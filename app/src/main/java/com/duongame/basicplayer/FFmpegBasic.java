@@ -5,8 +5,11 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
+
+import java.io.File;
 
 public class FFmpegBasic extends Activity {
     @Override
@@ -30,7 +33,11 @@ class MoviePlayView extends View {
         	((Activity)context).finish();
         }
         
-        String fname = "/mnt/sdcard/HSTest/T4_MVI_1498.AVI";
+        //String fname = "/mnt/sdcard/HSTest/T4_MVI_1498.AVI";
+        String fname = "/mnt/sdcard/mediaweb.mp4";
+        File file = new File(fname);
+        Log.d("jungsoo", String.valueOf(file.exists()));
+
         
         int openResult = openMovie(fname);
         if (openResult < 0) {

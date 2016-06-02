@@ -14,7 +14,7 @@
 #include "BasicPlayer.h"
 
 
-jint Java_net_jbong_FFmpegBasic_MoviePlayView_initBasicPlayer(JNIEnv *env, jobject thiz)
+jint Java_com_duongame_basicplayer_MoviePlayView_initBasicPlayer(JNIEnv *env, jobject thiz)
 {
 //	if (android_getCpuFamily() == ANDROID_CPU_FAMILY_ARM && (android_getCpuFeatures() & ANDROID_CPU_ARM_FEATURE_NEON) != 0) {
 //    if (android_getCpuFamily() == ANDROID_CPU_FAMILY_ARM) {
@@ -26,7 +26,7 @@ jint Java_net_jbong_FFmpegBasic_MoviePlayView_initBasicPlayer(JNIEnv *env, jobje
 //		return -1;
 }
 
-jint Java_net_jbong_FFmpegBasic_MoviePlayView_openMovie(JNIEnv *env, jobject thiz, jstring filePath)
+jint Java_com_duongame_basicplayer_MoviePlayView_openMovie(JNIEnv *env, jobject thiz, jstring filePath)
 {
 	const jbyte *str;
 	int result;
@@ -40,7 +40,7 @@ jint Java_net_jbong_FFmpegBasic_MoviePlayView_openMovie(JNIEnv *env, jobject thi
 	return result;
 }
 
-jint Java_net_jbong_FFmpegBasic_MoviePlayView_renderFrame(JNIEnv *env, jobject thiz, jobject bitmap)
+jint Java_com_duongame_basicplayer_MoviePlayView_renderFrame(JNIEnv *env, jobject thiz, jobject bitmap)
 {
     void *pixels;
 	int result;
@@ -54,17 +54,17 @@ jint Java_net_jbong_FFmpegBasic_MoviePlayView_renderFrame(JNIEnv *env, jobject t
 	AndroidBitmap_unlockPixels(env, bitmap);
 }
 
-jint Java_net_jbong_FFmpegBasic_MoviePlayView_getMovieWidth(JNIEnv *env, jobject thiz)
+jint Java_com_duongame_basicplayer_MoviePlayView_getMovieWidth(JNIEnv *env, jobject thiz)
 {
 	return getWidth();
 }
 
-jint Java_net_jbong_FFmpegBasic_MoviePlayView_getMovieHeight(JNIEnv *env, jobject thiz)
+jint Java_com_duongame_basicplayer_MoviePlayView_getMovieHeight(JNIEnv *env, jobject thiz)
 {
 	return getHeight();
 }
 
-void Java_net_jbong_FFmpegBasic_MoviePlayView_closeMovie(JNIEnv *env, jobject thiz)
+void Java_com_duongame_basicplayer_MoviePlayView_closeMovie(JNIEnv *env, jobject thiz)
 {
 	closeMovie();
 }
