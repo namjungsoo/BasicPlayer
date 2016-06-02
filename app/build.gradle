@@ -11,6 +11,15 @@ android {
         versionCode 1
         versionName "1.0"
     }
+    sourceSets {
+        main {
+            // eclipse의 폴더명과 동일하게 사용함
+            jniLibs.srcDirs = ["src/main/libs"]
+
+            // android studio가 직접 컴파일하지 않게 함
+            jni.srcDirs = []
+        }
+    }
     buildTypes {
         release {
             minifyEnabled false
