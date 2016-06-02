@@ -21,6 +21,13 @@
 //#include "avformat.h"
 //#include "swscale.h"
 //#include "BasicPlayer.h"
+#include <android/log.h>
+#define TAG "basicplayer-so"
+
+#define LOGV(...) ((void)__android_log_print(ANDROID_LOG_VERBOSE, TAG, __VA_ARGS__))
+#define LOGI(...) ((void)__android_log_print(ANDROID_LOG_INFO, TAG, __VA_ARGS__))
+#define LOGE(...) ((void)__android_log_print(ANDROID_LOG_ERROR, TAG, __VA_ARGS__))
+#define LOGD(...) ((void)__android_log_print(ANDROID_LOG_DEBUG, TAG, __VA_ARGS__))
 
 
 AVFormatContext *gFormatCtx = NULL;
@@ -44,12 +51,19 @@ AVDictionary    *optionsDict = NULL;
 int openMovie(const char filePath[])
 {
 	int i;
-
+	unsigned char errbuf[128];
+	  
 	if (gFormatCtx != NULL)
 		return -1;
 
-	if (avformat_open_input(&gFormatCtx, filePath, NULL, NULL) != 0)
+	//if (avformat_open_input(&gFormatCtx, filePath, NULL, NULL) != 0)
+	int err = avformat_open_input(&gFormatCtx, filePath, NULL, NULL);
+	if(err < 0) {
+		av_strerror(err, errbuf, sizeof(errbuf));
+		LOGD("%s", errbuf);  
 		return -2;
+	}
+		
 
 	if (avformat_find_stream_info(gFormatCtx, NULL) < 0)
 		return -3;

@@ -53,7 +53,7 @@ LOCAL_C_INCLUDES := $(LOCAL_PATH)/../include/ \
 
 LOCAL_SHARED_LIBRARIES := libavformat libavcodec libswscale libavutil libswresample
 
-LOCAL_LDLIBS := -lz -ljnigraphics
+LOCAL_LDLIBS := -lz -ljnigraphics -llog
 
 LOCAL_ARM_MODE := arm
 
