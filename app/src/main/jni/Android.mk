@@ -1,6 +1,7 @@
 LOCAL_PATH := $(call my-dir)
 
-#BEGIN PREBUILT_SHARED_LIBRARY
+# BEGIN PREBUILT_SHARED_LIBRARY
+
 include $(CLEAR_VARS)
 LOCAL_MODULE:= libavcodec
 LOCAL_SRC_FILES:= ../lib/libavcodec.so
@@ -36,7 +37,8 @@ LOCAL_MODULE:= libwsresample
 LOCAL_SRC_FILES:= ../lib/libswresample.so
 LOCAL_EXPORT_C_INCLUDES := $(LOCAL_PATH)/include
 include $(PREBUILT_SHARED_LIBRARY)
-#END PREBUILT_SHARED_LIBRARY
+
+# END PREBUILT_SHARED_LIBRARY
 
 
 include $(CLEAR_VARS)
@@ -49,12 +51,10 @@ LOCAL_C_INCLUDES := $(LOCAL_PATH)/../include/ \
                     $(LOCAL_PATH)/../include/libavformat \
                     $(LOCAL_PATH)/../include/libswscale
 
-LOCAL_SHARED_LIBRARIES := libavformat libavcodec libswscale libavutil libswresample cpufeatures
+LOCAL_SHARED_LIBRARIES := libavformat libavcodec libswscale libavutil libswresample
 
 LOCAL_LDLIBS := -lz -ljnigraphics
 
 LOCAL_ARM_MODE := arm
 
 include $(BUILD_SHARED_LIBRARY)
-
-#$(call import-module,ffmpeg-3.0.2/android/arm,android/cpufeatures)
