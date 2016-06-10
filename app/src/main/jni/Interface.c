@@ -13,30 +13,21 @@
 //#include <cpu-features.h>
 #include "BasicPlayer.h"
 
-
 jint Java_com_duongame_basicplayer_MoviePlayView_initBasicPlayer(JNIEnv *env, jobject thiz)
 {
-//	if (android_getCpuFamily() == ANDROID_CPU_FAMILY_ARM && (android_getCpuFeatures() & ANDROID_CPU_ARM_FEATURE_NEON) != 0) {
-//    if (android_getCpuFamily() == ANDROID_CPU_FAMILY_ARM) {
-		av_register_all();
-
-		return 0;
-//	}
-//	else
-//		return -1;
+	// ARM 패밀리 이고, NEON 피쳐가 있을경우 av_register_all을 해준다. 
+	//Initializes libavformat and registers all the muxers, demuxers and protocols. 
+	av_register_all();
+	return 0;
 }
 
 jint Java_com_duongame_basicplayer_MoviePlayView_openMovie(JNIEnv *env, jobject thiz, jstring filePath)
 {
 	const jbyte *str;
 	int result;
-
 	str = (*env)->GetStringUTFChars(env, filePath, NULL);
-
 	result = openMovie(str);
-
 	(*env)->ReleaseStringUTFChars(env, filePath, str);
-
 	return result;
 }
 

@@ -15,7 +15,7 @@ public class FFmpegBasic extends Activity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        
+
         MoviePlayView playView = new MoviePlayView(this);
         setContentView(playView);
     }
@@ -26,32 +26,31 @@ class MoviePlayView extends View {
 
     public MoviePlayView(Context context) {
         super(context);
-        
+
         if (initBasicPlayer() < 0) {
-        	Toast.makeText(context, "CPU doesn't support NEON", Toast.LENGTH_LONG).show();
-        	
-        	((Activity)context).finish();
+            Toast.makeText(context, "CPU doesn't support NEON", Toast.LENGTH_LONG).show();
+
+            ((Activity) context).finish();
         }
-        
+
         //String fname = "/mnt/sdcard/HSTest/T4_MVI_1498.AVI";
         String fname = "/mnt/sdcard/mediaweb.mp4";
         File file = new File(fname);
         Log.d("jungsoo", String.valueOf(file.exists()));
 
-        
+
         int openResult = openMovie(fname);
         if (openResult < 0) {
-        	Toast.makeText(context, "Open Movie Error: " + openResult, Toast.LENGTH_LONG).show();
-        	
-        	((Activity)context).finish();
-        }
-        else
-        	mBitmap = Bitmap.createBitmap(getMovieWidth(), getMovieHeight(), Bitmap.Config.RGB_565);
+            Toast.makeText(context, "Open Movie Error: " + openResult, Toast.LENGTH_LONG).show();
+
+            ((Activity) context).finish();
+        } else
+            mBitmap = Bitmap.createBitmap(getMovieWidth(), getMovieHeight(), Bitmap.Config.RGB_565);
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
-    	renderFrame(mBitmap);
+        renderFrame(mBitmap);
         canvas.drawBitmap(mBitmap, 0, 0, null);
 
         invalidate();
@@ -62,9 +61,14 @@ class MoviePlayView extends View {
     }
 
     public static native int initBasicPlayer();
-	public static native int openMovie(String filePath);
-	public static native int renderFrame(Bitmap bitmap);
-	public static native int getMovieWidth();
-	public static native int getMovieHeight();
-	public static native void closeMovie();
+
+    public static native int openMovie(String filePath);
+
+    public static native int renderFrame(Bitmap bitmap);
+
+    public static native int getMovieWidth();
+
+    public static native int getMovieHeight();
+
+    public static native void closeMovie();
 }

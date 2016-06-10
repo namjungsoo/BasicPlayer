@@ -17,10 +17,6 @@
 #include <libswscale/swscale.h>
 #include <libavutil/pixfmt.h>
 
-//#include "avcodec.h"
-//#include "avformat.h"
-//#include "swscale.h"
-//#include "BasicPlayer.h"
 #include <android/log.h>
 #define TAG "basicplayer-so"
 
@@ -28,7 +24,6 @@
 #define LOGI(...) ((void)__android_log_print(ANDROID_LOG_INFO, TAG, __VA_ARGS__))
 #define LOGE(...) ((void)__android_log_print(ANDROID_LOG_ERROR, TAG, __VA_ARGS__))
 #define LOGD(...) ((void)__android_log_print(ANDROID_LOG_DEBUG, TAG, __VA_ARGS__))
-
 
 AVFormatContext *gFormatCtx = NULL;
 
@@ -44,42 +39,42 @@ struct SwsContext *gImgConvertCtx = NULL;
 int gPictureSize = 0;
 uint8_t *gVideoBuffer = NULL;
 
-
-AVDictionary    *optionsDict = NULL;
-
+AVDictionary *optionsDict = NULL;
 
 int openMovie(const char filePath[])
 {
 	int i;
 	unsigned char errbuf[128];
-	  
+	
+	// 최초에 컨텍스트가 null이 맞는지 확인한다. 
 	if (gFormatCtx != NULL)
 		return -1;
 
-	//if (avformat_open_input(&gFormatCtx, filePath, NULL, NULL) != 0)
+	// 파일을 연다. 
 	int err = avformat_open_input(&gFormatCtx, filePath, NULL, NULL);
 	if(err < 0) {
 		av_strerror(err, errbuf, sizeof(errbuf));
 		LOGD("%s", errbuf);  
 		return -2;
 	}
-		
 
+	// 스트짐 정보를 포맷 컨텍스트에 리턴한다. 
 	if (avformat_find_stream_info(gFormatCtx, NULL) < 0)
 		return -3;
 
 	for (i = 0; i < gFormatCtx->nb_streams; i++) {
 		if (gFormatCtx->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO) {
 			gVideoStreamIdx = i;
-
 			break;
 		}
 	}
+
+	// 비디오 스트림 인덱스를 체크한다. 
 	if (gVideoStreamIdx == -1)
 		return -4;
 
+	// 비디오 코텍을 찾아서 오픈한다. 
 	gVideoCodecCtx = gFormatCtx->streams[gVideoStreamIdx]->codec;
-
 	gVideoCodec = avcodec_find_decoder(gVideoCodecCtx->codec_id);
 	if (gVideoCodec == NULL)
 		return -5;
@@ -87,19 +82,21 @@ int openMovie(const char filePath[])
 	if (avcodec_open2(gVideoCodecCtx, gVideoCodec, &optionsDict) < 0)
 		return -6;
 
+	// 프레임을 할당한다. frame은 원본 frameRGB는 변환용 
 	gFrame = av_frame_alloc();
 	if (gFrame == NULL)
 		return -7;
-
 	gFrameRGB = av_frame_alloc();
 	if (gFrameRGB == NULL)
 		return -8;
 
+	// 픽처 사이즈를 계산한다. 
 	gPictureSize = avpicture_get_size(AV_PIX_FMT_RGB565LE, gVideoCodecCtx->width, gVideoCodecCtx->height);
+	// 비디오 버퍼를 할당한다. 
 	gVideoBuffer = (uint8_t*)(malloc(sizeof(uint8_t) * gPictureSize));
 
+	// 비디오 버퍼 메모리를 설정함
 	avpicture_fill((AVPicture*)gFrameRGB, gVideoBuffer, AV_PIX_FMT_RGB565LE, gVideoCodecCtx->width, gVideoCodecCtx->height);
-	
 	return 0;
 }
 
@@ -120,14 +117,11 @@ int decodeFrame()
 				sws_scale(gImgConvertCtx, gFrame->data, gFrame->linesize, 0, gVideoCodecCtx->height, gFrameRGB->data, gFrameRGB->linesize);
 				
 				av_free_packet(&packet);
-		
 				return 0;
 			}
 		}
-		
 		av_free_packet(&packet);
 	}
-
 	return -1;
 }
 
