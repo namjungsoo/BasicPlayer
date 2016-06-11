@@ -11,7 +11,6 @@
 #ifndef BASICPLAYER_H__INCED__110326
 #define BASICPLAYER_H__INCED__110326
 
-
 // return: == 0 - success
 //          < 0 - error code
 int openMovie(const char filePath[]);
@@ -26,6 +25,5 @@ int getWidth();
 int getHeight();
 
 void closeMovie();
-
 
 #endif
