@@ -41,6 +41,8 @@ uint8_t *gVideoBuffer = NULL;
 
 AVDictionary *optionsDict = NULL;
 
+int gPixelFormat = AV_PIX_FMT_BGR32;
+
 int openMovie(const char filePath[])
 {
 	int i;
@@ -91,12 +93,12 @@ int openMovie(const char filePath[])
 		return -8;
 
 	// 픽처 사이즈를 계산한다. 
-	gPictureSize = avpicture_get_size(AV_PIX_FMT_RGB565LE, gVideoCodecCtx->width, gVideoCodecCtx->height);
+	gPictureSize = avpicture_get_size(gPixelFormat, gVideoCodecCtx->width, gVideoCodecCtx->height);
 	// 비디오 버퍼를 할당한다. 
 	gVideoBuffer = (uint8_t*)(malloc(sizeof(uint8_t) * gPictureSize));
 
 	// 비디오 버퍼 메모리를 설정함
-	avpicture_fill((AVPicture*)gFrameRGB, gVideoBuffer, AV_PIX_FMT_RGB565LE, gVideoCodecCtx->width, gVideoCodecCtx->height);
+	avpicture_fill((AVPicture*)gFrameRGB, gVideoBuffer, gPixelFormat, gVideoCodecCtx->width, gVideoCodecCtx->height);
 	return 0;
 }
 
@@ -112,7 +114,7 @@ int decodeFrame()
 			if (frameFinished) {
 				gImgConvertCtx = sws_getCachedContext(gImgConvertCtx,
 					gVideoCodecCtx->width, gVideoCodecCtx->height, gVideoCodecCtx->pix_fmt,
-					gVideoCodecCtx->width, gVideoCodecCtx->height, AV_PIX_FMT_RGB565LE, SWS_BICUBIC, NULL, NULL, NULL);
+					gVideoCodecCtx->width, gVideoCodecCtx->height, gPixelFormat, SWS_BICUBIC, NULL, NULL, NULL);
 				
 				sws_scale(gImgConvertCtx, gFrame->data, gFrame->linesize, 0, gVideoCodecCtx->height, gFrameRGB->data, gFrameRGB->linesize);
 				

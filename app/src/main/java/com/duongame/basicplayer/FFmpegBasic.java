@@ -66,7 +66,7 @@ class MoviePlayView extends View {
             Toast.makeText(context, "Open Movie Error: " + openResult, Toast.LENGTH_LONG).show();
             ((Activity) context).finish();
         } else {
-            mBitmap = Bitmap.createBitmap(getMovieWidth(), getMovieHeight(), Bitmap.Config.RGB_565);
+            mBitmap = Bitmap.createBitmap(getMovieWidth(), getMovieHeight(), Bitmap.Config.ARGB_8888);
             Log.d(TAG,"init createBitmap");
             setWillNotDraw(false);
         }
