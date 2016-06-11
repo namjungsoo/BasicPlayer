@@ -42,7 +42,6 @@ class MoviePlayView extends View {
         } else {
             mBitmap = Bitmap.createBitmap(getMovieWidth(), getMovieHeight(), Bitmap.Config.ARGB_8888);
             Log.d(TAG,"init createBitmap");
-            setWillNotDraw(false);
         }
 
     }
