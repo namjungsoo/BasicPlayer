@@ -7,11 +7,21 @@
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
  */
-
-#include <jni.h>
 #include <android/bitmap.h>
-//#include <cpu-features.h>
+#include <android/log.h>
+#include <jni.h>
 #include "BasicPlayer.h"
+ 
+#define LOGV(...)   __android_log_print(ANDROID_LOG_VERBOSE, "libnav", __VA_ARGS__)
+#define LOGD(...)   __android_log_print(ANDROID_LOG_DEBUG, "libnav", __VA_ARGS__)
+#define LOGI(...)   __android_log_print(ANDROID_LOG_INFO, "libnav", __VA_ARGS__)
+#define LOGW(...)   __android_log_print(ANDROID_LOG_WARN, "libnav", __VA_ARGS__)
+#define LOGE(...)   __android_log_print(ANDROID_LOG_ERROR, "libnav", __VA_ARGS__)
+
+jint JNI_OnLoad(JavaVM* vm, void* reserved) {
+    LOGD("Hello");
+    return JNI_VERSION_1_6;
+}
 
 jint Java_com_duongame_basicplayer_MoviePlayView_initBasicPlayer(JNIEnv *env, jobject thiz)
 {

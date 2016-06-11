@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
 
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
@@ -18,6 +19,8 @@
 #include <libavutil/pixfmt.h>
 
 #include <android/log.h>
+#include <jni.h>// JNI_OnLoad
+#include <sys/types.h>
 #define TAG "basicplayer-so"
 
 #define LOGV(...) ((void)__android_log_print(ANDROID_LOG_VERBOSE, TAG, __VA_ARGS__))
@@ -45,6 +48,8 @@ int gPixelFormat = AV_PIX_FMT_BGR32;
 
 int openMovie(const char filePath[])
 {
+	__android_log_print(ANDROID_LOG_DEBUG, "basicplayer", "openMovie %s", filePath);
+
 	int i;
 	unsigned char errbuf[128];
 	
@@ -110,6 +115,8 @@ int decodeFrame()
 	while (av_read_frame(gFormatCtx, &packet) >= 0) {
 		if (packet.stream_index == gVideoStreamIdx) {
 			avcodec_decode_video2(gVideoCodecCtx, gFrame, &frameFinished, &packet);
+			//LOGD("packet.pts=%llu frame.pts=%llu", packet.pts, gFrame->pts);
+			__android_log_print(ANDROID_LOG_DEBUG, "basicplayer", "packet.pts=%llu frame.pts=%llu", packet.pts, gFrame->pts);
 			
 			if (frameFinished) {
 				gImgConvertCtx = sws_getCachedContext(gImgConvertCtx,
