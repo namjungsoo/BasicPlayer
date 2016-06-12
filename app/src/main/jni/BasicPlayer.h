@@ -29,6 +29,7 @@ int getHeight();
 
 void closeMovie();
 
-double getFps();
+//double getFps();
+extern double gFps;
 
 #endif

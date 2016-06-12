@@ -8,19 +8,31 @@
  * version 2.1 of the License, or (at your option) any later version.
  */
 
+// std c lib
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
 
-#include <libavcodec/avcodec.h>
-#include <libavformat/avformat.h>
-#include <libswscale/swscale.h>
-#include <libavutil/pixfmt.h>
+// ffmpeg lib
+extern "C" {
+	#include <libavcodec/avcodec.h>
+	#include <libavformat/avformat.h>
+	#include <libswscale/swscale.h>
+	#include <libavutil/pixfmt.h>
+}
 
+// android lib
 #include <android/log.h>
 #include <jni.h>// JNI_OnLoad
+
+// linux lib
 #include <sys/types.h>
+#include <unistd.h>
+#include <pthread.h>
+
+// std c++ lib
+#include <queue>
 
 #define TAG "basicplayer-so"
 
@@ -53,16 +65,29 @@ double gFps = 0.0;
 AVCodecContext *gAudioCodecCtx = NULL;
 AVCodec *gAudioCodec = NULL;
 int gAudioStreamIdx = -1;
+AVFrame *gFrameAudio = NULL;
 
+pthread_t gAudioThread = 0;
+bool gAudioThreadRunning = true;
+std::queue<AVPacket> gAudioQ;
 
+extern "C" {
+int64_t getTimeNsec() 
+{
+    struct timespec now;
+    clock_gettime(CLOCK_MONOTONIC, &now);
+    return (int64_t) now.tv_sec*1000000000LL + now.tv_nsec;
+}
 
-double getFps() {
+double getFps() 
+{
 	// LOGD("getFps %f", gFps);
 	// return gFps;
 	return 24.0;
 }
 
-int openVideoStream() {
+int openVideoStream() 
+{
 	LOGD("openVideoStream");
 
 	// 비디오 스트림 인덱스를 체크한다. 
@@ -86,6 +111,11 @@ int openVideoStream() {
 	if (gFrameRGB == NULL)
 		return -8;
 
+	// 오디오를 위해 추가됨 
+	gFrameAudio = av_frame_alloc();
+	if (gFrameAudio == NULL)
+		return -9;
+	
 	// 픽처 사이즈를 계산한다. 
 	gPictureSize = avpicture_get_size(gPixelFormat, gVideoCodecCtx->width, gVideoCodecCtx->height);
 	// 비디오 버퍼를 할당한다. 
@@ -99,7 +129,8 @@ int openVideoStream() {
 	return 0;
 }
 
-int openAudioStream() {
+int openAudioStream() 
+{
 	LOGD("openAudioStream");
 
 	// 오디오 스트림 인덱스를 체크한다. 
@@ -118,6 +149,49 @@ int openAudioStream() {
 	LOGD("gAudioCodecCtx->sample_fmt=%d", gAudioCodecCtx->sample_fmt);
 	LOGD("gAudioCodecCtx->sample_rate=%d", gAudioCodecCtx->sample_rate);
 	LOGD("gAudioCodecCtx->channels=%d", gAudioCodecCtx->channels);
+}
+
+void decodeAudioThread(void *param) 
+{
+	LOGD("decodeAudioThread");
+	int frameFinished = 0;
+
+	while(gAudioThreadRunning) {
+//		LOGD("decodeAudioThread running");
+		if(gAudioQ.size() > 0) {
+			LOGD("decodeAudioThread queue pop");
+			AVPacket packet = gAudioQ.front();
+			gAudioQ.pop();
+
+			int64_t begin = getTimeNsec();
+ 			int len = avcodec_decode_audio4(gAudioCodecCtx, gFrameAudio, &frameFinished, &packet);
+			int64_t end = getTimeNsec();
+			int64_t diff = end - begin;
+
+			if(len < 0) {
+				LOGD("skip audio");
+			}
+			
+			LOGD("audio diff time=%llu", diff);
+
+ 			// 이게 전부 0.0에서 변화가 없음
+ 			double pts = av_frame_get_best_effort_timestamp(gFrameAudio);
+ 			double pts_clock = pts * av_q2d(gFormatCtx->streams[gAudioStreamIdx]->time_base);
+			LOGD("decodeAudioThread ts=%f pts_clock=%f", pts, pts_clock);
+
+ 			if (frameFinished) {
+ 				av_free_packet(&packet);
+// 				return 0;
+ 			}
+			else {
+				av_free_packet(&packet);
+			}
+
+		}
+		usleep(100);
+	}
+
+	LOGD("decodeAudioThread end");
 }
 
 int openMovie(const char filePath[])
@@ -166,6 +240,8 @@ int openMovie(const char filePath[])
 	if(ret < 0)
 		return ret;  
 
+	ret = pthread_create(&gAudioThread, NULL, decodeAudioThread, NULL);
+
 	return ret;
 }
 
@@ -176,7 +252,11 @@ int decodeFrame()
 	
 	while (av_read_frame(gFormatCtx, &packet) >= 0) {
 		if (packet.stream_index == gVideoStreamIdx) {
+			int64_t begin = getTimeNsec();
 			avcodec_decode_video2(gVideoCodecCtx, gFrame, &frameFinished, &packet);
+			int64_t end = getTimeNsec();
+			int64_t diff = end - begin;
+			LOGD("video diff time=%llu", diff);
 
 			// 이게 전부 0.0에서 변화가 없음
 			double pts = av_frame_get_best_effort_timestamp(gFrame);
@@ -193,32 +273,23 @@ int decodeFrame()
 				av_free_packet(&packet);
 				return 0;
 			}
+			else {
+				av_free_packet(&packet);
+			}
 		}
 		else if(packet.stream_index = gAudioStreamIdx) {
-// 			avcodec_decode_audio4(gAudioCodecCtx, gFrame, &frameFinished, &packet);
-
-// 			// 이게 전부 0.0에서 변화가 없음
-// 			double pts = av_frame_get_best_effort_timestamp(gFrame);
-// 			double pts_clock = pts * av_q2d(gFormatCtx->streams[gAudioStreamIdx]->time_base);
-// //			LOGD("decodeAudioFrame ts=%f pts_clock=%f", pts, pts_clock);
-
-// 			if (frameFinished) {
-// 				av_free_packet(&packet);
-// 				return 0;
-// 			}
+			//TODO: 큐 동기화가 필요함 
+			gAudioQ.push(packet);
+			LOGD("decodeFrame audio queue push");
 		}
-		av_free_packet(&packet);
+		else {
+			// 처리하지 못했을때 자체적으로 packet을 free 함 
+			av_free_packet(&packet);
+		}
+		usleep(100);
 	}
 	return -1;
 }
-
-// int decodeAudioFrame() 
-// {
-// 	int frameFinished = 0;
-// 	AVPacket packet;
-
-// 	while(av_read_frame(gFormatCtx))
-// }
 
 void copyPixels(uint8_t *pixels)
 {
@@ -256,4 +327,5 @@ void closeMovie()
         avformat_close_input(&gFormatCtx);
 		gFormatCtx = NULL;
 	}
+}
 }

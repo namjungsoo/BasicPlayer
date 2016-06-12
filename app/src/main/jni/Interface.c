@@ -74,7 +74,9 @@ void Java_com_duongame_basicplayer_MoviePlayView_closeMovie(JNIEnv *env, jobject
 
 jdouble Java_com_duongame_basicplayer_MoviePlayView_getFps(JNIEnv *env, jobject thiz)
 {
-	jdouble fps = getFps();
+	//jdouble fps = getFps();
+	jdouble fps = gFps;
 	LOGD("interface fps=%f", fps);
 	return fps;
 }
+
