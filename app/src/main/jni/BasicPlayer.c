@@ -31,6 +31,7 @@
 
 AVFormatContext *gFormatCtx = NULL;
 
+// 비디오 관련 
 AVCodecContext *gVideoCodecCtx = NULL;
 AVCodec *gVideoCodec = NULL;
 int gVideoStreamIdx = -1;
@@ -48,41 +49,21 @@ AVDictionary *optionsDict = NULL;
 int gPixelFormat = AV_PIX_FMT_BGR32;
 double gFps = 0.0;
 
+// 오디오 관련 
+AVCodecContext *gAudioCodecCtx = NULL;
+AVCodec *gAudioCodec = NULL;
+int gAudioStreamIdx = -1;
+
+
+
 double getFps() {
 	// LOGD("getFps %f", gFps);
 	// return gFps;
 	return 24.0;
 }
 
-int openMovie(const char filePath[])
-{
-	__android_log_print(ANDROID_LOG_DEBUG, "basicplayer", "openMovie %s", filePath);
-
-	int i;
-	unsigned char errbuf[128];
-	
-	// 최초에 컨텍스트가 null이 맞는지 확인한다. 
-	if (gFormatCtx != NULL)
-		return -1;
-
-	// 파일을 연다. 
-	int err = avformat_open_input(&gFormatCtx, filePath, NULL, NULL);
-	if(err < 0) {
-		av_strerror(err, errbuf, sizeof(errbuf));
-		LOGD("%s", errbuf);  
-		return -2;
-	}
-
-	// 스트짐 정보를 포맷 컨텍스트에 리턴한다. 
-	if (avformat_find_stream_info(gFormatCtx, NULL) < 0)
-		return -3;
-
-	for (i = 0; i < gFormatCtx->nb_streams; i++) {
-		if (gFormatCtx->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO) {
-			gVideoStreamIdx = i;
-			break;
-		}
-	}
+int openVideoStream() {
+	LOGD("openVideoStream");
 
 	// 비디오 스트림 인덱스를 체크한다. 
 	if (gVideoStreamIdx == -1)
@@ -118,6 +99,76 @@ int openMovie(const char filePath[])
 	return 0;
 }
 
+int openAudioStream() {
+	LOGD("openAudioStream");
+
+	// 오디오 스트림 인덱스를 체크한다. 
+	if (gAudioStreamIdx == -1)
+		return -4;
+
+	// 오디오 코텍을 찾아서 오픈한다. 
+	gAudioCodecCtx = gFormatCtx->streams[gAudioStreamIdx]->codec;
+	gAudioCodec = avcodec_find_decoder(gAudioCodecCtx->codec_id);
+	if (gAudioCodec == NULL)
+		return -5;
+
+	if (avcodec_open2(gAudioCodecCtx, gAudioCodec, &optionsDict) < 0)
+		return -6;
+
+	LOGD("gAudioCodecCtx->sample_fmt=%d", gAudioCodecCtx->sample_fmt);
+	LOGD("gAudioCodecCtx->sample_rate=%d", gAudioCodecCtx->sample_rate);
+	LOGD("gAudioCodecCtx->channels=%d", gAudioCodecCtx->channels);
+}
+
+int openMovie(const char filePath[])
+{
+	__android_log_print(ANDROID_LOG_DEBUG, "basicplayer", "openMovie %s", filePath);
+
+	int i;
+	unsigned char errbuf[128];
+	
+	// 최초에 컨텍스트가 null이 맞는지 확인한다. 
+	if (gFormatCtx != NULL)
+		return -1;
+
+	// 파일을 연다. 
+	int err = avformat_open_input(&gFormatCtx, filePath, NULL, NULL);
+	if(err < 0) {
+		av_strerror(err, errbuf, sizeof(errbuf));
+		LOGD("%s", errbuf);  
+		return -2;
+	}
+
+	// 스트짐 정보를 포맷 컨텍스트에 리턴한다. 
+	if (avformat_find_stream_info(gFormatCtx, NULL) < 0)
+		return -3;
+
+	for (i = 0; i < gFormatCtx->nb_streams; i++) {
+		if (gFormatCtx->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO) {
+			gVideoStreamIdx = i;
+			LOGD("gVideoStreamIdx=%d", gVideoStreamIdx);
+//			break;
+		}
+
+		if (gFormatCtx->streams[i]->codec->codec_type == AVMEDIA_TYPE_AUDIO) {
+			gAudioStreamIdx = i;
+			LOGD("gAudioStreamIdx=%d", gAudioStreamIdx);
+//			break;
+		}		
+	}
+
+	int ret;
+	ret = openVideoStream();
+	if(ret < 0)
+		return ret;  
+
+	ret = openAudioStream(); 
+	if(ret < 0)
+		return ret;  
+
+	return ret;
+}
+
 int decodeFrame()
 {
 	int frameFinished = 0;
@@ -129,9 +180,8 @@ int decodeFrame()
 
 			// 이게 전부 0.0에서 변화가 없음
 			double pts = av_frame_get_best_effort_timestamp(gFrame);
-			//LOGD("pts=%f packet.dts=%f packet.pts=%llu frame.pts=%llu frame.opaque=%llu", pts, packet.dts, packet.pts, gFrame->pts, gFrame->opaque);
 			double pts_clock = pts * av_q2d(gFormatCtx->streams[gVideoStreamIdx]->time_base);
-			LOGD("pts=%f pts_clock=%f", pts, pts_clock);
+//			LOGD("decodeVideoFrame ts=%f pts_clock=%f", pts, pts_clock);
 
 			if (frameFinished) {
 				gImgConvertCtx = sws_getCachedContext(gImgConvertCtx,
@@ -144,10 +194,31 @@ int decodeFrame()
 				return 0;
 			}
 		}
+		else if(packet.stream_index = gAudioStreamIdx) {
+// 			avcodec_decode_audio4(gAudioCodecCtx, gFrame, &frameFinished, &packet);
+
+// 			// 이게 전부 0.0에서 변화가 없음
+// 			double pts = av_frame_get_best_effort_timestamp(gFrame);
+// 			double pts_clock = pts * av_q2d(gFormatCtx->streams[gAudioStreamIdx]->time_base);
+// //			LOGD("decodeAudioFrame ts=%f pts_clock=%f", pts, pts_clock);
+
+// 			if (frameFinished) {
+// 				av_free_packet(&packet);
+// 				return 0;
+// 			}
+		}
 		av_free_packet(&packet);
 	}
 	return -1;
 }
+
+// int decodeAudioFrame() 
+// {
+// 	int frameFinished = 0;
+// 	AVPacket packet;
+
+// 	while(av_read_frame(gFormatCtx))
+// }
 
 void copyPixels(uint8_t *pixels)
 {

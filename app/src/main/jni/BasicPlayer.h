@@ -15,9 +15,13 @@
 //          < 0 - error code
 int openMovie(const char filePath[]);
 
+int openVideoStream();
+int openAudioStream();
+
 // return: == 0 - success
 //         != 0 then end of movie or fail
 int decodeFrame();
+
 void copyPixels(uint8_t *pixels);
 
 int getWidth();
