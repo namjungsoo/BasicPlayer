@@ -18,12 +18,13 @@ int openMovie(const char filePath[]);
 // return: == 0 - success
 //         != 0 then end of movie or fail
 int decodeFrame();
-
 void copyPixels(uint8_t *pixels);
 
 int getWidth();
 int getHeight();
 
 void closeMovie();
+
+double getFps();
 
 #endif

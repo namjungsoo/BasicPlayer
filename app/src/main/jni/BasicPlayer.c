@@ -21,6 +21,7 @@
 #include <android/log.h>
 #include <jni.h>// JNI_OnLoad
 #include <sys/types.h>
+
 #define TAG "basicplayer-so"
 
 #define LOGV(...) ((void)__android_log_print(ANDROID_LOG_VERBOSE, TAG, __VA_ARGS__))
@@ -45,6 +46,13 @@ uint8_t *gVideoBuffer = NULL;
 AVDictionary *optionsDict = NULL;
 
 int gPixelFormat = AV_PIX_FMT_BGR32;
+double gFps = 0.0;
+
+double getFps() {
+	// LOGD("getFps %f", gFps);
+	// return gFps;
+	return 24.0;
+}
 
 int openMovie(const char filePath[])
 {
@@ -104,6 +112,9 @@ int openMovie(const char filePath[])
 
 	// 비디오 버퍼 메모리를 설정함
 	avpicture_fill((AVPicture*)gFrameRGB, gVideoBuffer, gPixelFormat, gVideoCodecCtx->width, gVideoCodecCtx->height);
+
+	gFps = av_q2d(gFormatCtx->streams[gVideoStreamIdx]->r_frame_rate);
+	LOGD("fps=%f", gFps);
 	return 0;
 }
 
@@ -115,9 +126,13 @@ int decodeFrame()
 	while (av_read_frame(gFormatCtx, &packet) >= 0) {
 		if (packet.stream_index == gVideoStreamIdx) {
 			avcodec_decode_video2(gVideoCodecCtx, gFrame, &frameFinished, &packet);
-			//LOGD("packet.pts=%llu frame.pts=%llu", packet.pts, gFrame->pts);
-			__android_log_print(ANDROID_LOG_DEBUG, "basicplayer", "packet.pts=%llu frame.pts=%llu", packet.pts, gFrame->pts);
-			
+
+			// 이게 전부 0.0에서 변화가 없음
+			double pts = av_frame_get_best_effort_timestamp(gFrame);
+			//LOGD("pts=%f packet.dts=%f packet.pts=%llu frame.pts=%llu frame.opaque=%llu", pts, packet.dts, packet.pts, gFrame->pts, gFrame->opaque);
+			double pts_clock = pts * av_q2d(gFormatCtx->streams[gVideoStreamIdx]->time_base);
+			LOGD("pts=%f pts_clock=%f", pts, pts_clock);
+
 			if (frameFinished) {
 				gImgConvertCtx = sws_getCachedContext(gImgConvertCtx,
 					gVideoCodecCtx->width, gVideoCodecCtx->height, gVideoCodecCtx->pix_fmt,

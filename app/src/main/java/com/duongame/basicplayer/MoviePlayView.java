@@ -9,6 +9,8 @@ import android.view.View;
 import android.widget.Toast;
 
 import java.io.File;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * Created by namjungsoo on 16. 6. 11..
@@ -32,8 +34,9 @@ class MoviePlayView extends View {
         }
 
         String fname = "/mnt/sdcard/ar18-1.avi";
+//        String fname = "/mnt/sdcard/mediaweb.mp4";
         File file = new File(fname);
-        Log.d("jungsoo", String.valueOf(file.exists()));
+        Log.d(TAG, String.valueOf(file.exists()));
 
         int openResult = openMovie(fname);
         if (openResult < 0) {
@@ -42,6 +45,27 @@ class MoviePlayView extends View {
         } else {
             mBitmap = Bitmap.createBitmap(getMovieWidth(), getMovieHeight(), Bitmap.Config.ARGB_8888);
             Log.d(TAG,"init createBitmap");
+
+            double fps = getFps();
+            Log.d(TAG, "fps="+fps);
+            long interval = (long) (1000./fps);
+            Log.d(TAG, "interval="+interval);
+
+            final TimerTask task = new TimerTask() {
+                @Override
+                public void run() {
+                    MoviePlayView.this.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            invalidate();
+                        }
+                    });
+                }
+            };
+
+            final Timer timer;
+            timer = new Timer();
+            timer.schedule(task, 0, interval);
         }
 
     }
@@ -53,7 +77,8 @@ class MoviePlayView extends View {
             renderFrame(mBitmap);
             canvas.drawBitmap(mBitmap, 0, 0, null);
 
-            invalidate();
+            // 최초 그려지고 나서 항상 그려지게 한다.
+//            invalidate();
 //            Log.d(TAG,"onDraw invalidate");
         }
     }
@@ -73,4 +98,6 @@ class MoviePlayView extends View {
     public static native int getMovieHeight();
 
     public static native void closeMovie();
+
+    public static native double getFps();
 }
