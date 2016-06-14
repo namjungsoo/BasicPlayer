@@ -44,13 +44,14 @@ include $(PREBUILT_SHARED_LIBRARY)
 include $(CLEAR_VARS)
 
 LOCAL_MODULE := libbasicplayer
-LOCAL_SRC_FILES := BasicPlayer.cpp Interface.c
+LOCAL_SRC_FILES := BasicPlayer.c Interface.c AudioQ.cpp AudioTrack.c
 #LOCAL_SRC_FILES := Interface.c
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/../include/ \
                     $(LOCAL_PATH)/../include/libavcodec \
                     $(LOCAL_PATH)/../include/libavformat \
                     $(LOCAL_PATH)/../include/libswscale
 LOCAL_CPPFLAGS := -w -D__STDC_CONSTANT_MACROS -fpermissive
+LOCAL_CFLAGS := -w
 LOCAL_SHARED_LIBRARIES := libavformat libavcodec libswscale libavutil libswresample
 LOCAL_LDLIBS := -lz -ljnigraphics -llog
 LOCAL_ARM_MODE := arm

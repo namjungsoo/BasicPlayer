@@ -13,7 +13,7 @@
 
 // return: == 0 - success
 //          < 0 - error code
-int openMovie(const char filePath[]);
+int openMovie(const char filePath[], JNIEnv *env, jobject thiz);
 
 int openVideoStream();
 int openAudioStream();

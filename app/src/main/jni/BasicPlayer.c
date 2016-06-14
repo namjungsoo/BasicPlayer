@@ -15,12 +15,10 @@
 #include <stdarg.h>
 
 // ffmpeg lib
-extern "C" {
-	#include <libavcodec/avcodec.h>
-	#include <libavformat/avformat.h>
-	#include <libswscale/swscale.h>
-	#include <libavutil/pixfmt.h>
-}
+#include <libavcodec/avcodec.h>
+#include <libavformat/avformat.h>
+#include <libswscale/swscale.h>
+#include <libavutil/pixfmt.h>
 
 // android lib
 #include <android/log.h>
@@ -31,15 +29,9 @@ extern "C" {
 #include <unistd.h>
 #include <pthread.h>
 
-// std c++ lib
-#include <queue>
-
-#define TAG "basicplayer-so"
-
-#define LOGV(...) ((void)__android_log_print(ANDROID_LOG_VERBOSE, TAG, __VA_ARGS__))
-#define LOGI(...) ((void)__android_log_print(ANDROID_LOG_INFO, TAG, __VA_ARGS__))
-#define LOGE(...) ((void)__android_log_print(ANDROID_LOG_ERROR, TAG, __VA_ARGS__))
-#define LOGD(...) ((void)__android_log_print(ANDROID_LOG_DEBUG, TAG, __VA_ARGS__))
+#include "BasicPlayer.h"
+#include "Log.h"
+#include "AudioQ.h"
 
 AVFormatContext *gFormatCtx = NULL;
 
@@ -68,10 +60,8 @@ int gAudioStreamIdx = -1;
 AVFrame *gFrameAudio = NULL;
 
 pthread_t gAudioThread = 0;
-bool gAudioThreadRunning = true;
-std::queue<AVPacket> gAudioQ;
+int gAudioThreadRunning = 1;
 
-extern "C" {
 int64_t getTimeNsec() 
 {
     struct timespec now;
@@ -79,12 +69,13 @@ int64_t getTimeNsec()
     return (int64_t) now.tv_sec*1000000000LL + now.tv_nsec;
 }
 
-double getFps() 
-{
-	// LOGD("getFps %f", gFps);
-	// return gFps;
-	return 24.0;
-}
+// 현재 사용안함 
+// double getFps() 
+// {
+// 	// LOGD("getFps %f", gFps);
+// 	// return gFps;
+// 	return 24.0;
+// }
 
 int openVideoStream() 
 {
@@ -156,12 +147,14 @@ void decodeAudioThread(void *param)
 	LOGD("decodeAudioThread");
 	int frameFinished = 0;
 
+//	createAudioTrack();
+
 	while(gAudioThreadRunning) {
 //		LOGD("decodeAudioThread running");
-		if(gAudioQ.size() > 0) {
-			LOGD("decodeAudioThread queue pop");
-			AVPacket packet = gAudioQ.front();
-			gAudioQ.pop();
+		if(AudioQ_size() > 0) {
+//			LOGD("decodeAudioThread queue pop");
+
+			AVPacket packet = AudioQ_pop();			
 
 			int64_t begin = getTimeNsec();
  			int len = avcodec_decode_audio4(gAudioCodecCtx, gFrameAudio, &frameFinished, &packet);
@@ -172,18 +165,22 @@ void decodeAudioThread(void *param)
 				LOGD("skip audio");
 			}
 			
-			LOGD("audio diff time=%llu", diff);
+//			LOGD("audio diff time=%llu", diff);
 
  			// 이게 전부 0.0에서 변화가 없음
  			double pts = av_frame_get_best_effort_timestamp(gFrameAudio);
  			double pts_clock = pts * av_q2d(gFormatCtx->streams[gAudioStreamIdx]->time_base);
-			LOGD("decodeAudioThread ts=%f pts_clock=%f", pts, pts_clock);
+//			LOGD("decodeAudioThread ts=%f pts_clock=%f", pts, pts_clock);
 
  			if (frameFinished) {
- 				av_free_packet(&packet);
-// 				return 0;
+				int data_size = av_samples_get_buffer_size(NULL, gAudioCodecCtx->channels, gFrameAudio->nb_samples, gAudioCodecCtx->sample_fmt, 1);
+				//gFrameAudio->data[0];
+//				LOGD("frameFinished data_size=%d", data_size);
+				av_free_packet(&packet);
+//				return 0;
  			}
 			else {
+				LOGD("frameFinished NO");
 				av_free_packet(&packet);
 			}
 
@@ -194,9 +191,9 @@ void decodeAudioThread(void *param)
 	LOGD("decodeAudioThread end");
 }
 
-int openMovie(const char filePath[])
+int openMovie(const char filePath[], JNIEnv *env, jobject thiz)
 {
-	__android_log_print(ANDROID_LOG_DEBUG, "basicplayer", "openMovie %s", filePath);
+	LOGD("openMovie %s", filePath);
 
 	int i;
 	unsigned char errbuf[128];
@@ -220,13 +217,13 @@ int openMovie(const char filePath[])
 	for (i = 0; i < gFormatCtx->nb_streams; i++) {
 		if (gFormatCtx->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO) {
 			gVideoStreamIdx = i;
-			LOGD("gVideoStreamIdx=%d", gVideoStreamIdx);
+//			LOGD("gVideoStreamIdx=%d", gVideoStreamIdx);
 //			break;
 		}
 
 		if (gFormatCtx->streams[i]->codec->codec_type == AVMEDIA_TYPE_AUDIO) {
 			gAudioStreamIdx = i;
-			LOGD("gAudioStreamIdx=%d", gAudioStreamIdx);
+//			LOGD("gAudioStreamIdx=%d", gAudioStreamIdx);
 //			break;
 		}		
 	}
@@ -240,23 +237,28 @@ int openMovie(const char filePath[])
 	if(ret < 0)
 		return ret;  
 
+	prepareAudioTrack(env, thiz, gAudioCodecCtx->sample_rate, gAudioCodecCtx->channels);
+	
+// 	ret = createAudioTrack(env, thiz);
 	ret = pthread_create(&gAudioThread, NULL, decodeAudioThread, NULL);
 
 	return ret;
 }
 
+// 40ms만에 한번씩 호출된다. 
 int decodeFrame()
 {
 	int frameFinished = 0;
 	AVPacket packet;
 	
+	// 한번에 하나를 읽고 종료하자 
 	while (av_read_frame(gFormatCtx, &packet) >= 0) {
 		if (packet.stream_index == gVideoStreamIdx) {
 			int64_t begin = getTimeNsec();
 			avcodec_decode_video2(gVideoCodecCtx, gFrame, &frameFinished, &packet);
 			int64_t end = getTimeNsec();
 			int64_t diff = end - begin;
-			LOGD("video diff time=%llu", diff);
+//			LOGD("video diff time=%llu", diff);
 
 			// 이게 전부 0.0에서 변화가 없음
 			double pts = av_frame_get_best_effort_timestamp(gFrame);
@@ -277,10 +279,10 @@ int decodeFrame()
 				av_free_packet(&packet);
 			}
 		}
-		else if(packet.stream_index = gAudioStreamIdx) {
+		else if(packet.stream_index == gAudioStreamIdx) {
 			//TODO: 큐 동기화가 필요함 
-			gAudioQ.push(packet);
-			LOGD("decodeFrame audio queue push");
+			AudioQ_push(packet);
+//			LOGD("decodeFrame audio queue push");
 		}
 		else {
 			// 처리하지 못했을때 자체적으로 packet을 free 함 
@@ -327,5 +329,4 @@ void closeMovie()
         avformat_close_input(&gFormatCtx);
 		gFormatCtx = NULL;
 	}
-}
 }

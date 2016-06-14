@@ -4,6 +4,9 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.media.AudioFormat;
+import android.media.AudioManager;
+import android.media.AudioTrack;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
@@ -15,8 +18,9 @@ import java.util.TimerTask;
 /**
  * Created by namjungsoo on 16. 6. 11..
  */
-class MoviePlayView extends View {
+public class MoviePlayView extends View {
     private final static String TAG="MoviePlayView";
+
     private Bitmap mBitmap;
 
     public MoviePlayView(Context context) {
@@ -33,14 +37,19 @@ class MoviePlayView extends View {
             ((Activity) context).finish();
         }
 
-        String fname = "/mnt/sdcard/ar18-1.avi";
+        initAudioTrack();
+
+        final String fname = "/mnt/sdcard/Download/dd 022.avi";
 //        String fname = "/mnt/sdcard/mediaweb.mp4";
-        File file = new File(fname);
+
+        // 파일 존재 여부 체크
+        final File file = new File(fname);
         Log.d(TAG, String.valueOf(file.exists()));
 
         int openResult = openMovie(fname);
         if (openResult < 0) {
             Toast.makeText(context, "Open Movie Error: " + openResult, Toast.LENGTH_LONG).show();
+
             ((Activity) context).finish();
         } else {
             mBitmap = Bitmap.createBitmap(getMovieWidth(), getMovieHeight(), Bitmap.Config.ARGB_8888);
@@ -70,6 +79,52 @@ class MoviePlayView extends View {
 
     }
 
+    //ndk에서 불러준다.
+    private AudioTrack prepareAudioTrack(int sampleRateInHz,
+                                         int numberOfChannels) {
+
+        for (;;) {
+            int channelConfig;
+            if (numberOfChannels == 1) {
+                channelConfig = AudioFormat.CHANNEL_OUT_MONO;
+            } else if (numberOfChannels == 2) {
+                channelConfig = AudioFormat.CHANNEL_OUT_STEREO;
+            } else if (numberOfChannels == 3) {
+                channelConfig = AudioFormat.CHANNEL_OUT_FRONT_CENTER
+                        | AudioFormat.CHANNEL_OUT_FRONT_RIGHT
+                        | AudioFormat.CHANNEL_OUT_FRONT_LEFT;
+            } else if (numberOfChannels == 4) {
+                channelConfig = AudioFormat.CHANNEL_OUT_QUAD;
+            } else if (numberOfChannels == 5) {
+                channelConfig = AudioFormat.CHANNEL_OUT_QUAD
+                        | AudioFormat.CHANNEL_OUT_LOW_FREQUENCY;
+            } else if (numberOfChannels == 6) {
+                channelConfig = AudioFormat.CHANNEL_OUT_5POINT1;
+            } else if (numberOfChannels == 8) {
+                channelConfig = AudioFormat.CHANNEL_OUT_7POINT1;
+            } else {
+                channelConfig = AudioFormat.CHANNEL_OUT_STEREO;
+            }
+            try {
+                int minBufferSize = AudioTrack.getMinBufferSize(sampleRateInHz,
+                        channelConfig, AudioFormat.ENCODING_PCM_16BIT);
+                AudioTrack audioTrack = new AudioTrack(
+                        AudioManager.STREAM_MUSIC, sampleRateInHz,
+                        channelConfig, AudioFormat.ENCODING_PCM_16BIT,
+                        minBufferSize, AudioTrack.MODE_STREAM);
+                return audioTrack;
+            } catch (IllegalArgumentException e) {
+                if (numberOfChannels > 2) {
+                    numberOfChannels = 2;
+                } else if (numberOfChannels > 1) {
+                    numberOfChannels = 1;
+                } else {
+                    throw e;
+                }
+            }
+        }
+    }
+
     @Override
     protected void onDraw(Canvas canvas) {
 //        Log.d(TAG,"onDraw");
@@ -87,17 +142,19 @@ class MoviePlayView extends View {
         System.loadLibrary("basicplayer");
     }
 
-    public static native int initBasicPlayer();
+    public native void initAudioTrack();
 
-    public static native int openMovie(String filePath);
+    public native int initBasicPlayer();
 
-    public static native int renderFrame(Bitmap bitmap);
+    public native int openMovie(String filePath);
 
-    public static native int getMovieWidth();
+    public native int renderFrame(Bitmap bitmap);
 
-    public static native int getMovieHeight();
+    public native int getMovieWidth();
 
-    public static native void closeMovie();
+    public native int getMovieHeight();
 
-    public static native double getFps();
+    public native void closeMovie();
+
+    public native double getFps();
 }

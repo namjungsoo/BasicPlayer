@@ -8,21 +8,19 @@
  * version 2.1 of the License, or (at your option) any later version.
  */
 #include <android/bitmap.h>
-#include <android/log.h>
 #include <jni.h>
+#include "Log.h"
 #include "BasicPlayer.h"
- 
-#define TAG "basicplayer-so"
-
-#define LOGV(...)   __android_log_print(ANDROID_LOG_VERBOSE, TAG, __VA_ARGS__)
-#define LOGD(...)   __android_log_print(ANDROID_LOG_DEBUG, TAG, __VA_ARGS__)
-#define LOGI(...)   __android_log_print(ANDROID_LOG_INFO, TAG, __VA_ARGS__)
-#define LOGW(...)   __android_log_print(ANDROID_LOG_WARN, TAG, __VA_ARGS__)
-#define LOGE(...)   __android_log_print(ANDROID_LOG_ERROR, TAG, __VA_ARGS__)
+#include "AudioTrack.h"
 
 jint JNI_OnLoad(JavaVM* vm, void* reserved) {
     LOGD("Hello");
     return JNI_VERSION_1_6;
+}
+
+void Java_com_duongame_basicplayer_MoviePlayView_initAudioTrack(JNIEnv *env, jobject thiz)
+{
+	initAudioTrack(env, thiz);
 }
 
 jint Java_com_duongame_basicplayer_MoviePlayView_initBasicPlayer(JNIEnv *env, jobject thiz)
@@ -37,9 +35,12 @@ jint Java_com_duongame_basicplayer_MoviePlayView_openMovie(JNIEnv *env, jobject 
 {
 	const jbyte *str;
 	int result;
+
+	// 문자열 사용하고 나서 삭제 
 	str = (*env)->GetStringUTFChars(env, filePath, NULL);
-	result = openMovie(str);
+	result = openMovie(str, env, thiz);
 	(*env)->ReleaseStringUTFChars(env, filePath, str);
+
 	return result;
 }
 
@@ -79,4 +80,3 @@ jdouble Java_com_duongame_basicplayer_MoviePlayView_getFps(JNIEnv *env, jobject 
 	LOGD("interface fps=%f", fps);
 	return fps;
 }
-
