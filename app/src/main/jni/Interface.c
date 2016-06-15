@@ -38,7 +38,7 @@ jint Java_com_duongame_basicplayer_MoviePlayView_openMovie(JNIEnv *env, jobject 
 
 	// 문자열 사용하고 나서 삭제 
 	str = (*env)->GetStringUTFChars(env, filePath, NULL);
-	result = openMovie(str, env, thiz);
+	result = openMovie(str);
 	(*env)->ReleaseStringUTFChars(env, filePath, str);
 
 	return result;

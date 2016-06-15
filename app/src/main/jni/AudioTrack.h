@@ -35,7 +35,7 @@ static JavaMethod audio_track_get_channel_count = {"getChannelCount", "()I"};
 static JavaMethod audio_track_get_sample_rate = {"getSampleRate", "()I"};
 
 void initAudioTrack(JNIEnv *env, jobject thiz);
-void prepareAudioTrack(JNIEnv *env, jobject thiz, int sampleRate, int channels);
-//void playAudioTrack();
+void prepareAudioTrack(int sampleRate, int channels);
+void writeAudioTrack(char* data, int data_size);
 
 #endif __AUDIOTRACK_H__

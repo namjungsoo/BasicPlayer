@@ -32,6 +32,7 @@
 #include "BasicPlayer.h"
 #include "Log.h"
 #include "AudioQ.h"
+#include "AudioTrack.h"
 
 AVFormatContext *gFormatCtx = NULL;
 
@@ -176,6 +177,10 @@ void decodeAudioThread(void *param)
 				int data_size = av_samples_get_buffer_size(NULL, gAudioCodecCtx->channels, gFrameAudio->nb_samples, gAudioCodecCtx->sample_fmt, 1);
 				//gFrameAudio->data[0];
 //				LOGD("frameFinished data_size=%d", data_size);
+
+				//사운드 데이터를 집어 넣는다. 
+				writeAudioTrack(gFrameAudio->data[0], data_size);
+
 				av_free_packet(&packet);
 //				return 0;
  			}
@@ -191,7 +196,7 @@ void decodeAudioThread(void *param)
 	LOGD("decodeAudioThread end");
 }
 
-int openMovie(const char filePath[], JNIEnv *env, jobject thiz)
+int openMovie(const char filePath[])
 {
 	LOGD("openMovie %s", filePath);
 
@@ -237,8 +242,8 @@ int openMovie(const char filePath[], JNIEnv *env, jobject thiz)
 	if(ret < 0)
 		return ret;  
 
-	prepareAudioTrack(env, thiz, gAudioCodecCtx->sample_rate, gAudioCodecCtx->channels);
-	
+	prepareAudioTrack(gAudioCodecCtx->sample_rate, gAudioCodecCtx->channels);
+
 // 	ret = createAudioTrack(env, thiz);
 	ret = pthread_create(&gAudioThread, NULL, decodeAudioThread, NULL);
 
@@ -317,6 +322,7 @@ void closeMovie()
 	
 	if (gFrame != NULL)
 		av_freep(gFrame);
+
 	if (gFrameRGB != NULL)
 		av_freep(gFrameRGB);
 
