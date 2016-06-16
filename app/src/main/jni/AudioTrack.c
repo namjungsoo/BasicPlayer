@@ -84,7 +84,7 @@ void prepareAudioTrack(int sampleRate, int channels)
 void writeAudioTrack(char* data, int data_size) 
 {
     // 쓰레드에서 호출되므로 javavm에서 env를 호출해야함 
-    LOGD("writeAudioTrack data=%d data_size=%d", data, data_size);
+//    LOGD("writeAudioTrack data=%d data_size=%d", data, data_size);
 
     JNIEnv *env;
     char title[512];
@@ -97,18 +97,18 @@ void writeAudioTrack(char* data, int data_size)
 
     // 오디오 트랙에 데이터를 쓰면 된다 여기서
     // 어떤 소리가 나던지 일단은 써보자 
-    LOGD("writeAudioTrack samples_byte_array begin");
+//    LOGD("writeAudioTrack samples_byte_array begin");
     jbyteArray samples_byte_array = (*env)->NewByteArray(env, data_size);
-    LOGD("writeAudioTrack samples_byte_array end");
+//    LOGD("writeAudioTrack samples_byte_array end");
 
 	jbyte *jni_samples = (*env)->GetByteArrayElements(env, samples_byte_array, 0);
 	memcpy(jni_samples, data, data_size);
 	(*env)->ReleaseByteArrayElements(env, samples_byte_array, jni_samples, 0);
-    LOGD("writeAudioTrack jni_samples");
+//    LOGD("writeAudioTrack jni_samples");
 
 	ret = (*env)->CallIntMethod(env, player.audio_track,
 			player.audio_track_write_method, samples_byte_array, 0, data_size);
-    LOGD("writeAudioTrack ret=%d", ret);
+//    LOGD("writeAudioTrack ret=%d", ret);
 
     ret = (*player.javavm)->DetachCurrentThread(player.javavm);
 

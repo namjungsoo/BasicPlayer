@@ -34,6 +34,8 @@
 #include "AudioQ.h"
 #include "AudioTrack.h"
 
+#define AVCODEC_MAX_AUDIO_FRAME_SIZE 192000
+
 AVFormatContext *gFormatCtx = NULL;
 
 // 비디오 관련 
@@ -62,6 +64,7 @@ AVFrame *gFrameAudio = NULL;
 
 pthread_t gAudioThread = 0;
 int gAudioThreadRunning = 1;
+enum AVSampleFormat sfmt;
 
 int64_t getTimeNsec() 
 {
@@ -141,14 +144,43 @@ int openAudioStream()
 	LOGD("gAudioCodecCtx->sample_fmt=%d", gAudioCodecCtx->sample_fmt);
 	LOGD("gAudioCodecCtx->sample_rate=%d", gAudioCodecCtx->sample_rate);
 	LOGD("gAudioCodecCtx->channels=%d", gAudioCodecCtx->channels);
+
+	sfmt = gAudioCodecCtx->sample_fmt;
+	
+	if (sfmt == AV_SAMPLE_FMT_U8 || sfmt == AV_SAMPLE_FMT_U8P) {
+		LOGD("AV_SAMPLE_FMT_U8");
+	}
+	else if (sfmt == AV_SAMPLE_FMT_S16 || sfmt == AV_SAMPLE_FMT_S16P) {
+		LOGD("AV_SAMPLE_FMT_S16");
+	}
+	else if (sfmt == AV_SAMPLE_FMT_S32 || sfmt == AV_SAMPLE_FMT_S32P) {
+		LOGD("AV_SAMPLE_FMT_S32");
+	}
+	else if (sfmt == AV_SAMPLE_FMT_FLT || sfmt == AV_SAMPLE_FMT_FLTP) {
+		LOGD("AV_SAMPLE_FMT_FLT");
+	}
+	else if (sfmt == AV_SAMPLE_FMT_DBL || sfmt == AV_SAMPLE_FMT_DBLP) {
+		LOGD("AV_SAMPLE_FMT_DBL");
+	}
+	else {
+		LOGD("Unsupported format");
+	}
+
+	LOGD("check AV_SAMPLE_FMT_S16=%d", AV_SAMPLE_FMT_S16);
+	LOGD("check AV_SAMPLE_FMT_S16P=%d", AV_SAMPLE_FMT_S16P);
+
 }
 
 void decodeAudioThread(void *param) 
 {
-	LOGD("decodeAudioThread");
+	LOGD("decodeAudioThread begin");
 	int frameFinished = 0;
 
 //	createAudioTrack();
+
+	int buffer_size = AVCODEC_MAX_AUDIO_FRAME_SIZE + FF_INPUT_BUFFER_PADDING_SIZE;
+	uint8_t buffer = av_malloc(sizeof(uint8_t)*buffer_size);
+	uint8_t samples = av_malloc(sizeof(uint8_t)*buffer_size);
 
 	while(gAudioThreadRunning) {
 //		LOGD("decodeAudioThread running");
@@ -174,12 +206,45 @@ void decodeAudioThread(void *param)
 //			LOGD("decodeAudioThread ts=%f pts_clock=%f", pts, pts_clock);
 
  			if (frameFinished) {
-				int data_size = av_samples_get_buffer_size(NULL, gAudioCodecCtx->channels, gFrameAudio->nb_samples, gAudioCodecCtx->sample_fmt, 1);
+                int write_p = 0;
+				int plane_size;
+				int data_size = av_samples_get_buffer_size(&plane_size, gAudioCodecCtx->channels, gFrameAudio->nb_samples, gAudioCodecCtx->sample_fmt, 1);
+				uint16_t *out = (uint16_t *)samples;
+
+				LOGD("nb_samples=%d", gFrameAudio->nb_samples);
+				LOGD("channels=%d", gAudioCodecCtx->channels);
+				LOGD("plane_size=%d", plane_size);
+
+				if(sfmt == AV_SAMPLE_FMT_S16P) {
+					LOGD("AV_SAMPLE_FMT_S16P");
+
+					LOGD("begin samples");
+					uint16_t nb, ch;
+					for (nb = 0; nb < plane_size / sizeof(uint16_t); nb++) {
+						for (ch = 0; ch < gAudioCodecCtx->channels; ch++) {
+							out[write_p] = ((uint16_t *) gFrameAudio->extended_data[ch])[nb];
+							write_p++;
+						}
+					}
+					LOGD("end samples");
+
+					LOGD("begin writeAudioTrack");
+					writeAudioTrack(samples, plane_size * gAudioCodecCtx->channels);
+					LOGD("end writeAudioTrack");
+				}
+
+				// int i, j;
+				// for (i = 0; i < gFrameAudio->nb_samples; i++) {
+				// 	for (j = 0; j < gAudioCodecCtx->channels; j++) {
+				// 		writeAudioTrack(gFrameAudio->data[j], data_size);
+				// 	}
+				// }
+
 				//gFrameAudio->data[0];
 //				LOGD("frameFinished data_size=%d", data_size);
 
 				//사운드 데이터를 집어 넣는다. 
-				writeAudioTrack(gFrameAudio->data[0], data_size);
+//				writeAudioTrack(gFrameAudio->data[0], data_size);
 
 				av_free_packet(&packet);
 //				return 0;
@@ -192,6 +257,10 @@ void decodeAudioThread(void *param)
 		}
 		usleep(100);
 	}
+
+	av_free(buffer);
+	av_free(samples);
+
 
 	LOGD("decodeAudioThread end");
 }
