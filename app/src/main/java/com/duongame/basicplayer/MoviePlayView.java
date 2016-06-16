@@ -26,10 +26,11 @@ public class MoviePlayView extends View {
     private int mMovieWidth;
     private int mMovieHeight;
 
-    public MoviePlayView(Context context) {
+    public MoviePlayView(Context context, String filename) {
         super(context);
 
         closeMovie();
+        init(context, filename);
     }
 
     private void initRenderTimer() {
@@ -56,7 +57,7 @@ public class MoviePlayView extends View {
         timer.schedule(task, 0, interval);
     }
 
-    public void init(Context context) {
+    public void init(Context context, String filename) {
         Log.d(TAG,"init");
 
         if (initBasicPlayer() < 0) {
@@ -66,15 +67,15 @@ public class MoviePlayView extends View {
 
         initAudioTrack();
 
-        final String fname = "/mnt/sdcard/ar18-1.avi";
+//        final String fname = "/mnt/sdcard/ar18-1.avi";
 //        final String fname = "/mnt/sdcard/Download/dd 022.avi";
 //        String fname = "/mnt/sdcard/mediaweb.mp4";
 
         // 파일 존재 여부 체크
-        final File file = new File(fname);
+        final File file = new File(filename);
         Log.d(TAG, String.valueOf(file.exists()));
 
-        int openResult = openMovie(fname);
+        int openResult = openMovie(filename);
         if (openResult < 0) {
             Toast.makeText(context, "Open Movie Error: " + openResult, Toast.LENGTH_LONG).show();
 
@@ -143,7 +144,7 @@ public class MoviePlayView extends View {
             renderFrame(mBitmap);
 
             // 항상 풀스크린으로 채우는 것은 안된다
-            // 종횡비를 맞춰서 채워야 한다 
+            // 종횡비를 맞춰서 채워야 한다
             canvas.drawBitmap(mBitmap, new Rect(0,0,mBitmap.getWidth(), mBitmap.getHeight()), new Rect(0,0,getWidth(),getHeight()), null);
 
             // 최초 그려지고 나서 항상 그려지게 한다.

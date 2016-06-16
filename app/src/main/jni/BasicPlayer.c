@@ -291,14 +291,10 @@ int openMovie(const char filePath[])
 	for (i = 0; i < gFormatCtx->nb_streams; i++) {
 		if (gFormatCtx->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO) {
 			gVideoStreamIdx = i;
-//			LOGD("gVideoStreamIdx=%d", gVideoStreamIdx);
-//			break;
 		}
 
 		if (gFormatCtx->streams[i]->codec->codec_type == AVMEDIA_TYPE_AUDIO) {
 			gAudioStreamIdx = i;
-//			LOGD("gAudioStreamIdx=%d", gAudioStreamIdx);
-//			break;
 		}		
 	}
 
@@ -313,7 +309,6 @@ int openMovie(const char filePath[])
 
 	prepareAudioTrack(gAudioCodecCtx->sample_rate, gAudioCodecCtx->channels);
 
-// 	ret = createAudioTrack(env, thiz);
 	ret = pthread_create(&gAudioThread, NULL, decodeAudioThread, NULL);
 
 	return ret;
