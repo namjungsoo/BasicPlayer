@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Rect;
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTrack;
@@ -22,11 +23,37 @@ public class MoviePlayView extends View {
     private final static String TAG="MoviePlayView";
 
     private Bitmap mBitmap;
+    private int mMovieWidth;
+    private int mMovieHeight;
 
     public MoviePlayView(Context context) {
         super(context);
 
         closeMovie();
+    }
+
+    private void initRenderTimer() {
+        double fps = getFps();
+        Log.d(TAG, "fps="+fps);
+        long interval = (long) (1000./fps);
+        Log.d(TAG, "interval="+interval);
+
+        // 렌더링 타이머 24fps
+        final TimerTask task = new TimerTask() {
+            @Override
+            public void run() {
+                MoviePlayView.this.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        invalidate();
+                    }
+                });
+            }
+        };
+
+        final Timer timer;
+        timer = new Timer();
+        timer.schedule(task, 0, interval);
     }
 
     public void init(Context context) {
@@ -53,29 +80,12 @@ public class MoviePlayView extends View {
 
             ((Activity) context).finish();
         } else {
-            mBitmap = Bitmap.createBitmap(getMovieWidth(), getMovieHeight(), Bitmap.Config.ARGB_8888);
+            mMovieWidth = getMovieWidth();
+            mMovieHeight = getMovieHeight();
+            mBitmap = Bitmap.createBitmap(mMovieWidth, mMovieHeight, Bitmap.Config.ARGB_8888);
             Log.d(TAG,"init createBitmap");
 
-            double fps = getFps();
-            Log.d(TAG, "fps="+fps);
-            long interval = (long) (1000./fps);
-            Log.d(TAG, "interval="+interval);
-
-            final TimerTask task = new TimerTask() {
-                @Override
-                public void run() {
-                    MoviePlayView.this.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            invalidate();
-                        }
-                    });
-                }
-            };
-
-            final Timer timer;
-            timer = new Timer();
-            timer.schedule(task, 0, interval);
+            initRenderTimer();
         }
 
     }
@@ -131,7 +141,10 @@ public class MoviePlayView extends View {
 //        Log.d(TAG,"onDraw");
         if(mBitmap != null) {
             renderFrame(mBitmap);
-            canvas.drawBitmap(mBitmap, 0, 0, null);
+
+            // 항상 풀스크린으로 채우는 것은 안된다
+            // 종횡비를 맞춰서 채워야 한다 
+            canvas.drawBitmap(mBitmap, new Rect(0,0,mBitmap.getWidth(), mBitmap.getHeight()), new Rect(0,0,getWidth(),getHeight()), null);
 
             // 최초 그려지고 나서 항상 그려지게 한다.
 //            invalidate();
