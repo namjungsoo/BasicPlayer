@@ -39,7 +39,8 @@ public class MoviePlayView extends View {
 
         initAudioTrack();
 
-        final String fname = "/mnt/sdcard/Download/dd 022.avi";
+        final String fname = "/mnt/sdcard/ar18-1.avi";
+//        final String fname = "/mnt/sdcard/Download/dd 022.avi";
 //        String fname = "/mnt/sdcard/mediaweb.mp4";
 
         // 파일 존재 여부 체크

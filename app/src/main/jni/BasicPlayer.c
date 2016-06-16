@@ -147,28 +147,27 @@ int openAudioStream()
 
 	sfmt = gAudioCodecCtx->sample_fmt;
 	
-	if (sfmt == AV_SAMPLE_FMT_U8 || sfmt == AV_SAMPLE_FMT_U8P) {
-		LOGD("AV_SAMPLE_FMT_U8");
-	}
-	else if (sfmt == AV_SAMPLE_FMT_S16 || sfmt == AV_SAMPLE_FMT_S16P) {
-		LOGD("AV_SAMPLE_FMT_S16");
-	}
-	else if (sfmt == AV_SAMPLE_FMT_S32 || sfmt == AV_SAMPLE_FMT_S32P) {
-		LOGD("AV_SAMPLE_FMT_S32");
-	}
-	else if (sfmt == AV_SAMPLE_FMT_FLT || sfmt == AV_SAMPLE_FMT_FLTP) {
-		LOGD("AV_SAMPLE_FMT_FLT");
-	}
-	else if (sfmt == AV_SAMPLE_FMT_DBL || sfmt == AV_SAMPLE_FMT_DBLP) {
-		LOGD("AV_SAMPLE_FMT_DBL");
-	}
-	else {
-		LOGD("Unsupported format");
-	}
+	// if (sfmt == AV_SAMPLE_FMT_U8 || sfmt == AV_SAMPLE_FMT_U8P) {
+	// 	LOGD("AV_SAMPLE_FMT_U8");
+	// }
+	// else if (sfmt == AV_SAMPLE_FMT_S16 || sfmt == AV_SAMPLE_FMT_S16P) {
+	// 	LOGD("AV_SAMPLE_FMT_S16");
+	// }
+	// else if (sfmt == AV_SAMPLE_FMT_S32 || sfmt == AV_SAMPLE_FMT_S32P) {
+	// 	LOGD("AV_SAMPLE_FMT_S32");
+	// }
+	// else if (sfmt == AV_SAMPLE_FMT_FLT || sfmt == AV_SAMPLE_FMT_FLTP) {
+	// 	LOGD("AV_SAMPLE_FMT_FLT");
+	// }
+	// else if (sfmt == AV_SAMPLE_FMT_DBL || sfmt == AV_SAMPLE_FMT_DBLP) {
+	// 	LOGD("AV_SAMPLE_FMT_DBL");
+	// }
+	// else {
+	// 	LOGD("Unsupported format");
+	// }
 
-	LOGD("check AV_SAMPLE_FMT_S16=%d", AV_SAMPLE_FMT_S16);
-	LOGD("check AV_SAMPLE_FMT_S16P=%d", AV_SAMPLE_FMT_S16P);
-
+	// LOGD("check AV_SAMPLE_FMT_S16=%d", AV_SAMPLE_FMT_S16);
+	// LOGD("check AV_SAMPLE_FMT_S16P=%d", AV_SAMPLE_FMT_S16P);
 }
 
 void decodeAudioThread(void *param) 
@@ -179,8 +178,8 @@ void decodeAudioThread(void *param)
 //	createAudioTrack();
 
 	int buffer_size = AVCODEC_MAX_AUDIO_FRAME_SIZE + FF_INPUT_BUFFER_PADDING_SIZE;
-	uint8_t buffer = av_malloc(sizeof(uint8_t)*buffer_size);
-	uint8_t samples = av_malloc(sizeof(uint8_t)*buffer_size);
+	uint8_t *buffer = av_malloc(sizeof(uint8_t)*buffer_size);
+	uint8_t *samples = av_malloc(sizeof(uint8_t)*buffer_size);
 
 	while(gAudioThreadRunning) {
 //		LOGD("decodeAudioThread running");
@@ -211,14 +210,15 @@ void decodeAudioThread(void *param)
 				int data_size = av_samples_get_buffer_size(&plane_size, gAudioCodecCtx->channels, gFrameAudio->nb_samples, gAudioCodecCtx->sample_fmt, 1);
 				uint16_t *out = (uint16_t *)samples;
 
-				LOGD("nb_samples=%d", gFrameAudio->nb_samples);
-				LOGD("channels=%d", gAudioCodecCtx->channels);
-				LOGD("plane_size=%d", plane_size);
+				// LOGD("nb_samples=%d", gFrameAudio->nb_samples);
+				// LOGD("channels=%d", gAudioCodecCtx->channels);
+				// LOGD("plane_size=%d", plane_size);
 
 				if(sfmt == AV_SAMPLE_FMT_S16P) {
-					LOGD("AV_SAMPLE_FMT_S16P");
+					// LOGD("AV_SAMPLE_FMT_S16P");
 
-					LOGD("begin samples");
+					// LOGD("begin samples");
+					// LOGD("gFrameAudio->extended_data=%d", gFrameAudio->extended_data);
 					uint16_t nb, ch;
 					for (nb = 0; nb < plane_size / sizeof(uint16_t); nb++) {
 						for (ch = 0; ch < gAudioCodecCtx->channels; ch++) {
@@ -226,11 +226,11 @@ void decodeAudioThread(void *param)
 							write_p++;
 						}
 					}
-					LOGD("end samples");
+					// LOGD("end samples");
 
-					LOGD("begin writeAudioTrack");
+					// LOGD("begin writeAudioTrack");
 					writeAudioTrack(samples, plane_size * gAudioCodecCtx->channels);
-					LOGD("end writeAudioTrack");
+					// LOGD("end writeAudioTrack");
 				}
 
 				// int i, j;
@@ -250,7 +250,7 @@ void decodeAudioThread(void *param)
 //				return 0;
  			}
 			else {
-				LOGD("frameFinished NO");
+				// LOGD("frameFinished NO");
 				av_free_packet(&packet);
 			}
 
@@ -262,7 +262,7 @@ void decodeAudioThread(void *param)
 	av_free(samples);
 
 
-	LOGD("decodeAudioThread end");
+	// LOGD("decodeAudioThread end");
 }
 
 int openMovie(const char filePath[])
