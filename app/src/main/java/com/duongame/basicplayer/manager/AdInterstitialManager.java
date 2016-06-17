@@ -87,7 +87,7 @@ public class AdInterstitialManager {
                     final int count = PreferenceManager.getStartCount(context);
                     Log.e(TAG, "count=" + count);
 
-                    if (count % 3 == 2) {
+                    if (count % 4 == 3) {
                         Log.e(TAG, "showAd");
                         showAd(context, MODE_START);
                     }

@@ -8,6 +8,7 @@ import android.graphics.Rect;
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTrack;
+import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
@@ -26,26 +27,73 @@ public class MoviePlayView extends View {
     private int mMovieWidth;
     private int mMovieHeight;
     private Timer mTimer;
+    private Context mContext;
+    private long mInterval;
 
-    public MoviePlayView(Context context, String filename) {
-        super(context);
+    public MoviePlayView(Context context, AttributeSet attrs) {
+        super(context, attrs);
 
+        mContext = context;
         closeMovie();
-        init(context, filename);
+        init(context);
+    }
+    public MoviePlayView(Context context) {
+        this(context, null);
+
+    }
+
+    public void init(Context context) {
+        Log.d(TAG,"init");
+
+        if (initBasicPlayer() < 0) {
+            Toast.makeText(context, "CPU doesn't support NEON", Toast.LENGTH_LONG).show();
+            ((Activity) context).finish();
+        }
+
+        initAudioTrack();
     }
 
     private void initRenderTimer() {
         double fps = getFps();
         Log.d(TAG, "fps="+fps);
-        long interval = (long) (1000./fps);
-        if(interval == 0)
-            interval = 1;
-        Log.d(TAG, "interval="+interval);
 
+        mInterval = (long) (1000./fps);
+        if(mInterval == 0)
+            mInterval = 1;
+        Log.d(TAG, "mInterval="+mInterval);
+    }
+
+    public void openFile(String filename) {
+        // 파일 존재 여부 체크
+        final File file = new File(filename);
+        Log.d(TAG, String.valueOf(file.exists()));
+
+        int openResult = openMovie(filename);
+        if (openResult < 0) {
+            Toast.makeText(mContext, "Open Movie Error: " + openResult, Toast.LENGTH_LONG).show();
+            ((Activity) mContext).finish();
+        } else {
+            mMovieWidth = getMovieWidth();
+            mMovieHeight = getMovieHeight();
+            mBitmap = Bitmap.createBitmap(mMovieWidth, mMovieHeight, Bitmap.Config.ARGB_8888);
+            Log.d(TAG,"init createBitmap");
+
+            initRenderTimer();
+            resume();
+        }
+    }
+
+    public void pause() {
+        mTimer.cancel();
+    }
+
+    public void resume() {
         // 렌더링 타이머 24fps
         final TimerTask task = new TimerTask() {
             @Override
             public void run() {
+                Log.d(TAG, "Timer");
+
                 MoviePlayView.this.post(new Runnable() {
                     @Override
                     public void run() {
@@ -56,37 +104,7 @@ public class MoviePlayView extends View {
         };
 
         mTimer = new Timer();
-        mTimer.schedule(task, 0, interval);
-    }
-
-    public void init(Context context, String filename) {
-        Log.d(TAG,"init");
-
-        if (initBasicPlayer() < 0) {
-            Toast.makeText(context, "CPU doesn't support NEON", Toast.LENGTH_LONG).show();
-            ((Activity) context).finish();
-        }
-
-        initAudioTrack();
-
-        // 파일 존재 여부 체크
-        final File file = new File(filename);
-        Log.d(TAG, String.valueOf(file.exists()));
-
-        int openResult = openMovie(filename);
-        if (openResult < 0) {
-            Toast.makeText(context, "Open Movie Error: " + openResult, Toast.LENGTH_LONG).show();
-
-            ((Activity) context).finish();
-        } else {
-            mMovieWidth = getMovieWidth();
-            mMovieHeight = getMovieHeight();
-            mBitmap = Bitmap.createBitmap(mMovieWidth, mMovieHeight, Bitmap.Config.ARGB_8888);
-            Log.d(TAG,"init createBitmap");
-
-            initRenderTimer();
-        }
-
+        mTimer.schedule(task, 0, mInterval);
     }
 
     //ndk에서 불러준다.
@@ -137,13 +155,13 @@ public class MoviePlayView extends View {
 
     @Override
     protected void onDraw(Canvas canvas) {
-//        Log.d(TAG,"onDraw");
+        Log.d(TAG,"onDraw");
         if(mBitmap != null) {
             int ret = renderFrame(mBitmap);
 
             // 렌더링 종료
             if(ret > 0) {
-                mTimer.cancel();
+                pause();
             }
             else {
                 // 항상 풀스크린으로 채우는 것은 안된다
@@ -156,6 +174,7 @@ public class MoviePlayView extends View {
 //            invalidate();
 //            Log.d(TAG,"onDraw invalidate");
         }
+        Log.d(TAG,"onDraw END");
     }
 
     static {

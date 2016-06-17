@@ -311,6 +311,7 @@ int openMovie(const char filePath[])
 	}
 	else {
 		prepareAudioTrack(gAudioCodecCtx->sample_rate, gAudioCodecCtx->channels);
+		gAudioThreadRunning = 1;
 		ret = pthread_create(&gAudioThread, NULL, decodeAudioThread, NULL);
 	}
 
@@ -381,51 +382,61 @@ int getHeight()
 	return gVideoCodecCtx->height;
 }
 
-void closeMovie()
+void closeFrame() 
 {
-	LOGD("closeMovie BEGIN");
-
-	if (gVideoBuffer != NULL) {
-		free(gVideoBuffer);
-		gVideoBuffer = NULL;
-	}
-
-	LOGD("closeMovie gVideoBuffer");
-	
 	if (gFrame != NULL) {
-		av_freep(gFrame);
+		av_frame_free(&gFrame);
 		gFrame = NULL;
 	}
 	LOGD("closeMovie gFrame");
 
 	if (gFrameRGB != NULL) {
-		av_freep(gFrameRGB);
+		av_frame_free(&gFrameRGB);
 		gFrameRGB = NULL;
 	}
 	LOGD("closeMovie gFrameRGB");
 
+	if (gFrameAudio != NULL) {
+		av_frame_free(&gFrameAudio);
+		gFrameAudio = NULL;
+	}
+	LOGD("closeMovie gFrameAudio");
+}
+
+void closeMovie()
+{
+	int status;
+
+	LOGD("closeMovie BEGIN");
+	gAudioThreadRunning = 0;
+
+	pthread_join(gAudioThread, (void**)&status);
+
+	if (gVideoBuffer != NULL) {
+		free(gVideoBuffer);
+		gVideoBuffer = NULL;
+	}
+	LOGD("closeMovie gVideoBuffer");
+	
 	if (gVideoCodecCtx != NULL) {
 		avcodec_close(gVideoCodecCtx);
 		gVideoCodecCtx = NULL;
 	}
 	LOGD("closeMovie gVideoCodecCtx");
 	
+	//Audio 
+	if(gAudioCodecCtx != NULL) {
+		avcodec_close(gAudioCodecCtx);
+		gAudioCodecCtx = NULL;
+	}
+	LOGD("closeMovie gAudioCodecCtx");
+
 	if (gFormatCtx != NULL) {
         avformat_close_input(&gFormatCtx);
 		gFormatCtx = NULL;
 	}
 	LOGD("closeMovie gFormatCtx");
 
-	//Audio 
-	if(gAudioCodecCtx != NULL) {
-		avcodec_close(gAudioCodecCtx);
-		gAudioCodecCtx = NULL;
-	}
-	if (gFrameAudio != NULL) {
-		av_freep(gFrameAudio);
-		gFrameAudio = NULL;
-	}
-	LOGD("closeMovie gFrameAudio");
-
+	closeFrame();
 	LOGD("closeMovie END");
 }
