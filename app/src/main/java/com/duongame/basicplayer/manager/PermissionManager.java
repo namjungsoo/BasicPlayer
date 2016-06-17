@@ -45,8 +45,6 @@ public class PermissionManager {
                 context.requestPermissions(requestArray, PERMISSION_STORAGE);
                 return false;
             }
-
-            return true;
         }
         return true;
     }

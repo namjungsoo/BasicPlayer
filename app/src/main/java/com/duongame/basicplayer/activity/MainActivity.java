@@ -20,6 +20,7 @@ import com.duongame.basicplayer.R;
 import com.duongame.basicplayer.manager.AdBannerManager;
 import com.duongame.basicplayer.manager.AdInterstitialManager;
 import com.duongame.basicplayer.manager.PermissionManager;
+import com.duongame.basicplayer.manager.ShortcutManager;
 import com.google.android.gms.ads.AdView;
 
 import java.io.File;
@@ -30,20 +31,38 @@ public class MainActivity extends AppCompatActivity {
     private ListView mListMovie;
     private MovieAdapter mMovieAdapter;
     private SwipeRefreshLayout mSwipeLayout;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, "onCreate");
 
         super.onCreate(savedInstanceState);
+
         //setContentView(R.layout.activity_main);
         initView();
 
-
-
-
         // 런타임 퍼미션 체크
-        PermissionManager.checkStoragePermissions(this, true, false);
+        if(PermissionManager.checkStoragePermissions(this, true, false)) {
+            initAdapter();
+        }
 
+        ShortcutManager.checkShortcut(this);
+    }
+
+    private void initAdapter() {
+        mMovieAdapter = new MovieAdapter();
+        mListMovie.setAdapter(mMovieAdapter);
+        // 아이템을 클릭하면 오픈하자
+        mListMovie.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                final File file = (File) mMovieAdapter.getItem(position);
+
+                final Intent intent = new Intent(MainActivity.this, PlayerActivity.class);
+                intent.putExtra("filename", file.getAbsolutePath());
+                startActivity(intent);
+            }
+        });
     }
 
     private void initView() {
@@ -54,7 +73,6 @@ public class MainActivity extends AppCompatActivity {
         // 루트 레이아웃을 얻어서
         mSwipeLayout = (SwipeRefreshLayout)getLayoutInflater().inflate(R.layout.activity_main, null);
         final RelativeLayout relativeLayout = (RelativeLayout)mSwipeLayout.findViewById(R.id.relative);
-        mMovieAdapter = new MovieAdapter();
 
         // AdView 생성
         final AdView adView = AdBannerManager.getAdBannerView();
@@ -72,19 +90,6 @@ public class MainActivity extends AppCompatActivity {
         mListMovie.setLayoutParams(params);
 
         setContentView(mSwipeLayout);
-
-        mListMovie.setAdapter(mMovieAdapter);
-        // 아이템을 클릭하면 오픈하자
-        mListMovie.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                final File file = (File) mMovieAdapter.getItem(position);
-
-                final Intent intent = new Intent(MainActivity.this, PlayerActivity.class);
-                intent.putExtra("filename", file.getAbsolutePath());
-                startActivity(intent);
-            }
-        });
     }
 
     @Override
@@ -99,6 +104,7 @@ public class MainActivity extends AppCompatActivity {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (PermissionManager.onRequestPermissionsResult(this, requestCode, permissions, grantResults)) {
             Log.d(TAG, "onRequestPermissionsResult");
+            initAdapter();
         }
     }
 

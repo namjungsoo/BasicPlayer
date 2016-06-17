@@ -38,7 +38,7 @@ void initAudioTrack(JNIEnv *env, jobject thiz);
 void prepareAudioTrack(int sampleRate, int channels);
 void writeAudioTrack(char* data, int data_size);
 
-void pauseAudioTrack();
-void resumeAudioTrack();
+void pauseAudioTrack(JNIEnv *env, jobject thiz);
+void resumeAudioTrack(JNIEnv *env, jobject thiz);
 
 #endif __AUDIOTRACK_H__

@@ -29,8 +29,8 @@ int getHeight();
 
 void closeMovie();
 
-void pauseMovie();
-void resumeMovie();
+void pauseMovie(JNIEnv *env, jobject thiz);
+void resumeMovie(JNIEnv *env, jobject thiz);
 void seekMovie(long positionUs);
 
 //double getFps();
