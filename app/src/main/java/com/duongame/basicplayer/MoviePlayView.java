@@ -23,7 +23,7 @@ import java.util.TimerTask;
  * Created by namjungsoo on 16. 6. 11..
  */
 public class MoviePlayView extends View {
-    private final static String TAG="MoviePlayView";
+    private final static String TAG = "MoviePlayView";
 
     private Bitmap mBitmap;
     private int mMovieWidth;
@@ -40,13 +40,14 @@ public class MoviePlayView extends View {
         closeMovie();
         init(context);
     }
+
     public MoviePlayView(Context context) {
         this(context, null);
 
     }
 
     public void init(Context context) {
-        Log.d(TAG,"init");
+        Log.d(TAG, "init");
 
         if (initBasicPlayer() < 0) {
             Toast.makeText(context, "CPU doesn't support NEON", Toast.LENGTH_LONG).show();
@@ -58,12 +59,12 @@ public class MoviePlayView extends View {
 
     private void initRenderTimer() {
         double fps = getFps();
-        Log.d(TAG, "fps="+fps);
+        Log.d(TAG, "fps=" + fps);
 
-        mInterval = (long) (1000./fps);
-        if(mInterval == 0)
+        mInterval = (long) (1000. / fps);
+        if (mInterval == 0)
             mInterval = 1;
-        Log.d(TAG, "mInterval="+mInterval);
+        Log.d(TAG, "mInterval=" + mInterval);
     }
 
     public void openFile(String filename) {
@@ -79,7 +80,7 @@ public class MoviePlayView extends View {
             mMovieWidth = getMovieWidth();
             mMovieHeight = getMovieHeight();
             mBitmap = Bitmap.createBitmap(mMovieWidth, mMovieHeight, Bitmap.Config.ARGB_8888);
-            Log.d(TAG,"init createBitmap");
+            Log.d(TAG, "init createBitmap");
 
             initRenderTimer();
             resume();
@@ -130,7 +131,7 @@ public class MoviePlayView extends View {
     private AudioTrack prepareAudioTrack(int sampleRateInHz,
                                          int numberOfChannels) {
 
-        for (;;) {
+        for (; ; ) {
             int channelConfig;
             if (numberOfChannels == 1) {
                 channelConfig = AudioFormat.CHANNEL_OUT_MONO;
@@ -174,17 +175,17 @@ public class MoviePlayView extends View {
 
     @Override
     protected void onDraw(Canvas canvas) {
-        Log.d(TAG,"onDraw");
+        Log.d(TAG, "onDraw");
 
-        if(mBitmap != null) {
-            if(mPlaying) {
-                Log.d(TAG,"onDraw renderFrame BEGIN");
+        if (mBitmap != null) {
+            if (mPlaying) {
+                Log.d(TAG, "onDraw renderFrame BEGIN");
 
                 int ret = renderFrame(mBitmap);
-                Log.d(TAG,"onDraw ret="+ret);
+                Log.d(TAG, "onDraw ret=" + ret);
 
                 // 렌더링 종료
-                if(ret > 0) {
+                if (ret > 0) {
                     pause();
 
 //                    // 플레이 끝났을시 액티비티 종료
@@ -194,9 +195,9 @@ public class MoviePlayView extends View {
 
             // 항상 풀스크린으로 채우는 것은 안된다
             // 종횡비를 맞춰서 채워야 한다
-            canvas.drawBitmap(mBitmap, new Rect(0,0,mBitmap.getWidth(), mBitmap.getHeight()), new Rect(0,0,getWidth(),getHeight()), null);
+            canvas.drawBitmap(mBitmap, new Rect(0, 0, mBitmap.getWidth(), mBitmap.getHeight()), new Rect(0, 0, getWidth(), getHeight()), null);
         }
-        Log.d(TAG,"onDraw END");
+        Log.d(TAG, "onDraw END");
     }
 
     static {

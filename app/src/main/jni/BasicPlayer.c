@@ -323,6 +323,11 @@ int decodeFrame()
 {
 	int frameFinished = 0;
 	AVPacket packet;
+
+	if(gFormatCtx == NULL) {
+		LOGD("decodeFrame END");
+		return -1;
+	}
 	
 	// 한번에 하나를 읽고 종료하자 
 	while (av_read_frame(gFormatCtx, &packet) >= 0) {
@@ -363,7 +368,8 @@ int decodeFrame()
 		}
 		usleep(100);
 	}
-	LOGD("decodeFrame end");
+
+	LOGD("decodeFrame END");
 	return -1;
 }
 

@@ -1,18 +1,14 @@
 package com.duongame.basicplayer.activity;
 
 import android.content.res.Configuration;
-import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.v4.content.res.ResourcesCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.KeyCharacterMap;
-import android.view.KeyEvent;
 import android.view.Surface;
 import android.view.View;
-import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.AlphaAnimation;
@@ -23,6 +19,7 @@ import android.widget.LinearLayout;
 import com.duongame.basicplayer.MoviePlayView;
 import com.duongame.basicplayer.R;
 import com.duongame.basicplayer.manager.FullscreenManager;
+import com.duongame.basicplayer.manager.NavigationBarManager;
 
 public class PlayerActivity extends AppCompatActivity {
     private final static String TAG = "PlayerActivity";
@@ -88,7 +85,7 @@ public class PlayerActivity extends AppCompatActivity {
 //            toolBox.setAlpha(1.0f);
 //            Log.d(TAG, "onConfigurationChanged 1.0");
 //        }
-        Log.d(TAG, ""+toolBox.getAlpha());
+        Log.d(TAG, "" + toolBox.getAlpha());
 
         toolBox.setAlpha(alpha);
 
@@ -135,35 +132,26 @@ public class PlayerActivity extends AppCompatActivity {
 //        Log.d(TAG, "setToolBox newFullscreen="+newFullscreen + " END");
     }
 
-    private boolean hasSoftKeyMenu() {
-        boolean hasMenuKey = ViewConfiguration.get(this).hasPermanentMenuKey();
-        boolean hasBackKey = KeyCharacterMap.deviceHasKey(KeyEvent.KEYCODE_BACK);
-        return !hasBackKey && !hasMenuKey;
-    }
-
     private void applyNavigationBarHeight(boolean portrait) {
         // 소프트키가 없을 경우에 패스
-        if (!hasSoftKeyMenu())
+        if (!NavigationBarManager.hasSoftKeyMenu(this))
             return;
 
-        final Resources resources = this.getResources();
-        final int resourceId = resources.getIdentifier("navigation_bar_height", "dimen", "android");
-        if (resourceId > 0) {
-            final int deviceHeight = resources.getDimensionPixelSize(resourceId);
-            final LinearLayout layout = (LinearLayout) findViewById(R.id.toolBox);
+        int size = NavigationBarManager.getNavigationBarHeight(this);
 
-            // 수직일때는 하단
-            if (portrait) {
-                final FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) layout.getLayoutParams();
-                params.setMargins(0, 0, 0, deviceHeight);
-                layout.setLayoutParams(params);
-            }
-            // 수평일때는 우측
-            else {
-                final FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) layout.getLayoutParams();
-                params.setMargins(0, 0, deviceHeight, 0);
-                layout.setLayoutParams(params);
-            }
+        final LinearLayout layout = (LinearLayout) findViewById(R.id.toolBox);
+
+        // 수직일때는 하단
+        if (portrait) {
+            final FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) layout.getLayoutParams();
+            params.setMargins(0, 0, 0, size);
+            layout.setLayoutParams(params);
+        }
+        // 수평일때는 우측
+        else {
+            final FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) layout.getLayoutParams();
+            params.setMargins(0, 0, size, 0);
+            layout.setLayoutParams(params);
         }
     }
 
