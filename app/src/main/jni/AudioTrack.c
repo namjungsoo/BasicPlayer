@@ -33,51 +33,54 @@ typedef struct {
     JavaVM *javavm;
 } Player;
 
-Player player;
+Player *player = NULL;
 
 void initAudioTrack(JNIEnv *env, jobject thiz)
 {
+    player = malloc(sizeof(Player));
+    memset(player, 0, sizeof(*player));
+
     LOGD("initAudioTrack");
 
-    int ret = (*env)->GetJavaVM(env, &player.javavm);
-    player.env = env;
-    player.thiz = (*env)->NewGlobalRef(env, thiz);
+    int ret = (*env)->GetJavaVM(env, &player->javavm);
+    player->env = env;
+    player->thiz = (*env)->NewGlobalRef(env, thiz);
 
 	jclass player_class = (*env)->FindClass(env, player_class_path_name);
 	LOGD("initAudioTrack player_class=%d", player_class);
 
-	player.player_prepare_audio_track_method = java_get_method(env, player_class, player_prepare_audio_track);
-	LOGD("initAudioTrack player_prepare_audio_track_method=%d", player.player_prepare_audio_track_method);
+	player->player_prepare_audio_track_method = java_get_method(env, player_class, player_prepare_audio_track);
+	LOGD("initAudioTrack player_prepare_audio_track_method=%d", player->player_prepare_audio_track_method);
 
     (*env)->DeleteLocalRef(env, player_class);
 }
 
 void prepareAudioTrack(int sampleRate, int channels)
 {
-    JNIEnv *env = player.env;
-    jobject thiz = player.thiz;
+    JNIEnv *env = player->env;
+    jobject thiz = player->thiz;
 
     LOGD("prepareAudioTrack sampleRate=%d channels=%d", sampleRate, channels);
 
     // object AudioTrack
-    jobject audio_track = (*env)->CallObjectMethod(env, thiz, player.player_prepare_audio_track_method, sampleRate, channels);
+    jobject audio_track = (*env)->CallObjectMethod(env, thiz, player->player_prepare_audio_track_method, sampleRate, channels);
     LOGD("prepareAudioTrack audio_track=%d", audio_track);
 
-    player.audio_track = (*env)->NewGlobalRef(env, audio_track);
+    player->audio_track = (*env)->NewGlobalRef(env, audio_track);
     (*env)->DeleteLocalRef(env, audio_track);
 
 	// class AudioTrack 
 	jclass audio_track_class = (*env)->FindClass(env, android_track_class_path_name);
-	player.audio_track_class = (*env)->NewGlobalRef(env, audio_track_class);
+	player->audio_track_class = (*env)->NewGlobalRef(env, audio_track_class);
 
-    player.audio_track_write_method = java_get_method(env, player.audio_track_class, audio_track_write);
-    player.audio_track_pause_method = java_get_method(env, player.audio_track_class, audio_track_pause);
-    player.audio_track_play_method = java_get_method(env, player.audio_track_class, audio_track_play);
-    player.audio_track_flush_method = java_get_method(env, player.audio_track_class, audio_track_flush);
-    player.audio_track_stop_method = java_get_method(env, player.audio_track_class, audio_track_stop);
+    player->audio_track_write_method = java_get_method(env, player->audio_track_class, audio_track_write);
+    player->audio_track_pause_method = java_get_method(env, player->audio_track_class, audio_track_pause);
+    player->audio_track_play_method = java_get_method(env, player->audio_track_class, audio_track_play);
+    player->audio_track_flush_method = java_get_method(env, player->audio_track_class, audio_track_flush);
+    player->audio_track_stop_method = java_get_method(env, player->audio_track_class, audio_track_stop);
 
 	// call play
-	(*env)->CallVoidMethod(env, player.audio_track, player.audio_track_play_method);
+	(*env)->CallVoidMethod(env, player->audio_track, player->audio_track_play_method);
 	LOGD("prepareAudioTrack play");
 }
 
@@ -87,20 +90,20 @@ JNIEnv *attachThread()
     char title[512];
     sprintf(title, "basicplayer");
     JavaVMAttachArgs thread_spec = { JNI_VERSION_1_4, title, NULL };
-    int ret = (*player.javavm)->AttachCurrentThread(player.javavm, &env, &thread_spec);
+    int ret = (*player->javavm)->AttachCurrentThread(player->javavm, &env, &thread_spec);
     return env;
 }
 
 void detatchThread()
 {
-    int ret = (*player.javavm)->DetachCurrentThread(player.javavm);
+    int ret = (*player->javavm)->DetachCurrentThread(player->javavm);
 }
 
 void writeAudioTrack(char* data, int data_size) 
 {
     // 쓰레드에서 호출되므로 javavm에서 env를 호출해야함 
     JNIEnv *env = attachThread();
-    jobject thiz = player.thiz;
+    jobject thiz = player->thiz;
 
     // 오디오 트랙에 데이터를 쓰면 된다 여기서
     // 어떤 소리가 나던지 일단은 써보자 
@@ -110,17 +113,23 @@ void writeAudioTrack(char* data, int data_size)
 	memcpy(jni_samples, data, data_size);
 	(*env)->ReleaseByteArrayElements(env, samples_byte_array, jni_samples, 0);
 
-	int ret = (*env)->CallIntMethod(env, player.audio_track, player.audio_track_write_method, samples_byte_array, 0, data_size);
+    if(player->audio_track != NULL) {
+	   int ret = (*env)->CallIntMethod(env, player->audio_track, player->audio_track_write_method, samples_byte_array, 0, data_size);
+    }
 
     detatchThread();
 }
 
 void pauseAudioTrack(JNIEnv *env, jobject thiz) 
 {
-    (*env)->CallVoidMethod(env, player.audio_track, player.audio_track_pause_method);
+    if(player->audio_track != NULL) {
+        (*env)->CallVoidMethod(env, player->audio_track, player->audio_track_pause_method);
+    }
 }
 
 void resumeAudioTrack(JNIEnv *env, jobject thiz) 
 {
-    (*env)->CallVoidMethod(env, player.audio_track, player.audio_track_play_method);
+    if(player->audio_track != NULL) {
+        (*env)->CallVoidMethod(env, player->audio_track, player->audio_track_play_method);
+    }
 }

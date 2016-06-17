@@ -13,6 +13,8 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
+import com.duongame.basicplayer.activity.PlayerActivity;
+
 import java.io.File;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -172,26 +174,29 @@ public class MoviePlayView extends View {
 
     @Override
     protected void onDraw(Canvas canvas) {
-//        Log.d(TAG,"onDraw");
+        Log.d(TAG,"onDraw");
+
         if(mBitmap != null) {
-            int ret = renderFrame(mBitmap);
+            if(mPlaying) {
+                Log.d(TAG,"onDraw renderFrame BEGIN");
 
-            // 렌더링 종료
-            if(ret > 0) {
-//                pause();
+                int ret = renderFrame(mBitmap);
+                Log.d(TAG,"onDraw ret="+ret);
+
+                // 렌더링 종료
+                if(ret > 0) {
+                    pause();
+
+//                    // 플레이 끝났을시 액티비티 종료
+//                    ((PlayerActivity)mContext).finish();
+                }
             }
-            else {
-                // 항상 풀스크린으로 채우는 것은 안된다
-                // 종횡비를 맞춰서 채워야 한다
-                canvas.drawBitmap(mBitmap, new Rect(0,0,mBitmap.getWidth(), mBitmap.getHeight()), new Rect(0,0,getWidth(),getHeight()), null);
-            }
 
-
-            // 최초 그려지고 나서 항상 그려지게 한다.
-//            invalidate();
-//            Log.d(TAG,"onDraw invalidate");
+            // 항상 풀스크린으로 채우는 것은 안된다
+            // 종횡비를 맞춰서 채워야 한다
+            canvas.drawBitmap(mBitmap, new Rect(0,0,mBitmap.getWidth(), mBitmap.getHeight()), new Rect(0,0,getWidth(),getHeight()), null);
         }
-//        Log.d(TAG,"onDraw END");
+        Log.d(TAG,"onDraw END");
     }
 
     static {

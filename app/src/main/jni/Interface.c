@@ -54,7 +54,7 @@ jint Java_com_duongame_basicplayer_MoviePlayView_renderFrame(JNIEnv *env, jobjec
 		LOGD("closeMovie");
 		closeMovie();
 
-		LOGD("renderFrame end");
+		LOGD("renderFrame END");
 		return 1;// 종료 상태 
 	}
 	else {

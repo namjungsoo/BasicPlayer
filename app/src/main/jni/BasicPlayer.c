@@ -126,7 +126,7 @@ int openVideoStream()
 
 int openAudioStream() 
 {
-	LOGD("openAudioStream");
+	LOGD("openAudioStream gAudioStreamIdx=%d", gAudioStreamIdx);
 
 	// 오디오 스트림 인덱스를 체크한다. 
 	if (gAudioStreamIdx == -1)
@@ -306,7 +306,7 @@ int openMovie(const char filePath[])
 	// 오디오는 없을수 있다. 
 	ret = openAudioStream(); 
 	if(ret < 0) {
-		LOGD("Audio not found");
+		LOGD("Audio NOT FOUND");
 		return 0;
 	}
 	else {

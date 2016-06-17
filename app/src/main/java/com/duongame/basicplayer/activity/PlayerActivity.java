@@ -77,7 +77,7 @@ public class PlayerActivity extends AppCompatActivity {
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
-        Log.d(TAG, "onConfigurationChanged alpha="+alpha);
+//        Log.d(TAG, "onConfigurationChanged alpha="+alpha);
         super.onConfigurationChanged(newConfig);
 
         // 현재 풀스크린일때
@@ -126,13 +126,13 @@ public class PlayerActivity extends AppCompatActivity {
             alpha = 1.0f;
             animation = new AlphaAnimation(0.0f, 1.0f);
         }
-        Log.d(TAG, "setToolBox newFullscreen="+newFullscreen +" alpha="+alpha);
+//        Log.d(TAG, "setToolBox newFullscreen="+newFullscreen +" alpha="+alpha);
         animation.setFillAfter(true);
         animation.setFillEnabled(true);
         animation.setDuration(300);
         animation.setInterpolator(new AccelerateInterpolator());
         toolBox.startAnimation(animation);
-        Log.d(TAG, "setToolBox newFullscreen="+newFullscreen + " END");
+//        Log.d(TAG, "setToolBox newFullscreen="+newFullscreen + " END");
     }
 
     private boolean hasSoftKeyMenu() {
