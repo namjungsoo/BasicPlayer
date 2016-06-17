@@ -1,15 +1,21 @@
 package com.duongame.basicplayer.activity;
 
-import android.app.Activity;
+import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.v4.content.res.ResourcesCompat;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.KeyCharacterMap;
+import android.view.KeyEvent;
+import android.view.Surface;
 import android.view.View;
+import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.AlphaAnimation;
-import android.view.animation.Animation;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -18,23 +24,22 @@ import com.duongame.basicplayer.MoviePlayView;
 import com.duongame.basicplayer.R;
 import com.duongame.basicplayer.manager.FullscreenManager;
 
-public class PlayerActivity extends Activity {
+public class PlayerActivity extends AppCompatActivity {
     private final static String TAG = "PlayerActivity";
 
-    MoviePlayView playView;
-    ViewGroup toolBox;
-    class ToolBoxAnimation extends Animation {
+    private MoviePlayView playView;
+    private ViewGroup toolBox;
+    private float alpha;
 
-    }
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.layout_player);
         playView = (MoviePlayView) findViewById(R.id.moviePlay);
-        toolBox = (ViewGroup )findViewById(R.id.toolBox);
+        toolBox = (ViewGroup) findViewById(R.id.toolBox);
 
-        if(playView != null) {
+        if (playView != null) {
             playView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -42,20 +47,19 @@ public class PlayerActivity extends Activity {
                     FullscreenManager.setFullscreen(PlayerActivity.this, !FullscreenManager.isFullscreen());
                 }
             });
-            String filename = getIntent().getStringExtra("filename");
+            final String filename = getIntent().getStringExtra("filename");
             playView.openFile(filename);
         }
 
-        final ImageButton play = (ImageButton)findViewById(R.id.play);
-        if(play != null) {// 일시정지를 시키자
+        final ImageButton play = (ImageButton) findViewById(R.id.play);
+        if (play != null) {// 일시정지를 시키자
             play.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if(playView.getPlaying()) {
+                    if (playView.getPlaying()) {
                         playView.pause();
                         play.setImageDrawable(ResourcesCompat.getDrawable(getResources(), R.drawable.pause, getApplicationContext().getTheme()));
-                    }
-                    else {
+                    } else {
                         playView.resume();
                         play.setImageDrawable(ResourcesCompat.getDrawable(getResources(), R.drawable.play, getApplicationContext().getTheme()));
                     }
@@ -66,41 +70,98 @@ public class PlayerActivity extends Activity {
         applyNavigationBarHeight(true);
         FullscreenManager.setFullscreen(this, true);
         setToolBox(true);
+
+        // 타이틀바 반투명
+        getSupportActionBar().setBackgroundDrawable(new ColorDrawable(Color.parseColor("#66000000")));
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        Log.d(TAG, "onConfigurationChanged alpha="+alpha);
+        super.onConfigurationChanged(newConfig);
+
+        // 현재 풀스크린일때
+//        if (FullscreenManager.isFullscreen()) {
+//            toolBox.setAlpha(0.0f);
+//            Log.d(TAG, "onConfigurationChanged 0.0");
+//        } else {
+//            toolBox.setAlpha(1.0f);
+//            Log.d(TAG, "onConfigurationChanged 1.0");
+//        }
+        Log.d(TAG, ""+toolBox.getAlpha());
+
+        toolBox.setAlpha(alpha);
+
+        final int rotation = getWindowManager().getDefaultDisplay().getRotation();
+        switch (rotation) {
+            case Surface.ROTATION_0:
+                applyNavigationBarHeight(true);
+                Log.d(TAG, "ROTATION_0");
+                break;
+            case Surface.ROTATION_90:
+                Log.d(TAG, "ROTATION_90");
+                applyNavigationBarHeight(false);
+                break;
+            case Surface.ROTATION_180:
+                applyNavigationBarHeight(true);
+                Log.d(TAG, "ROTATION_180");
+                break;
+            case Surface.ROTATION_270:
+                Log.d(TAG, "ROTATION_270");
+                applyNavigationBarHeight(false);
+                break;
+
+        }
     }
 
     private void setToolBox(boolean newFullscreen) {
-        AlphaAnimation animation;
-        if(newFullscreen) {
+        final AlphaAnimation animation;
+
+        // 기본값으로 설정후에 애니메이션 한다
+        toolBox.setAlpha(1.0f);
+        if (newFullscreen) {
+            alpha = 0.0f;
             animation = new AlphaAnimation(1.f, 0.0f);
+        } else {
+            alpha = 1.0f;
+            animation = new AlphaAnimation(0.0f, 1.0f);
         }
-        else {
-            animation = new AlphaAnimation(0.0f, 1.f);
-        }
+        Log.d(TAG, "setToolBox newFullscreen="+newFullscreen +" alpha="+alpha);
         animation.setFillAfter(true);
         animation.setFillEnabled(true);
         animation.setDuration(300);
         animation.setInterpolator(new AccelerateInterpolator());
         toolBox.startAnimation(animation);
+        Log.d(TAG, "setToolBox newFullscreen="+newFullscreen + " END");
+    }
+
+    private boolean hasSoftKeyMenu() {
+        boolean hasMenuKey = ViewConfiguration.get(this).hasPermanentMenuKey();
+        boolean hasBackKey = KeyCharacterMap.deviceHasKey(KeyEvent.KEYCODE_BACK);
+        return !hasBackKey && !hasMenuKey;
     }
 
     private void applyNavigationBarHeight(boolean portrait) {
-        Resources resources = this.getResources();
-        int resourceId = resources.getIdentifier("navigation_bar_height", "dimen", "android");
-        if (resourceId > 0) {
-            int deviceHeight = resources.getDimensionPixelSize(resourceId);
+        // 소프트키가 없을 경우에 패스
+        if (!hasSoftKeyMenu())
+            return;
 
-            LinearLayout layout = (LinearLayout) findViewById(R.id.toolBox);
+        final Resources resources = this.getResources();
+        final int resourceId = resources.getIdentifier("navigation_bar_height", "dimen", "android");
+        if (resourceId > 0) {
+            final int deviceHeight = resources.getDimensionPixelSize(resourceId);
+            final LinearLayout layout = (LinearLayout) findViewById(R.id.toolBox);
 
             // 수직일때는 하단
-            if(portrait) {
-                FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) layout.getLayoutParams();
+            if (portrait) {
+                final FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) layout.getLayoutParams();
                 params.setMargins(0, 0, 0, deviceHeight);
                 layout.setLayoutParams(params);
             }
             // 수평일때는 우측
             else {
-                FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) layout.getLayoutParams();
-                params.setMargins(0, 0, 0, 0);
+                final FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) layout.getLayoutParams();
+                params.setMargins(0, 0, deviceHeight, 0);
                 layout.setLayoutParams(params);
             }
         }
