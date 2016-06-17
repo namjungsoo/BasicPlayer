@@ -191,12 +191,12 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-            LinearLayout ll = (LinearLayout) getLayoutInflater().inflate(R.layout.list_item, parent, false);
-            TextView tv = (TextView) ll.findViewById(R.id.textMovie);
+            LinearLayout layout = (LinearLayout) getLayoutInflater().inflate(R.layout.list_item, parent, false);
+            TextView tv = (TextView) layout.findViewById(R.id.textMovie);
 
 //            TextView tv = new TextView(MainActivity.this);
             tv.setText(movieList.get(position).getName());
-            return ll;
+            return layout;
         }
     }
 }

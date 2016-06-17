@@ -42,7 +42,7 @@ public class AdInterstitialManager {
         interstitialAD.setAdUnitId(INTERSTITIAL_ID);
         requestNewInterstitial();
 
-        show = true;
+//        show = true;
 
         interstitialAD.setAdListener(new AdListener() {
 

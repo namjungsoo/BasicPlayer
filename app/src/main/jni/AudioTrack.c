@@ -81,35 +81,46 @@ void prepareAudioTrack(int sampleRate, int channels)
 	LOGD("prepareAudioTrack play");
 }
 
-void writeAudioTrack(char* data, int data_size) 
+JNIEnv *attachThread() 
 {
-    // 쓰레드에서 호출되므로 javavm에서 env를 호출해야함 
-//    LOGD("writeAudioTrack data=%d data_size=%d", data, data_size);
-
     JNIEnv *env;
     char title[512];
     sprintf(title, "basicplayer");
     JavaVMAttachArgs thread_spec = { JNI_VERSION_1_4, title, NULL };
-
     int ret = (*player.javavm)->AttachCurrentThread(player.javavm, &env, &thread_spec);
+    return env;
+}
 
+void detatchThread()
+{
+    int ret = (*player.javavm)->DetachCurrentThread(player.javavm);
+}
+
+void writeAudioTrack(char* data, int data_size) 
+{
+    // 쓰레드에서 호출되므로 javavm에서 env를 호출해야함 
+    JNIEnv *env = attachThread();
     jobject thiz = player.thiz;
 
     // 오디오 트랙에 데이터를 쓰면 된다 여기서
     // 어떤 소리가 나던지 일단은 써보자 
-//    LOGD("writeAudioTrack samples_byte_array begin");
     jbyteArray samples_byte_array = (*env)->NewByteArray(env, data_size);
-//    LOGD("writeAudioTrack samples_byte_array end");
 
 	jbyte *jni_samples = (*env)->GetByteArrayElements(env, samples_byte_array, 0);
 	memcpy(jni_samples, data, data_size);
 	(*env)->ReleaseByteArrayElements(env, samples_byte_array, jni_samples, 0);
-//    LOGD("writeAudioTrack jni_samples");
 
-	ret = (*env)->CallIntMethod(env, player.audio_track,
-			player.audio_track_write_method, samples_byte_array, 0, data_size);
-//    LOGD("writeAudioTrack ret=%d", ret);
+	int ret = (*env)->CallIntMethod(env, player.audio_track, player.audio_track_write_method, samples_byte_array, 0, data_size);
 
-    ret = (*player.javavm)->DetachCurrentThread(player.javavm);
+    detatchThread();
+}
 
+void pauseAudioTrack(JNIEnv *env, jobject thiz) 
+{
+    (*env)->CallVoidMethod(env, player.audio_track, player.audio_track_pause_method);
+}
+
+void resumeAudioTrack(JNIEnv *env, jobject thiz) 
+{
+    (*env)->CallVoidMethod(env, player.audio_track, player.audio_track_play_method);
 }

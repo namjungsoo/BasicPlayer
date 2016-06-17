@@ -440,3 +440,20 @@ void closeMovie()
 	closeFrame();
 	LOGD("closeMovie END");
 }
+
+void pauseMovie(JNIEnv *env, jobject thiz) 
+{
+	// 사운드 쓰레드를 중지시킴 
+	pauseAudioTrack(env, thiz);    
+}
+
+void resumeMovie(JNIEnv *env, jobject thiz) 
+{
+	// 사운드 쓰레드를 재개
+	resumeAudioTrack(env, thiz); 
+}
+
+void seekMovie(long positionUs) 
+{
+	// 프레임을 해당 시간으로 이동시킴 
+}

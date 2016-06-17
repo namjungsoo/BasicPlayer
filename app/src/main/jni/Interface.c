@@ -84,6 +84,23 @@ void Java_com_duongame_basicplayer_MoviePlayView_closeMovie(JNIEnv *env, jobject
 	closeMovie();
 }
 
+void Java_com_duongame_basicplayer_MoviePlayView_pauseMovie(JNIEnv *env, jobject thiz)
+{
+	LOGD("pauseMovie");
+	pauseMovie(env, thiz);
+}
+
+void Java_com_duongame_basicplayer_MoviePlayView_resumeMovie(JNIEnv *env, jobject thiz)
+{
+	LOGD("resumeMovie");
+	resumeMovie(env, thiz);
+}
+
+void Java_com_duongame_basicplayer_MoviePlayView_seekMovie(JNIEnv *env, jobject thiz, jlong positionUs)
+{
+	seekMovie(positionUs);
+}
+
 jdouble Java_com_duongame_basicplayer_MoviePlayView_getFps(JNIEnv *env, jobject thiz)
 {
 	//jdouble fps = getFps();

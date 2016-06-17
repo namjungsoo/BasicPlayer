@@ -29,6 +29,7 @@ public class MoviePlayView extends View {
     private Timer mTimer;
     private Context mContext;
     private long mInterval;
+    private boolean mPlaying;
 
     public MoviePlayView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -83,16 +84,32 @@ public class MoviePlayView extends View {
         }
     }
 
+    public boolean getPlaying() {
+        return mPlaying;
+    }
+
     public void pause() {
-        mTimer.cancel();
+        mPlaying = false;
+        pauseTimer();
+        pauseMovie();
     }
 
     public void resume() {
+        mPlaying = true;
+        resumeTimer();
+        resumeMovie();
+    }
+
+    private void pauseTimer() {
+        mTimer.cancel();
+    }
+
+    private void resumeTimer() {
         // 렌더링 타이머 24fps
         final TimerTask task = new TimerTask() {
             @Override
             public void run() {
-                Log.d(TAG, "Timer");
+//                Log.d(TAG, "Timer");
 
                 MoviePlayView.this.post(new Runnable() {
                     @Override
@@ -155,13 +172,13 @@ public class MoviePlayView extends View {
 
     @Override
     protected void onDraw(Canvas canvas) {
-        Log.d(TAG,"onDraw");
+//        Log.d(TAG,"onDraw");
         if(mBitmap != null) {
             int ret = renderFrame(mBitmap);
 
             // 렌더링 종료
             if(ret > 0) {
-                pause();
+//                pause();
             }
             else {
                 // 항상 풀스크린으로 채우는 것은 안된다
@@ -174,26 +191,30 @@ public class MoviePlayView extends View {
 //            invalidate();
 //            Log.d(TAG,"onDraw invalidate");
         }
-        Log.d(TAG,"onDraw END");
+//        Log.d(TAG,"onDraw END");
     }
 
     static {
         System.loadLibrary("basicplayer");
     }
 
-    public native void initAudioTrack();
+    private native void initAudioTrack();
 
-    public native int initBasicPlayer();
+    private native int initBasicPlayer();
 
-    public native int openMovie(String filePath);
+    private native int openMovie(String filePath);
 
-    public native int renderFrame(Bitmap bitmap);
+    private native int renderFrame(Bitmap bitmap);
 
-    public native int getMovieWidth();
+    private native int getMovieWidth();
 
-    public native int getMovieHeight();
+    private native int getMovieHeight();
 
     public native void closeMovie();
 
-    public native double getFps();
+    private native double getFps();
+
+    private native void pauseMovie();
+
+    private native void resumeMovie();
 }

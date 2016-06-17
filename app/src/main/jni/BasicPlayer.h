@@ -29,6 +29,10 @@ int getHeight();
 
 void closeMovie();
 
+void pauseMovie();
+void resumeMovie();
+void seekMovie(long positionUs);
+
 //double getFps();
 extern double gFps;
 
