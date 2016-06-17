@@ -303,13 +303,16 @@ int openMovie(const char filePath[])
 	if(ret < 0)
 		return ret;  
 
+	// 오디오는 없을수 있다. 
 	ret = openAudioStream(); 
-	if(ret < 0)
-		return ret;  
-
-	prepareAudioTrack(gAudioCodecCtx->sample_rate, gAudioCodecCtx->channels);
-
-	ret = pthread_create(&gAudioThread, NULL, decodeAudioThread, NULL);
+	if(ret < 0) {
+		LOGD("Audio not found");
+		return 0;
+	}
+	else {
+		prepareAudioTrack(gAudioCodecCtx->sample_rate, gAudioCodecCtx->channels);
+		ret = pthread_create(&gAudioThread, NULL, decodeAudioThread, NULL);
+	}
 
 	return ret;
 }
@@ -359,6 +362,7 @@ int decodeFrame()
 		}
 		usleep(100);
 	}
+	LOGD("decodeFrame end");
 	return -1;
 }
 
@@ -379,24 +383,49 @@ int getHeight()
 
 void closeMovie()
 {
+	LOGD("closeMovie BEGIN");
+
 	if (gVideoBuffer != NULL) {
 		free(gVideoBuffer);
 		gVideoBuffer = NULL;
 	}
-	
-	if (gFrame != NULL)
-		av_freep(gFrame);
 
-	if (gFrameRGB != NULL)
+	LOGD("closeMovie gVideoBuffer");
+	
+	if (gFrame != NULL) {
+		av_freep(gFrame);
+		gFrame = NULL;
+	}
+	LOGD("closeMovie gFrame");
+
+	if (gFrameRGB != NULL) {
 		av_freep(gFrameRGB);
+		gFrameRGB = NULL;
+	}
+	LOGD("closeMovie gFrameRGB");
 
 	if (gVideoCodecCtx != NULL) {
 		avcodec_close(gVideoCodecCtx);
 		gVideoCodecCtx = NULL;
 	}
+	LOGD("closeMovie gVideoCodecCtx");
 	
 	if (gFormatCtx != NULL) {
         avformat_close_input(&gFormatCtx);
 		gFormatCtx = NULL;
 	}
+	LOGD("closeMovie gFormatCtx");
+
+	//Audio 
+	if(gAudioCodecCtx != NULL) {
+		avcodec_close(gAudioCodecCtx);
+		gAudioCodecCtx = NULL;
+	}
+	if (gFrameAudio != NULL) {
+		av_freep(gFrameAudio);
+		gFrameAudio = NULL;
+	}
+	LOGD("closeMovie gFrameAudio");
+
+	LOGD("closeMovie END");
 }

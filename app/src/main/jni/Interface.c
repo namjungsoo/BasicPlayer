@@ -49,13 +49,24 @@ jint Java_com_duongame_basicplayer_MoviePlayView_renderFrame(JNIEnv *env, jobjec
     void *pixels;
 	int result;
 
-	if ((result = AndroidBitmap_lockPixels(env, bitmap, &pixels)) < 0)
-		return result;
+	// 영상이 종료된 상태임 
+	if(decodeFrame() < 0) {
+		LOGD("closeMovie");
+		closeMovie();
 
-	decodeFrame();
-	copyPixels((uint8_t*)pixels);
+		LOGD("renderFrame end");
+		return 1;// 종료 상태 
+	}
+	else {
+		if ((result = AndroidBitmap_lockPixels(env, bitmap, &pixels)) < 0)
+			return result;
 
-	AndroidBitmap_unlockPixels(env, bitmap);
+		copyPixels((uint8_t*)pixels);
+
+		AndroidBitmap_unlockPixels(env, bitmap);
+	}
+
+	return 0;
 }
 
 jint Java_com_duongame_basicplayer_MoviePlayView_getMovieWidth(JNIEnv *env, jobject thiz)

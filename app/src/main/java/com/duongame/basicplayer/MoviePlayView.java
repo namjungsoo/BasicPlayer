@@ -25,6 +25,7 @@ public class MoviePlayView extends View {
     private Bitmap mBitmap;
     private int mMovieWidth;
     private int mMovieHeight;
+    private Timer mTimer;
 
     public MoviePlayView(Context context, String filename) {
         super(context);
@@ -37,6 +38,8 @@ public class MoviePlayView extends View {
         double fps = getFps();
         Log.d(TAG, "fps="+fps);
         long interval = (long) (1000./fps);
+        if(interval == 0)
+            interval = 1;
         Log.d(TAG, "interval="+interval);
 
         // 렌더링 타이머 24fps
@@ -52,9 +55,8 @@ public class MoviePlayView extends View {
             }
         };
 
-        final Timer timer;
-        timer = new Timer();
-        timer.schedule(task, 0, interval);
+        mTimer = new Timer();
+        mTimer.schedule(task, 0, interval);
     }
 
     public void init(Context context, String filename) {
@@ -66,10 +68,6 @@ public class MoviePlayView extends View {
         }
 
         initAudioTrack();
-
-//        final String fname = "/mnt/sdcard/ar18-1.avi";
-//        final String fname = "/mnt/sdcard/Download/dd 022.avi";
-//        String fname = "/mnt/sdcard/mediaweb.mp4";
 
         // 파일 존재 여부 체크
         final File file = new File(filename);
@@ -141,11 +139,18 @@ public class MoviePlayView extends View {
     protected void onDraw(Canvas canvas) {
 //        Log.d(TAG,"onDraw");
         if(mBitmap != null) {
-            renderFrame(mBitmap);
+            int ret = renderFrame(mBitmap);
 
-            // 항상 풀스크린으로 채우는 것은 안된다
-            // 종횡비를 맞춰서 채워야 한다
-            canvas.drawBitmap(mBitmap, new Rect(0,0,mBitmap.getWidth(), mBitmap.getHeight()), new Rect(0,0,getWidth(),getHeight()), null);
+            // 렌더링 종료
+            if(ret > 0) {
+                mTimer.cancel();
+            }
+            else {
+                // 항상 풀스크린으로 채우는 것은 안된다
+                // 종횡비를 맞춰서 채워야 한다
+                canvas.drawBitmap(mBitmap, new Rect(0,0,mBitmap.getWidth(), mBitmap.getHeight()), new Rect(0,0,getWidth(),getHeight()), null);
+            }
+
 
             // 최초 그려지고 나서 항상 그려지게 한다.
 //            invalidate();

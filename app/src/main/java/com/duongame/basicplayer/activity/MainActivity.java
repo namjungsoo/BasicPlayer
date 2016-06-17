@@ -4,17 +4,23 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.Environment;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
+import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.duongame.basicplayer.manager.PermissionManager;
 import com.duongame.basicplayer.R;
+import com.duongame.basicplayer.manager.AdBannerManager;
+import com.duongame.basicplayer.manager.AdInterstitialManager;
+import com.duongame.basicplayer.manager.PermissionManager;
+import com.google.android.gms.ads.AdView;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -23,30 +29,58 @@ public class MainActivity extends AppCompatActivity {
     private final static String TAG = "MainActivity";
     private ListView mListMovie;
     private MovieAdapter mMovieAdapter;
-
+    private SwipeRefreshLayout mSwipeLayout;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, "onCreate");
 
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        //setContentView(R.layout.activity_main);
+        initView();
+
+
+
 
         // 런타임 퍼미션 체크
         PermissionManager.checkStoragePermissions(this, true, false);
 
+    }
+
+    private void initView() {
+        // 광고들 초기화
+        AdBannerManager.init(this);
+        AdInterstitialManager.init(this);
+
+        // 루트 레이아웃을 얻어서
+        mSwipeLayout = (SwipeRefreshLayout)getLayoutInflater().inflate(R.layout.activity_main, null);
+        final RelativeLayout relativeLayout = (RelativeLayout)mSwipeLayout.findViewById(R.id.relative);
         mMovieAdapter = new MovieAdapter();
 
-        // 파일리스트를 불러오자
-        mListMovie = (ListView) findViewById(R.id.listMovie);
-        mListMovie.setAdapter(mMovieAdapter);
+        // AdView 생성
+        final AdView adView = AdBannerManager.getAdBannerView();
+        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        params.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+        adView.setLayoutParams(params);
+        adView.setId(1);// 아이디를 꼭 생성해 주어야 한다
+        relativeLayout.addView(adView, 0);
 
+        params = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        params.addRule(RelativeLayout.ABOVE, adView.getId());
+
+        // 파일리스트뷰를 불러오자
+        mListMovie = (ListView)relativeLayout.findViewById(R.id.listMovie);
+        mListMovie.setLayoutParams(params);
+
+        setContentView(mSwipeLayout);
+
+        mListMovie.setAdapter(mMovieAdapter);
         // 아이템을 클릭하면 오픈하자
         mListMovie.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                File file = (File) mMovieAdapter.getItem(position);
+                final File file = (File) mMovieAdapter.getItem(position);
 
-                Intent intent = new Intent(MainActivity.this, PlayerActivity.class);
+                final Intent intent = new Intent(MainActivity.this, PlayerActivity.class);
                 intent.putExtra("filename", file.getAbsolutePath());
                 startActivity(intent);
             }
@@ -157,9 +191,12 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-            TextView tv = new TextView(MainActivity.this);
+            LinearLayout ll = (LinearLayout) getLayoutInflater().inflate(R.layout.list_item, parent, false);
+            TextView tv = (TextView) ll.findViewById(R.id.textMovie);
+
+//            TextView tv = new TextView(MainActivity.this);
             tv.setText(movieList.get(position).getName());
-            return tv;
+            return ll;
         }
     }
 }
