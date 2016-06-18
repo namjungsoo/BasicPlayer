@@ -80,22 +80,22 @@ public class Player {
         System.loadLibrary("basicplayer");
     }
 
-    public native void initAudioTrack();
-    public native int initBasicPlayer();
+    public static native void initAudioTrack();
+    public static native int initBasicPlayer();
 
-    public native int openMovie(String filePath);
-    public native int renderFrame(Bitmap bitmap);
+    public static native int openMovie(String filePath);
+    public static native int renderFrame(Bitmap bitmap);
 
-    public native int getMovieWidth();
-    public native int getMovieHeight();
-    public native void closeMovie();
+    public static native int getMovieWidth();
+    public static native int getMovieHeight();
+    public static native void closeMovie();
 
-    public native void pauseMovie();
-    public native void resumeMovie();
-    public native int seekMovie(long positionUs);
+    public static native void pauseMovie();
+    public static native void resumeMovie();
+    public static native int seekMovie(long positionUs);
 
-    public native long getMovieDurationUs();
-    public native double getFps();
+    public static native long getMovieDurationUs();
+    public static native double getFps();
 
-    public native long getCurrentPositionUs();
+    public static native long getCurrentPositionUs();
 }

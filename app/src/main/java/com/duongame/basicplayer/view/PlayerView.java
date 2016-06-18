@@ -31,13 +31,13 @@ public class PlayerView extends View {
     private Context mContext;
     private long mInterval;
     private boolean mPlaying;
-    private Player mPlayer = new Player();
+//    private Player mPlayer = new Player();
 
     public PlayerView(Context context, AttributeSet attrs) {
         super(context, attrs);
 
         mContext = context;
-        mPlayer.closeMovie();
+        Player.closeMovie();
 
         init(context);
     }
@@ -49,16 +49,16 @@ public class PlayerView extends View {
     public void init(Context context) {
         Log.d(TAG, "init");
 
-        if (mPlayer.initBasicPlayer() < 0) {
+        if (Player.initBasicPlayer() < 0) {
             Toast.makeText(context, "CPU doesn't support NEON", Toast.LENGTH_LONG).show();
             ((Activity) context).finish();
         }
 
-        mPlayer.initAudioTrack();
+        Player.initAudioTrack();
     }
 
     private void initRenderTimer() {
-        double fps = mPlayer.getFps();
+        double fps = Player.getFps();
         Log.d(TAG, "fps=" + fps);
 
         mInterval = (long) (1000. / fps);
@@ -72,14 +72,14 @@ public class PlayerView extends View {
         final File file = new File(filename);
         Log.d(TAG, String.valueOf(file.exists()));
 
-        int openResult = mPlayer.openMovie(filename);
+        int openResult = Player.openMovie(filename);
         if (openResult < 0) {
             Toast.makeText(mContext, "Open Movie Error: " + openResult, Toast.LENGTH_LONG).show();
             ((Activity) mContext).finish();
             return false;
         } else {
-            mMovieWidth = mPlayer.getMovieWidth();
-            mMovieHeight = mPlayer.getMovieHeight();
+            mMovieWidth = Player.getMovieWidth();
+            mMovieHeight = Player.getMovieHeight();
 
             mBitmap = Bitmap.createBitmap(mMovieWidth, mMovieHeight, Bitmap.Config.ARGB_8888);
             Log.d(TAG, "init createBitmap");
@@ -97,13 +97,13 @@ public class PlayerView extends View {
     public void pause() {
         mPlaying = false;
         pauseTimer();
-        mPlayer.pauseMovie();
+        Player.pauseMovie();
     }
 
     public void resume() {
         mPlaying = true;
         resumeTimer();
-        mPlayer.resumeMovie();
+        Player.resumeMovie();
     }
 
     private void pauseTimer() {
@@ -131,11 +131,11 @@ public class PlayerView extends View {
     }
 
     public int seekMovie(long positionUs) {
-        return mPlayer.seekMovie(positionUs);
+        return Player.seekMovie(positionUs);
     }
 
     public long getMovieDurationUs() {
-        return mPlayer.getMovieDurationUs();
+        return Player.getMovieDurationUs();
     }
 
     @Override
@@ -147,7 +147,7 @@ public class PlayerView extends View {
 
         if (mBitmap != null) {
             if (mPlaying) {
-                int ret = mPlayer.renderFrame(mBitmap);
+                int ret = Player.renderFrame(mBitmap);
                 // 렌더링 종료
                 if (ret > 0) {
                     pause();
@@ -155,7 +155,7 @@ public class PlayerView extends View {
 //                    ((PlayerActivity)mContext).finish();
                 }
                 else {
-                    final long currentPositionUs = mPlayer.getCurrentPositionUs();
+                    final long currentPositionUs = Player.getCurrentPositionUs();
                     final PlayerActivity activity = (PlayerActivity)mContext;
                     if(activity != null) {
                         activity.updatePosition(currentPositionUs);
