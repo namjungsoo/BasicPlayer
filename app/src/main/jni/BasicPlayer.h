@@ -33,7 +33,6 @@ void pauseMovie(JNIEnv *env, jobject thiz);
 void resumeMovie(JNIEnv *env, jobject thiz);
 void seekMovie(long positionUs);
 
-//double getFps();
-extern double gFps;
+double getFps();
 
 #endif

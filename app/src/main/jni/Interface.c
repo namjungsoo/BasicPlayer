@@ -107,8 +107,7 @@ void Java_com_duongame_basicplayer_MoviePlayView_seekMovie(JNIEnv *env, jobject 
 
 jdouble Java_com_duongame_basicplayer_MoviePlayView_getFps(JNIEnv *env, jobject thiz)
 {
-	//jdouble fps = getFps();
-	jdouble fps = gFps;
+	jdouble fps = getFps();
 	LOGD("interface fps=%f", fps);
 	return fps;
 }

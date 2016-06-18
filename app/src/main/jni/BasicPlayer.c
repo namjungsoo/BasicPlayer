@@ -74,12 +74,11 @@ int64_t getTimeNsec()
 }
 
 // 현재 사용안함 
-// double getFps() 
-// {
-// 	// LOGD("getFps %f", gFps);
-// 	// return gFps;
-// 	return 24.0;
-// }
+double getFps() 
+{
+	LOGD("getFps %f", gFps);
+	return gFps;
+}
 
 int openVideoStream() 
 {
