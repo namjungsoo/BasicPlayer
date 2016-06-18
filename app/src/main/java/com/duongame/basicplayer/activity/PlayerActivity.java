@@ -75,6 +75,8 @@ public class PlayerActivity extends AppCompatActivity {
 
         // 타이틀바 백버튼 보이기
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        updateRotation();
     }
 
     @Override
@@ -105,7 +107,8 @@ public class PlayerActivity extends AppCompatActivity {
 //        Log.d(TAG, "onConfigurationChanged mAlpha="+mAlpha);
         super.onConfigurationChanged(newConfig);
 
-        getWindow().getDecorView().findViewById(android.R.id.content).invalidate();
+        // 동작하지 않음
+//        getWindow().getDecorView().findViewById(android.R.id.content).invalidate();
 
         // 현재 풀스크린일때
 //        if (FullscreenManager.isFullscreen()) {
@@ -119,6 +122,10 @@ public class PlayerActivity extends AppCompatActivity {
 
         mToolBox.setAlpha(mAlpha);
 
+        updateRotation();
+    }
+
+    private void updateRotation() {
         final int rotation = getWindowManager().getDefaultDisplay().getRotation();
         switch (rotation) {
             case Surface.ROTATION_0:
