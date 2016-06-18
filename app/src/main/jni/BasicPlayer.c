@@ -58,7 +58,7 @@ AVDictionary *optionsDict = NULL;
 
 int gPixelFormat = AV_PIX_FMT_BGR32;
 double gFps = 0.0;
-long gCurrentTimeUs = 0l;
+int64_t gCurrentTimeUs = 0l;
 
 // 오디오 관련 
 AVCodecContext *gAudioCodecCtx = NULL;
@@ -124,28 +124,23 @@ int openVideoStream()
 
 	// 비디오 버퍼 메모리를 설정함
 //	avpicture_fill((AVPicture*)gFrameRGB, gVideoBuffer, gPixelFormat, gVideoCodecCtx->width, gVideoCodecCtx->height);
-	av_image_fill_arrays(gFrameRGB->data, gFrameRGB->linesize, gPixelFormat, gVideoCodecCtx->width, gVideoCodecCtx->height, 1);
-	
-	/*
-	attribute_deprecated int avpicture_fill	(	AVPicture * 	picture,
-	const uint8_t * 	ptr,
-	enum AVPixelFormat 	pix_fmt,
-	int 	width,
-	int 	height 
-	)	
-	*/
+	av_image_fill_arrays(gFrameRGB->data, gFrameRGB->linesize, gVideoBuffer, gPixelFormat, gVideoCodecCtx->width, gVideoCodecCtx->height, 1);
 
-	/*
-	int av_image_fill_arrays	(	uint8_t * 	dst_data[4],
-	int 	dst_linesize[4],
-	const uint8_t * 	src,
-	enum AVPixelFormat 	pix_fmt,
-	int 	width,
-	int 	height,
-	int 	align 
-	)	
-	*/
+	// attribute_deprecated int avpicture_fill	(	AVPicture * 	picture,
+	// const uint8_t * 	ptr,
+	// enum AVPixelFormat 	pix_fmt,
+	// int 	width,
+	// int 	height 
+	// )	
 
+	// int av_image_fill_arrays	(	uint8_t * 	dst_data[4],
+	// int 	dst_linesize[4],
+	// const uint8_t * 	src,
+	// enum AVPixelFormat 	pix_fmt,
+	// int 	width,
+	// int 	height,
+	// int 	align 
+	// )	
 
 	gFps = av_q2d(gFormatCtx->streams[gVideoStreamIdx]->r_frame_rate);
 	LOGD("fps=%f", gFps);
@@ -378,7 +373,7 @@ int decodeFrame()
 			int64_t diff = end - begin;
 
 			// 이게 전부 0.0에서 변화가 없음
-			double pts = av_frame_get_best_effort_timestamp(gFrame);
+			int64_t pts = av_frame_get_best_effort_timestamp(gFrame);
 //			double pts_clock = pts * av_q2d(gFormatCtx->streams[gVideoStreamIdx]->time_base);
 			gCurrentTimeUs = av_rescale_q(pts, gFormatCtx->streams[gVideoStreamIdx]->time_base, AV_TIME_BASE_Q);
 //			LOGD("pts=%f pts_clock=%f pts_long=%lu", pts, pts_clock, pts_long);
@@ -506,7 +501,12 @@ void resumeMovie(JNIEnv *env, jobject thiz)
 
 int seekMovie(long positionUs) 
 {
-	// 프레임을 해당 시간으로 이동시킴 
+	LOGD("seekMovie positionUs=%ld", positionUs);
+
+	// 프레임을 해당 시간으로 이동시킴
+	int64_t seekTarget = av_rescale_q(positionUs, gFormatCtx->streams[gVideoStreamIdx]->time_base, AV_TIME_BASE_Q);
+	if(av_seek_frame(gFormatCtx, gVideoStreamIdx, seekTarget, AVSEEK_FLAG_ANY) < 0)
+        LOGD("av_seek_frame failed.");
 }
 
 long getDuration() 

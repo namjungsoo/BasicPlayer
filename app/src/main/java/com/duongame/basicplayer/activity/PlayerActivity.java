@@ -26,6 +26,8 @@ import com.duongame.basicplayer.manager.NavigationBarManager;
 
 public class PlayerActivity extends AppCompatActivity {
     private final static String TAG = "PlayerActivity";
+    private final static long SEC_TO_US = 1000000L;
+    private final static float US_TO_SEC = 0.000001f;
 
     private MoviePlayView mPlayerView;
     private ViewGroup mToolBox;
@@ -42,20 +44,47 @@ public class PlayerActivity extends AppCompatActivity {
         setContentView(R.layout.layout_player);
         mPlayerView = (MoviePlayView) findViewById(R.id.moviePlay);
         mToolBox = (ViewGroup) findViewById(R.id.toolBox);
-
-        mSeekBar = (SeekBar) findViewById(R.id.seekBar);
         mCurrentTime = (TextView) findViewById(R.id.currentTime);
         mDurationTime = (TextView) findViewById(R.id.durationTime);
-
         mPlay = (ImageButton) findViewById(R.id.play);
+
+        mSeekBar = (SeekBar) findViewById(R.id.seekBar);
+//        if (mSeekBar != null) {
+//            mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+//                private boolean startWithPaused = false;
+//                @Override
+//                public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+//                    // 유저가 움직였을 경우에만 탐색
+//                    if (fromUser) {
+//                        Log.d(TAG, "seekMovie "+progress * SEC_TO_US);
+//                        mPlayerView.seekMovie(progress * SEC_TO_US);
+//                    }
+//                }
+//
+//                @Override
+//                public void onStartTrackingTouch(SeekBar seekBar) {
+//                    mPlayerView.pause();
+//                    updatePlayButton();
+//                }
+//
+//                @Override
+//                public void onStopTrackingTouch(SeekBar seekBar) {
+//                    mPlayerView.resume();
+//                    updatePlayButton();
+//                }
+//            });
+//        }
+
         if (mPlay != null) {// 일시정지를 시키자
             mPlay.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if (mPlayerView.getPlaying()) {
-                        mPlayerView.pause();
-                    } else {
-                        mPlayerView.resume();
+                    if (mPlayerView != null) {
+                        if (mPlayerView.getPlaying()) {
+                            mPlayerView.pause();
+                        } else {
+                            mPlayerView.resume();
+                        }
                     }
                     updatePlayButton();
                 }
@@ -78,8 +107,11 @@ public class PlayerActivity extends AppCompatActivity {
                 long durationSec = durationUs / 1000000L;
                 final String duration = convertUsToString(durationUs);
 
-                mDurationTime.setText(duration);
-                mSeekBar.setMax((int)durationSec);
+                if (mDurationTime != null)
+                    mDurationTime.setText(duration);
+
+                if (mSeekBar != null)
+                    mSeekBar.setMax((int) durationSec);
             }
             updatePlayButton();
         }
@@ -88,7 +120,7 @@ public class PlayerActivity extends AppCompatActivity {
         FullscreenManager.setFullscreen(this, true);
         setToolBox(true);
 
-        // 타이틀바 반투명
+        // 타이틀바 반투명 블랙
         getSupportActionBar().setBackgroundDrawable(new ColorDrawable(Color.parseColor("#66000000")));
 
         // 타이틀바 백버튼 보이기
@@ -150,25 +182,25 @@ public class PlayerActivity extends AppCompatActivity {
     }
 
     public void updatePosition(long positionUs) {
-        if(!FullscreenManager.isFullscreen()) {
+        if (!FullscreenManager.isFullscreen()) {
             // 시간 텍스트 업데이트
             final String position = convertUsToString(positionUs);
             mCurrentTime.setText(position);
 
-            long positionSec = positionUs / 1000000L;
+            long positionSec = positionUs / SEC_TO_US;
 
             // SeekBar 포지션 업데이트
-            mSeekBar.setProgress((int)positionSec);
+            mSeekBar.setProgress((int) positionSec);
         }
     }
 
     private String convertUsToString(long timeUs) {
         // 초단위로 변경
-        timeUs = timeUs / 1000000L;
+        timeUs = timeUs / SEC_TO_US;
 
-        long hour = timeUs/3600;
-        long min = (timeUs - (hour*3600))/60;
-        long sec = timeUs - (hour*3600) - min*60;
+        long hour = timeUs / 3600;
+        long min = (timeUs - (hour * 3600)) / 60;
+        long sec = timeUs - (hour * 3600) - min * 60;
 
         return String.format("%01d:%02d:%02d", hour, min, sec);
     }

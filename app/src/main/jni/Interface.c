@@ -21,20 +21,25 @@ jint JNI_OnLoad(JavaVM* vm, void* reserved) {
 
 void Java_com_duongame_basicplayer_MoviePlayView_initAudioTrack(JNIEnv *env, jobject thiz)
 {
+	LOGD("BEGIN initAudioTrack");
 	initAudioTrack(env, thiz);
+	LOGD("END initAudioTrack");
 }
 
 jint Java_com_duongame_basicplayer_MoviePlayView_initBasicPlayer(JNIEnv *env, jobject thiz)
 {
+	LOGD("BEGIN initBasicPlayer");
 	// ARM 패밀리 이고, NEON 피쳐가 있을경우 av_register_all을 해준다. 
 	//Initializes libavformat and registers all the muxers, demuxers and protocols. 
 	av_register_all();
 	initAudioFormatMap();
+	LOGD("END initBasicPlayer");
 	return 0;
 }
 
 jint Java_com_duongame_basicplayer_MoviePlayView_openMovie(JNIEnv *env, jobject thiz, jstring filePath)
 {
+	LOGD("BEGIN openMovie");
 	const jbyte *str;
 	int result;
 
@@ -43,11 +48,14 @@ jint Java_com_duongame_basicplayer_MoviePlayView_openMovie(JNIEnv *env, jobject 
 	result = openMovie(str);
 	(*env)->ReleaseStringUTFChars(env, filePath, str);
 
+	LOGD("END openMovie");
 	return result;
 }
 
 jint Java_com_duongame_basicplayer_MoviePlayView_renderFrame(JNIEnv *env, jobject thiz, jobject bitmap)
 {
+	LOGD("BEGIN renderFrame");
+    
     void *pixels;
 	int result;
 
@@ -72,6 +80,7 @@ jint Java_com_duongame_basicplayer_MoviePlayView_renderFrame(JNIEnv *env, jobjec
 		AndroidBitmap_unlockPixels(env, bitmap);
 	}
 
+	LOGD("END renderFrame");
 	return 0;
 }
 
@@ -87,24 +96,31 @@ jint Java_com_duongame_basicplayer_MoviePlayView_getMovieHeight(JNIEnv *env, job
 
 void Java_com_duongame_basicplayer_MoviePlayView_closeMovie(JNIEnv *env, jobject thiz)
 {
+	LOGD("BEGIN closeMovie");
 	closeMovie();
+	LOGD("END closeMovie");
 }
 
 void Java_com_duongame_basicplayer_MoviePlayView_pauseMovie(JNIEnv *env, jobject thiz)
 {
-	LOGD("pauseMovie");
+	LOGD("BEGIN pauseMovie");
 	pauseMovie(env, thiz);
+	LOGD("END pauseMovie");
 }
 
 void Java_com_duongame_basicplayer_MoviePlayView_resumeMovie(JNIEnv *env, jobject thiz)
 {
-	LOGD("resumeMovie");
+	LOGD("BEGIN resumeMovie");
 	resumeMovie(env, thiz);
+	LOGD("END resumeMovie");
 }
 
 int Java_com_duongame_basicplayer_MoviePlayView_seekMovie(JNIEnv *env, jobject thiz, jlong positionUs)
 {
-	return seekMovie(positionUs);
+	LOGD("BEGIN seekMovie");
+	int ret = seekMovie(positionUs);
+	LOGD("END seekMovie");
+	return ret;
 }
 
 jdouble Java_com_duongame_basicplayer_MoviePlayView_getFps(JNIEnv *env, jobject thiz)
@@ -116,10 +132,16 @@ jdouble Java_com_duongame_basicplayer_MoviePlayView_getFps(JNIEnv *env, jobject 
 
 jlong Java_com_duongame_basicplayer_MoviePlayView_getMovieDurationUs(JNIEnv *env, jobject thiz)
 {
-	return getDuration();
+	LOGD("BEGIN getMovieDurationUs");
+	jlong ret =  getDuration();
+	LOGD("END getMovieDurationUs");
+	return ret;
 }
 
 jlong Java_com_duongame_basicplayer_MoviePlayView_getCurrentPositionUs(JNIEnv *env, jobject thiz)
 {
-	return getPosition();
+	LOGD("BEGIN getCurrentPositionUs");
+	jlong ret = getPosition();
+	LOGD("END getCurrentPositionUs");
+	return ret;
 }
