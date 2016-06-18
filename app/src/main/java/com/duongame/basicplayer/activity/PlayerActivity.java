@@ -19,17 +19,17 @@ import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
-import com.duongame.basicplayer.MoviePlayView;
 import com.duongame.basicplayer.R;
 import com.duongame.basicplayer.manager.FullscreenManager;
 import com.duongame.basicplayer.manager.NavigationBarManager;
+import com.duongame.basicplayer.view.PlayerView;
 
 public class PlayerActivity extends AppCompatActivity {
     private final static String TAG = "PlayerActivity";
     private final static long SEC_TO_US = 1000000L;
     private final static float US_TO_SEC = 0.000001f;
 
-    private MoviePlayView mPlayerView;
+    private PlayerView mPlayerView;
     private ViewGroup mToolBox;
     private float mAlpha;
     private ImageButton mPlay;
@@ -42,7 +42,8 @@ public class PlayerActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.layout_player);
-        mPlayerView = (MoviePlayView) findViewById(R.id.moviePlay);
+
+        mPlayerView = (PlayerView) findViewById(R.id.moviePlay);
         mToolBox = (ViewGroup) findViewById(R.id.toolBox);
         mCurrentTime = (TextView) findViewById(R.id.currentTime);
         mDurationTime = (TextView) findViewById(R.id.durationTime);

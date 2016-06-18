@@ -1,20 +1,17 @@
-package com.duongame.basicplayer;
+package com.duongame.basicplayer.view;
 
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Paint;
 import android.graphics.Rect;
-import android.media.AudioFormat;
-import android.media.AudioManager;
-import android.media.AudioTrack;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
+import com.duongame.basicplayer.Player;
 import com.duongame.basicplayer.activity.PlayerActivity;
 
 import java.io.File;
@@ -22,10 +19,10 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 /**
- * Created by namjungsoo on 16. 6. 11..
+ * Created by namjungsoo on 16. 6. 18..
  */
-public class MoviePlayView extends View {
-    private final static String TAG = "MoviePlayView";
+public class PlayerView extends View {
+    private final static String TAG = "PlayerView";
 
     private Bitmap mBitmap;
     private int mMovieWidth;
@@ -34,32 +31,34 @@ public class MoviePlayView extends View {
     private Context mContext;
     private long mInterval;
     private boolean mPlaying;
+    private Player mPlayer = new Player();
 
-    public MoviePlayView(Context context, AttributeSet attrs) {
+    public PlayerView(Context context, AttributeSet attrs) {
         super(context, attrs);
 
         mContext = context;
-        closeMovie();
+        mPlayer.closeMovie();
+
         init(context);
     }
 
-    public MoviePlayView(Context context) {
+    public PlayerView(Context context) {
         this(context, null);
     }
 
     public void init(Context context) {
         Log.d(TAG, "init");
 
-        if (initBasicPlayer() < 0) {
+        if (mPlayer.initBasicPlayer() < 0) {
             Toast.makeText(context, "CPU doesn't support NEON", Toast.LENGTH_LONG).show();
             ((Activity) context).finish();
         }
 
-        initAudioTrack();
+        mPlayer.initAudioTrack();
     }
 
     private void initRenderTimer() {
-        double fps = getFps();
+        double fps = mPlayer.getFps();
         Log.d(TAG, "fps=" + fps);
 
         mInterval = (long) (1000. / fps);
@@ -73,14 +72,15 @@ public class MoviePlayView extends View {
         final File file = new File(filename);
         Log.d(TAG, String.valueOf(file.exists()));
 
-        int openResult = openMovie(filename);
+        int openResult = mPlayer.openMovie(filename);
         if (openResult < 0) {
             Toast.makeText(mContext, "Open Movie Error: " + openResult, Toast.LENGTH_LONG).show();
             ((Activity) mContext).finish();
             return false;
         } else {
-            mMovieWidth = getMovieWidth();
-            mMovieHeight = getMovieHeight();
+            mMovieWidth = mPlayer.getMovieWidth();
+            mMovieHeight = mPlayer.getMovieHeight();
+
             mBitmap = Bitmap.createBitmap(mMovieWidth, mMovieHeight, Bitmap.Config.ARGB_8888);
             Log.d(TAG, "init createBitmap");
 
@@ -97,13 +97,13 @@ public class MoviePlayView extends View {
     public void pause() {
         mPlaying = false;
         pauseTimer();
-        pauseMovie();
+        mPlayer.pauseMovie();
     }
 
     public void resume() {
         mPlaying = true;
         resumeTimer();
-        resumeMovie();
+        mPlayer.resumeMovie();
     }
 
     private void pauseTimer() {
@@ -117,7 +117,7 @@ public class MoviePlayView extends View {
             public void run() {
 //                Log.d(TAG, "Timer");
 
-                MoviePlayView.this.post(new Runnable() {
+                PlayerView.this.post(new Runnable() {
                     @Override
                     public void run() {
                         invalidate();
@@ -130,54 +130,12 @@ public class MoviePlayView extends View {
         mTimer.schedule(task, 0, mInterval);
     }
 
-    //ndk에서 불러준다.
-    private AudioTrack prepareAudioTrack(int audioFormat, int sampleRateInHz,
-                                         int numberOfChannels) {
+    public int seekMovie(long positionUs) {
+        return mPlayer.seekMovie(positionUs);
+    }
 
-        while(true) {
-            int channelConfig;
-            if (numberOfChannels == 1) {
-                channelConfig = AudioFormat.CHANNEL_OUT_MONO;
-            } else if (numberOfChannels == 2) {
-                channelConfig = AudioFormat.CHANNEL_OUT_STEREO;
-            } else if (numberOfChannels == 3) {
-                channelConfig = AudioFormat.CHANNEL_OUT_FRONT_CENTER
-                        | AudioFormat.CHANNEL_OUT_FRONT_RIGHT
-                        | AudioFormat.CHANNEL_OUT_FRONT_LEFT;
-            } else if (numberOfChannels == 4) {
-                channelConfig = AudioFormat.CHANNEL_OUT_QUAD;
-            } else if (numberOfChannels == 5) {
-                channelConfig = AudioFormat.CHANNEL_OUT_QUAD
-                        | AudioFormat.CHANNEL_OUT_LOW_FREQUENCY;
-            } else if (numberOfChannels == 6) {
-                channelConfig = AudioFormat.CHANNEL_OUT_5POINT1;
-            } else if (numberOfChannels == 8) {
-                channelConfig = AudioFormat.CHANNEL_OUT_7POINT1;
-            } else {
-                channelConfig = AudioFormat.CHANNEL_OUT_STEREO;
-            }
-            try {
-//                int minBufferSize = AudioTrack.getMinBufferSize(sampleRateInHz,
-//                        channelConfig, AudioFormat.ENCODING_PCM_16BIT);
-//                AudioTrack audioTrack = new AudioTrack(
-//                        AudioManager.STREAM_MUSIC, sampleRateInHz,
-//                        channelConfig, AudioFormat.ENCODING_PCM_16BIT,
-//                        minBufferSize, AudioTrack.MODE_STREAM);
-
-                // 동적으로 audioFormat을 넣어준다
-                int minBufferSize = AudioTrack.getMinBufferSize(sampleRateInHz, channelConfig, audioFormat);
-                AudioTrack audioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, sampleRateInHz, channelConfig, audioFormat, minBufferSize, AudioTrack.MODE_STREAM);
-                return audioTrack;
-            } catch (IllegalArgumentException e) {
-                if (numberOfChannels > 2) {
-                    numberOfChannels = 2;
-                } else if (numberOfChannels > 1) {
-                    numberOfChannels = 1;
-                } else {
-                    throw e;
-                }
-            }
-        }
+    public long getMovieDurationUs() {
+        return mPlayer.getMovieDurationUs();
     }
 
     @Override
@@ -189,7 +147,7 @@ public class MoviePlayView extends View {
 
         if (mBitmap != null) {
             if (mPlaying) {
-                int ret = renderFrame(mBitmap);
+                int ret = mPlayer.renderFrame(mBitmap);
                 // 렌더링 종료
                 if (ret > 0) {
                     pause();
@@ -197,7 +155,7 @@ public class MoviePlayView extends View {
 //                    ((PlayerActivity)mContext).finish();
                 }
                 else {
-                    final long currentPositionUs = getCurrentPositionUs();
+                    final long currentPositionUs = mPlayer.getCurrentPositionUs();
                     final PlayerActivity activity = (PlayerActivity)mContext;
                     if(activity != null) {
                         activity.updatePosition(currentPositionUs);
@@ -281,26 +239,4 @@ public class MoviePlayView extends View {
 //        Log.d(TAG, "onDraw END");
     }
 
-    static {
-        System.loadLibrary("basicplayer");
-    }
-
-    private native void initAudioTrack();
-    private native int initBasicPlayer();
-
-    private native int openMovie(String filePath);
-    private native int renderFrame(Bitmap bitmap);
-
-    private native int getMovieWidth();
-    private native int getMovieHeight();
-    public native void closeMovie();
-
-    private native void pauseMovie();
-    private native void resumeMovie();
-    public native int seekMovie(long positionUs);
-
-    public native long getMovieDurationUs();
-    private native double getFps();
-
-    public native long getCurrentPositionUs();
 }

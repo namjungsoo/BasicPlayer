@@ -16,6 +16,10 @@ jmethodID java_get_method(JNIEnv *env, jclass class, JavaMethod method) {
 	return (*env)->GetMethodID(env, class, method.name, method.signature);
 }
 
+jmethodID java_get_static_method(JNIEnv *env, jclass class, JavaMethod method) {
+    return (*env)->GetStaticMethodID(env, class, method.name, method.signature);
+}
+
 typedef struct {
     jclass player_class;//MoviePlayView
     jmethodID player_prepare_audio_track_method;//prepareAudioTrack
@@ -29,10 +33,11 @@ typedef struct {
     jmethodID audio_track_stop_method;
     jmethodID audio_track_get_channel_count_method;
     jmethodID audio_track_get_sample_rate_method;
-
     jobject audio_track; 
+    
     JNIEnv *env;
     jobject thiz;
+    
     JavaVM *javavm;
 } Player;
 
@@ -50,9 +55,10 @@ void initAudioTrack(JNIEnv *env, jobject thiz)
     player->thiz = (*env)->NewGlobalRef(env, thiz);
 
 	jclass player_class = (*env)->FindClass(env, player_class_path_name);
+    player->player_class = (*env)->NewGlobalRef(env, player_class);
 //	LOGD("initAudioTrack player_class=%d", player_class);
 
-	player->player_prepare_audio_track_method = java_get_method(env, player_class, player_prepare_audio_track);
+	player->player_prepare_audio_track_method = java_get_static_method(env, player->player_class , player_prepare_audio_track);
 //	LOGD("initAudioTrack player_prepare_audio_track_method=%d", player->player_prepare_audio_track_method);
 
     (*env)->DeleteLocalRef(env, player_class);
@@ -92,7 +98,8 @@ void prepareAudioTrack(int audioFormat, int sampleRate, int channels)
     LOGD("prepareAudioTrack audioTrackFormat=%d", audioTrackFormat);
 
     // object AudioTrack
-    jobject audio_track = (*env)->CallObjectMethod(env, thiz, player->player_prepare_audio_track_method, audioTrackFormat, sampleRate, channels);
+//    jobject audio_track = (*env)->CallObjectMethod(env, thiz, player->player_prepare_audio_track_method, audioTrackFormat, sampleRate, channels);
+    jobject audio_track = (*env)->CallStaticObjectMethod(env, player->player_class, player->player_prepare_audio_track_method, audioTrackFormat, sampleRate, channels);
 //    LOGD("prepareAudioTrack audio_track=%d", audio_track);
 
     player->audio_track = (*env)->NewGlobalRef(env, audio_track);

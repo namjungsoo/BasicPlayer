@@ -17,7 +17,7 @@ jfieldID java_get_field(JNIEnv *env, char * class_name, JavaField field);
 jmethodID java_get_method(JNIEnv *env, jclass class, JavaMethod method);
 
 // FFmpegPlayer
-static char *player_class_path_name = "com/duongame/basicplayer/MoviePlayView";
+static char *player_class_path_name = "com/duongame/basicplayer/Player";
 //static JavaField player_m_native_player = {"mNativePlayer", "I"};
 //static JavaMethod player_on_update_time = {"onUpdateTime","(JJZ)V"};
 static JavaMethod player_prepare_audio_track = {"prepareAudioTrack", "(III)Landroid/media/AudioTrack;"};
