@@ -499,17 +499,20 @@ void resumeMovie(JNIEnv *env, jobject thiz)
 	resumeAudioTrack(env, thiz); 
 }
 
-int seekMovie(long positionUs) 
+int seekMovie(int64_t positionUs) 
 {
-	LOGD("seekMovie positionUs=%ld", positionUs);
+	LOGD("seekMovie positionUs=%lld", positionUs);
 
 	// 프레임을 해당 시간으로 이동시킴
 	int64_t seekTarget = av_rescale_q(positionUs, gFormatCtx->streams[gVideoStreamIdx]->time_base, AV_TIME_BASE_Q);
-	if(av_seek_frame(gFormatCtx, gVideoStreamIdx, seekTarget, AVSEEK_FLAG_ANY) < 0)
+	if(av_seek_frame(gFormatCtx, gVideoStreamIdx, seekTarget, AVSEEK_FLAG_ANY) < 0) {
         LOGD("av_seek_frame failed.");
+        return -1;
+	}
+	return 0;
 }
 
-long getDuration() 
+int64_t getDuration() 
 {
 	// 이건 믿음녀 안됨 
 	// LOGD("gFormatCtx->duration=%lu", gFormatCtx->duration);
@@ -520,8 +523,8 @@ long getDuration()
 		AVStream* stream = gFormatCtx->streams[i];
 		LOGD("stream->duration=%lld", stream->duration);
 
-		long duration = av_rescale_q(stream->duration, stream->time_base, AV_TIME_BASE_Q);
-		LOGD("duration=%ld", duration);
+		int64_t duration = av_rescale_q(stream->duration, stream->time_base, AV_TIME_BASE_Q);
+		LOGD("duration=%lld", duration);
 
 		if(duration != 0)
 			return duration;
@@ -530,7 +533,7 @@ long getDuration()
 	return 0l;
 }
 
-long getPosition()
+int64_t getPosition()
 {
 	return gCurrentTimeUs;
 }

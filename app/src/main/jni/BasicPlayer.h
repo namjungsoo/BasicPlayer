@@ -31,10 +31,10 @@ void closeMovie();
 
 void pauseMovie(JNIEnv *env, jobject thiz);
 void resumeMovie(JNIEnv *env, jobject thiz);
-int seekMovie(long positionUs);
+int seekMovie(int64_t positionUs);
 
 double getFps();
-long getDuration();
-long getPosition();
+int64_t getDuration();
+int64_t getPosition();
 
 #endif
