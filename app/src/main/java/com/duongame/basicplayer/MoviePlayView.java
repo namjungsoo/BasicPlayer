@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.Rect;
 import android.media.AudioFormat;
 import android.media.AudioManager;
@@ -12,8 +14,6 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
-
-import com.duongame.basicplayer.activity.PlayerActivity;
 
 import java.io.File;
 import java.util.Timer;
@@ -43,7 +43,6 @@ public class MoviePlayView extends View {
 
     public MoviePlayView(Context context) {
         this(context, null);
-
     }
 
     public void init(Context context) {
@@ -160,12 +159,10 @@ public class MoviePlayView extends View {
 //                        AudioManager.STREAM_MUSIC, sampleRateInHz,
 //                        channelConfig, AudioFormat.ENCODING_PCM_16BIT,
 //                        minBufferSize, AudioTrack.MODE_STREAM);
-                int minBufferSize = AudioTrack.getMinBufferSize(sampleRateInHz,
-                        channelConfig, audioFormat);
-                AudioTrack audioTrack = new AudioTrack(
-                        AudioManager.STREAM_MUSIC, sampleRateInHz,
-                        channelConfig, audioFormat,
-                        minBufferSize, AudioTrack.MODE_STREAM);
+
+                // 동적으로 audioFormat을 넣어준다
+                int minBufferSize = AudioTrack.getMinBufferSize(sampleRateInHz, channelConfig, audioFormat);
+                AudioTrack audioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, sampleRateInHz, channelConfig, audioFormat, minBufferSize, AudioTrack.MODE_STREAM);
                 return audioTrack;
             } catch (IllegalArgumentException e) {
                 if (numberOfChannels > 2) {
@@ -181,27 +178,94 @@ public class MoviePlayView extends View {
 
     @Override
     protected void onDraw(Canvas canvas) {
-//        Log.d(TAG, "onDraw");
+        super.onDraw(canvas);
+//        Log.d(TAG, "onDraw BEGIN");
+
+        canvas.drawColor(Color.BLACK);
 
         if (mBitmap != null) {
             if (mPlaying) {
-//                Log.d(TAG, "onDraw renderFrame BEGIN");
-
                 int ret = renderFrame(mBitmap);
-//                Log.d(TAG, "onDraw ret=" + ret);
-
                 // 렌더링 종료
                 if (ret > 0) {
                     pause();
-
 //                    // 플레이 끝났을시 액티비티 종료
 //                    ((PlayerActivity)mContext).finish();
                 }
             }
 
             // 항상 풀스크린으로 채우는 것은 안된다
-            // 종횡비를 맞춰서 채워야 한다
-            canvas.drawBitmap(mBitmap, new Rect(0, 0, mBitmap.getWidth(), mBitmap.getHeight()), new Rect(0, 0, getWidth(), getHeight()), null);
+            //TODO: 종횡비를 맞춰서 채워야 한다
+            final int width = getWidth();
+            final int height = getHeight();
+
+            final int bmWidth = mBitmap.getWidth();
+            final int bmHeight = mBitmap.getHeight();
+
+            // 가로
+            if (width > height) {
+                final float bmRatioInverse = (float) bmWidth / bmHeight;
+
+                // 비트맵 가로
+                if (bmWidth > bmHeight) {
+                    final float ratioInverse = (float) width / height;
+
+                    // 비트맵이 더 길쭉할때
+                    if(bmRatioInverse > ratioInverse) {
+                        final float bmRatio = (float) bmHeight / bmWidth;
+                        final int adjustedHeight = (int) (width * bmRatio);
+                        final int startHeight = (height >> 1) - (adjustedHeight >> 1);
+                        canvas.drawBitmap(mBitmap, new Rect(0, 0, bmWidth, bmHeight), new Rect(0, startHeight, width, startHeight + adjustedHeight), null);
+                    }
+                    else {// 비트맵 세로랑 동일하다
+                        final int adjustedWidth = (int) (height * bmRatioInverse);
+                        final int startWidth = (width >> 1) - (adjustedWidth >> 1);
+                        canvas.drawBitmap(mBitmap, new Rect(0, 0, bmWidth, bmHeight), new Rect(startWidth, 0, startWidth + adjustedWidth, height), null);
+                    }
+                }
+                // 비트맵 세로
+                else {
+                    final int adjustedWidth = (int) (height * bmRatioInverse);
+                    final int startWidth = (width >> 1) - (adjustedWidth >> 1);
+                    canvas.drawBitmap(mBitmap, new Rect(0, 0, bmWidth, bmHeight), new Rect(startWidth, 0, startWidth + adjustedWidth, height), null);
+                }
+            }
+            // 세로
+            else {
+                final float bmRatio = (float) bmHeight / bmWidth;
+
+                // 비트맵 가로
+                if (bmWidth > bmHeight) {
+                    // 가로를 맞춘다
+                    final int adjustedHeight = (int) (width * bmRatio);
+                    final int startHeight = (height >> 1) - (adjustedHeight >> 1);
+                    canvas.drawBitmap(mBitmap, new Rect(0, 0, bmWidth, bmHeight), new Rect(0, startHeight, width, startHeight + adjustedHeight), null);
+                }
+                // 비트맵 세로
+                else {
+                    // 세로-세로 이므로 비율을 계산해야 한다
+                    final float ratio = (float) height / width;
+
+                    // 비트맵이 더 길쭉할때
+                    if(bmRatio > ratio) {
+                        // 세로룰 맞춘다
+                        // 세로는 화면 길이
+                        // 가로는 비율에 맞게
+                        final float bmRatioInverse = (float) bmWidth / bmHeight;
+                        final int adjustedWidth = (int) (height * bmRatioInverse);
+                        final int startWidth = (width >> 1) - (adjustedWidth >> 1);
+                        canvas.drawBitmap(mBitmap, new Rect(0, 0, bmWidth, bmHeight), new Rect(startWidth, 0, startWidth + adjustedWidth, height), null);
+                    }
+                    else {// 비트맵 가로랑 동일하다
+                        // 가로를 맞춘다
+                        // 가로는 화면 길이
+                        // 세로는 비율에 맞게
+                        final int adjustedHeight = (int) (width * bmRatio);
+                        final int startHeight = (height >> 1) - (adjustedHeight >> 1);
+                        canvas.drawBitmap(mBitmap, new Rect(0, 0, bmWidth, bmHeight), new Rect(0, startHeight, width, startHeight + adjustedHeight), null);
+                    }
+                }
+            }
         }
 //        Log.d(TAG, "onDraw END");
     }

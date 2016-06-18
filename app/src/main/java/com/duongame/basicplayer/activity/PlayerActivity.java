@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.support.v4.content.res.ResourcesCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.Surface;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,70 +25,97 @@ import com.duongame.basicplayer.manager.NavigationBarManager;
 public class PlayerActivity extends AppCompatActivity {
     private final static String TAG = "PlayerActivity";
 
-    private MoviePlayView playView;
-    private ViewGroup toolBox;
-    private float alpha;
+    private MoviePlayView mPlayerView;
+    private ViewGroup mToolBox;
+    private float mAlpha;
+    private ImageButton mPlay;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.layout_player);
-        playView = (MoviePlayView) findViewById(R.id.moviePlay);
-        toolBox = (ViewGroup) findViewById(R.id.toolBox);
+        mPlayerView = (MoviePlayView) findViewById(R.id.moviePlay);
+        mToolBox = (ViewGroup) findViewById(R.id.toolBox);
 
-        if (playView != null) {
-            playView.setOnClickListener(new View.OnClickListener() {
+        mPlay = (ImageButton) findViewById(R.id.play);
+        if (mPlay != null) {// 일시정지를 시키자
+            mPlay.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    setToolBox(!FullscreenManager.isFullscreen());
+                    if (mPlayerView.getPlaying()) {
+                        mPlayerView.pause();
+                    } else {
+                        mPlayerView.resume();
+                    }
+                    updatePlayButton();
+                }
+            });
+        }
+
+        if (mPlayerView != null) {
+            mPlayerView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    setmToolBox(!FullscreenManager.isFullscreen());
                     FullscreenManager.setFullscreen(PlayerActivity.this, !FullscreenManager.isFullscreen());
                 }
             });
             final String filename = getIntent().getStringExtra("filename");
-            playView.openFile(filename);
-        }
-
-        final ImageButton play = (ImageButton) findViewById(R.id.play);
-        if (play != null) {// 일시정지를 시키자
-            play.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (playView.getPlaying()) {
-                        playView.pause();
-                        play.setImageDrawable(ResourcesCompat.getDrawable(getResources(), R.drawable.pause, getApplicationContext().getTheme()));
-                    } else {
-                        playView.resume();
-                        play.setImageDrawable(ResourcesCompat.getDrawable(getResources(), R.drawable.play, getApplicationContext().getTheme()));
-                    }
-                }
-            });
+            mPlayerView.openFile(filename);
+            updatePlayButton();
         }
 
         applyNavigationBarHeight(true);
         FullscreenManager.setFullscreen(this, true);
-        setToolBox(true);
+        setmToolBox(true);
 
         // 타이틀바 반투명
         getSupportActionBar().setBackgroundDrawable(new ColorDrawable(Color.parseColor("#66000000")));
+
+        // 타이틀바 백버튼 보이기
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+    }
+
+    @Override
+    public void onPause() {
+        Log.d(TAG, "onPause");
+
+        super.onPause();
+        mPlayerView.pause();
+        updatePlayButton();
+//        mPlayerView.closeMovie();
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                // API 5+ solution
+                onBackPressed();
+                return true;
+
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
-//        Log.d(TAG, "onConfigurationChanged alpha="+alpha);
+//        Log.d(TAG, "onConfigurationChanged mAlpha="+mAlpha);
         super.onConfigurationChanged(newConfig);
 
         // 현재 풀스크린일때
 //        if (FullscreenManager.isFullscreen()) {
-//            toolBox.setAlpha(0.0f);
+//            mToolBox.setAlpha(0.0f);
 //            Log.d(TAG, "onConfigurationChanged 0.0");
 //        } else {
-//            toolBox.setAlpha(1.0f);
+//            mToolBox.setAlpha(1.0f);
 //            Log.d(TAG, "onConfigurationChanged 1.0");
 //        }
-        Log.d(TAG, "" + toolBox.getAlpha());
+        Log.d(TAG, "" + mToolBox.getAlpha());
 
-        toolBox.setAlpha(alpha);
+        mToolBox.setAlpha(mAlpha);
 
         final int rotation = getWindowManager().getDefaultDisplay().getRotation();
         switch (rotation) {
@@ -111,25 +139,25 @@ public class PlayerActivity extends AppCompatActivity {
         }
     }
 
-    private void setToolBox(boolean newFullscreen) {
+    private void setmToolBox(boolean newFullscreen) {
         final AlphaAnimation animation;
 
         // 기본값으로 설정후에 애니메이션 한다
-        toolBox.setAlpha(1.0f);
+        mToolBox.setAlpha(1.0f);
         if (newFullscreen) {
-            alpha = 0.0f;
+            mAlpha = 0.0f;
             animation = new AlphaAnimation(1.f, 0.0f);
         } else {
-            alpha = 1.0f;
+            mAlpha = 1.0f;
             animation = new AlphaAnimation(0.0f, 1.0f);
         }
-//        Log.d(TAG, "setToolBox newFullscreen="+newFullscreen +" alpha="+alpha);
+//        Log.d(TAG, "setmToolBox newFullscreen="+newFullscreen +" mAlpha="+mAlpha);
         animation.setFillAfter(true);
         animation.setFillEnabled(true);
         animation.setDuration(300);
         animation.setInterpolator(new AccelerateInterpolator());
-        toolBox.startAnimation(animation);
-//        Log.d(TAG, "setToolBox newFullscreen="+newFullscreen + " END");
+        mToolBox.startAnimation(animation);
+//        Log.d(TAG, "setmToolBox newFullscreen="+newFullscreen + " END");
     }
 
     private void applyNavigationBarHeight(boolean portrait) {
@@ -155,12 +183,12 @@ public class PlayerActivity extends AppCompatActivity {
         }
     }
 
-    @Override
-    public void onPause() {
-        Log.d(TAG, "onPause");
-
-        super.onPause();
-        playView.pause();
-//        playView.closeMovie();
+    private void updatePlayButton() {
+        if (mPlayerView.getPlaying()) {
+            mPlay.setImageDrawable(ResourcesCompat.getDrawable(getResources(), R.drawable.pause, getApplicationContext().getTheme()));
+        }
+        else {
+            mPlay.setImageDrawable(ResourcesCompat.getDrawable(getResources(), R.drawable.play, getApplicationContext().getTheme()));
+        }
     }
 }
