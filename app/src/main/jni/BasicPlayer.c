@@ -58,6 +58,7 @@ AVDictionary *optionsDict = NULL;
 
 int gPixelFormat = AV_PIX_FMT_BGR32;
 double gFps = 0.0;
+long gCurrentTimeUs = 0l;
 
 // 오디오 관련 
 AVCodecContext *gAudioCodecCtx = NULL;
@@ -67,6 +68,7 @@ AVFrame *gFrameAudio = NULL;
 
 pthread_t gAudioThread = 0;
 int gAudioThreadRunning = 1;
+
 enum AVSampleFormat sfmt;
 
 int64_t getTimeNsec() 
@@ -353,7 +355,7 @@ int decodeFrame()
 			// 이게 전부 0.0에서 변화가 없음
 			double pts = av_frame_get_best_effort_timestamp(gFrame);
 //			double pts_clock = pts * av_q2d(gFormatCtx->streams[gVideoStreamIdx]->time_base);
-			long ptsTimeUs = av_rescale_q(pts, gFormatCtx->streams[gVideoStreamIdx]->time_base, AV_TIME_BASE_Q);
+			gCurrentTimeUs = av_rescale_q(pts, gFormatCtx->streams[gVideoStreamIdx]->time_base, AV_TIME_BASE_Q);
 //			LOGD("pts=%f pts_clock=%f pts_long=%lu", pts, pts_clock, pts_long);
 
 			if (frameFinished) {
@@ -497,4 +499,9 @@ long getDuration()
 	}
 
 	return 0l;
+}
+
+long getPosition()
+{
+	return gCurrentTimeUs;
 }

@@ -15,6 +15,8 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
+import com.duongame.basicplayer.activity.PlayerActivity;
+
 import java.io.File;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -66,7 +68,7 @@ public class MoviePlayView extends View {
         Log.d(TAG, "mInterval=" + mInterval);
     }
 
-    public void openFile(String filename) {
+    public boolean openFile(String filename) {
         // 파일 존재 여부 체크
         final File file = new File(filename);
         Log.d(TAG, String.valueOf(file.exists()));
@@ -75,6 +77,7 @@ public class MoviePlayView extends View {
         if (openResult < 0) {
             Toast.makeText(mContext, "Open Movie Error: " + openResult, Toast.LENGTH_LONG).show();
             ((Activity) mContext).finish();
+            return false;
         } else {
             mMovieWidth = getMovieWidth();
             mMovieHeight = getMovieHeight();
@@ -83,6 +86,7 @@ public class MoviePlayView extends View {
 
             initRenderTimer();
             resume();
+            return true;
         }
     }
 
@@ -130,7 +134,7 @@ public class MoviePlayView extends View {
     private AudioTrack prepareAudioTrack(int audioFormat, int sampleRateInHz,
                                          int numberOfChannels) {
 
-        for (; ; ) {
+        while(true) {
             int channelConfig;
             if (numberOfChannels == 1) {
                 channelConfig = AudioFormat.CHANNEL_OUT_MONO;
@@ -191,6 +195,13 @@ public class MoviePlayView extends View {
                     pause();
 //                    // 플레이 끝났을시 액티비티 종료
 //                    ((PlayerActivity)mContext).finish();
+                }
+                else {
+                    final long currentPositionUs = getCurrentPositionUs();
+                    final PlayerActivity activity = (PlayerActivity)mContext;
+                    if(activity != null) {
+                        activity.updatePosition(currentPositionUs);
+                    }
                 }
             }
 
@@ -275,26 +286,21 @@ public class MoviePlayView extends View {
     }
 
     private native void initAudioTrack();
-
     private native int initBasicPlayer();
 
     private native int openMovie(String filePath);
-
     private native int renderFrame(Bitmap bitmap);
 
     private native int getMovieWidth();
-
     private native int getMovieHeight();
-
     public native void closeMovie();
 
+    private native void pauseMovie();
+    private native void resumeMovie();
+    private native int seekMovie(long positionUs);
+
+    public native long getMovieDurationUs();
     private native double getFps();
 
-    private native void pauseMovie();
-
-    private native void resumeMovie();
-
-    private native long getMovieDuration();
-
-    private native int seekMovie(long positionUs);
+    public native long getCurrentPositionUs();
 }

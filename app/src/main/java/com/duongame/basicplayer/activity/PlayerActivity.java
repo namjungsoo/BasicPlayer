@@ -16,6 +16,8 @@ import android.view.animation.AlphaAnimation;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.SeekBar;
+import android.widget.TextView;
 
 import com.duongame.basicplayer.MoviePlayView;
 import com.duongame.basicplayer.R;
@@ -29,6 +31,9 @@ public class PlayerActivity extends AppCompatActivity {
     private ViewGroup mToolBox;
     private float mAlpha;
     private ImageButton mPlay;
+    private TextView mCurrentTime;
+    private TextView mDurationTime;
+    private SeekBar mSeekBar;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -37,6 +42,10 @@ public class PlayerActivity extends AppCompatActivity {
         setContentView(R.layout.layout_player);
         mPlayerView = (MoviePlayView) findViewById(R.id.moviePlay);
         mToolBox = (ViewGroup) findViewById(R.id.toolBox);
+
+        mSeekBar = (SeekBar) findViewById(R.id.seekBar);
+        mCurrentTime = (TextView) findViewById(R.id.currentTime);
+        mDurationTime = (TextView) findViewById(R.id.durationTime);
 
         mPlay = (ImageButton) findViewById(R.id.play);
         if (mPlay != null) {// 일시정지를 시키자
@@ -62,7 +71,16 @@ public class PlayerActivity extends AppCompatActivity {
                 }
             });
             final String filename = getIntent().getStringExtra("filename");
-            mPlayerView.openFile(filename);
+
+            // 파일 읽기 성공일때
+            if (mPlayerView.openFile(filename)) {
+                final long durationUs = mPlayerView.getMovieDurationUs();
+                long durationSec = durationUs / 1000000L;
+                final String duration = convertUsToString(durationUs);
+
+                mDurationTime.setText(duration);
+                mSeekBar.setMax((int)durationSec);
+            }
             updatePlayButton();
         }
 
@@ -86,7 +104,6 @@ public class PlayerActivity extends AppCompatActivity {
         super.onPause();
         mPlayerView.pause();
         updatePlayButton();
-//        mPlayerView.closeMovie();
     }
 
     @Override
@@ -104,24 +121,9 @@ public class PlayerActivity extends AppCompatActivity {
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
-//        Log.d(TAG, "onConfigurationChanged mAlpha="+mAlpha);
         super.onConfigurationChanged(newConfig);
 
-        // 동작하지 않음
-//        getWindow().getDecorView().findViewById(android.R.id.content).invalidate();
-
-        // 현재 풀스크린일때
-//        if (FullscreenManager.isFullscreen()) {
-//            mToolBox.setAlpha(0.0f);
-//            Log.d(TAG, "onConfigurationChanged 0.0");
-//        } else {
-//            mToolBox.setAlpha(1.0f);
-//            Log.d(TAG, "onConfigurationChanged 1.0");
-//        }
-        Log.d(TAG, "" + mToolBox.getAlpha());
-
         mToolBox.setAlpha(mAlpha);
-
         updateRotation();
     }
 
@@ -147,6 +149,30 @@ public class PlayerActivity extends AppCompatActivity {
         }
     }
 
+    public void updatePosition(long positionUs) {
+        if(!FullscreenManager.isFullscreen()) {
+            // 시간 텍스트 업데이트
+            final String position = convertUsToString(positionUs);
+            mCurrentTime.setText(position);
+
+            long positionSec = positionUs / 1000000L;
+
+            // SeekBar 포지션 업데이트
+            mSeekBar.setProgress((int)positionSec);
+        }
+    }
+
+    private String convertUsToString(long timeUs) {
+        // 초단위로 변경
+        timeUs = timeUs / 1000000L;
+
+        long hour = timeUs/3600;
+        long min = (timeUs - (hour*3600))/60;
+        long sec = timeUs - (hour*3600) - min*60;
+
+        return String.format("%01d:%02d:%02d", hour, min, sec);
+    }
+
     private void setToolBox(boolean newFullscreen) {
         final AlphaAnimation animation;
 
@@ -159,13 +185,11 @@ public class PlayerActivity extends AppCompatActivity {
             mAlpha = 1.0f;
             animation = new AlphaAnimation(0.0f, 1.0f);
         }
-//        Log.d(TAG, "setToolBox newFullscreen="+newFullscreen +" mAlpha="+mAlpha);
         animation.setFillAfter(true);
         animation.setFillEnabled(true);
         animation.setDuration(300);
         animation.setInterpolator(new AccelerateInterpolator());
         mToolBox.startAnimation(animation);
-//        Log.d(TAG, "setToolBox newFullscreen="+newFullscreen + " END");
     }
 
     private void applyNavigationBarHeight(boolean portrait) {
@@ -174,7 +198,6 @@ public class PlayerActivity extends AppCompatActivity {
             return;
 
         int size = NavigationBarManager.getNavigationBarHeight(this);
-
         final LinearLayout layout = (LinearLayout) findViewById(R.id.toolBox);
 
         // 수직일때는 하단
@@ -194,8 +217,7 @@ public class PlayerActivity extends AppCompatActivity {
     private void updatePlayButton() {
         if (mPlayerView.getPlaying()) {
             mPlay.setImageDrawable(ResourcesCompat.getDrawable(getResources(), R.drawable.pause, getApplicationContext().getTheme()));
-        }
-        else {
+        } else {
             mPlay.setImageDrawable(ResourcesCompat.getDrawable(getResources(), R.drawable.play, getApplicationContext().getTheme()));
         }
     }

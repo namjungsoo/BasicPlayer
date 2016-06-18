@@ -35,5 +35,6 @@ int seekMovie(long positionUs);
 
 double getFps();
 long getDuration();
+long getPosition();
 
 #endif

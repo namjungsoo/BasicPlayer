@@ -114,8 +114,12 @@ jdouble Java_com_duongame_basicplayer_MoviePlayView_getFps(JNIEnv *env, jobject 
 	return fps;
 }
 
-jlong Java_com_duongame_basicplayer_MoviePlayView_getMovieDuration(JNIEnv *env, jobject thiz)
+jlong Java_com_duongame_basicplayer_MoviePlayView_getMovieDurationUs(JNIEnv *env, jobject thiz)
 {
 	return getDuration();
 }
 
+jlong Java_com_duongame_basicplayer_MoviePlayView_getCurrentPositionUs(JNIEnv *env, jobject thiz)
+{
+	return getPosition();
+}
