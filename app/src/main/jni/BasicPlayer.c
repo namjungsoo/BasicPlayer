@@ -453,6 +453,8 @@ void closeMovie()
 	LOGD("closeMovie gFormatCtx");
 
 	closeFrame();
+	gVideoStreamIdx = -1;
+	gAudioStreamIdx = -1;
 	LOGD("closeMovie END");
 }
 
