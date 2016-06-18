@@ -293,4 +293,8 @@ public class MoviePlayView extends View {
     private native void pauseMovie();
 
     private native void resumeMovie();
+
+    private native long getMovieDuration();
+
+    private native int seekMovie(long positionUs);
 }

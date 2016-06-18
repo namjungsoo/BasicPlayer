@@ -31,8 +31,9 @@ void closeMovie();
 
 void pauseMovie(JNIEnv *env, jobject thiz);
 void resumeMovie(JNIEnv *env, jobject thiz);
-void seekMovie(long positionUs);
+int seekMovie(long positionUs);
 
 double getFps();
+long getDuration();
 
 #endif

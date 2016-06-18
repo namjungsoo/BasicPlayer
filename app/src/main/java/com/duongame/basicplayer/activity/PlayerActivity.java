@@ -57,7 +57,7 @@ public class PlayerActivity extends AppCompatActivity {
             mPlayerView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    setmToolBox(!FullscreenManager.isFullscreen());
+                    setToolBox(!FullscreenManager.isFullscreen());
                     FullscreenManager.setFullscreen(PlayerActivity.this, !FullscreenManager.isFullscreen());
                 }
             });
@@ -68,7 +68,7 @@ public class PlayerActivity extends AppCompatActivity {
 
         applyNavigationBarHeight(true);
         FullscreenManager.setFullscreen(this, true);
-        setmToolBox(true);
+        setToolBox(true);
 
         // 타이틀바 반투명
         getSupportActionBar().setBackgroundDrawable(new ColorDrawable(Color.parseColor("#66000000")));
@@ -105,6 +105,8 @@ public class PlayerActivity extends AppCompatActivity {
 //        Log.d(TAG, "onConfigurationChanged mAlpha="+mAlpha);
         super.onConfigurationChanged(newConfig);
 
+        getWindow().getDecorView().findViewById(android.R.id.content).invalidate();
+
         // 현재 풀스크린일때
 //        if (FullscreenManager.isFullscreen()) {
 //            mToolBox.setAlpha(0.0f);
@@ -135,11 +137,10 @@ public class PlayerActivity extends AppCompatActivity {
                 Log.d(TAG, "ROTATION_270");
                 applyNavigationBarHeight(false);
                 break;
-
         }
     }
 
-    private void setmToolBox(boolean newFullscreen) {
+    private void setToolBox(boolean newFullscreen) {
         final AlphaAnimation animation;
 
         // 기본값으로 설정후에 애니메이션 한다
@@ -151,13 +152,13 @@ public class PlayerActivity extends AppCompatActivity {
             mAlpha = 1.0f;
             animation = new AlphaAnimation(0.0f, 1.0f);
         }
-//        Log.d(TAG, "setmToolBox newFullscreen="+newFullscreen +" mAlpha="+mAlpha);
+//        Log.d(TAG, "setToolBox newFullscreen="+newFullscreen +" mAlpha="+mAlpha);
         animation.setFillAfter(true);
         animation.setFillEnabled(true);
         animation.setDuration(300);
         animation.setInterpolator(new AccelerateInterpolator());
         mToolBox.startAnimation(animation);
-//        Log.d(TAG, "setmToolBox newFullscreen="+newFullscreen + " END");
+//        Log.d(TAG, "setToolBox newFullscreen="+newFullscreen + " END");
     }
 
     private void applyNavigationBarHeight(boolean portrait) {

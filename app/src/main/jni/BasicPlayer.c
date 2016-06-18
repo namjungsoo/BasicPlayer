@@ -327,6 +327,7 @@ int openMovie(const char filePath[])
 		ret = pthread_create(&gAudioThread, NULL, decodeAudioThread, NULL);
 	}
 
+	getDuration();
 	return ret;
 }
 
@@ -470,7 +471,28 @@ void resumeMovie(JNIEnv *env, jobject thiz)
 	resumeAudioTrack(env, thiz); 
 }
 
-void seekMovie(long positionUs) 
+int seekMovie(long positionUs) 
 {
 	// 프레임을 해당 시간으로 이동시킴 
+}
+
+long getDuration() 
+{
+	// 이건 믿음녀 안됨 
+	// LOGD("gFormatCtx->duration=%lu", gFormatCtx->duration);
+	LOGD("gFormatCtx->nb_streams=%d", gFormatCtx->nb_streams);
+
+	int i;
+	for(i=0; i<gFormatCtx->nb_streams; i++) {
+		AVStream* stream = gFormatCtx->streams[i];
+		LOGD("stream->duration=%lu", stream->duration);
+
+		long duration = av_rescale_q(stream->duration, stream->time_base, AV_TIME_BASE_Q);
+		LOGD("duration=%lu", duration);
+
+		if(duration != 0)
+			return duration;
+	}
+
+	return 0l;
 }
