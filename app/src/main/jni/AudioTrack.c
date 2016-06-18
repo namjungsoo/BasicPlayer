@@ -1,6 +1,9 @@
 #include "AudioTrack.h"
 #include "Log.h" 
+
 #include <stdio.h>
+
+#include <libavformat/avformat.h>
 
 jfieldID java_get_field(JNIEnv *env, char * class_name, JavaField field) {
 	jclass clazz = (*env)->FindClass(env, class_name);
@@ -55,15 +58,41 @@ void initAudioTrack(JNIEnv *env, jobject thiz)
     (*env)->DeleteLocalRef(env, player_class);
 }
 
-void prepareAudioTrack(int sampleRate, int channels)
+void prepareAudioTrack(int audioFormat, int sampleRate, int channels)
 {
     JNIEnv *env = player->env;
     jobject thiz = player->thiz;
 
-    LOGD("prepareAudioTrack sampleRate=%d channels=%d", sampleRate, channels);
+    LOGD("prepareAudioTrack audioFormat=%d sampleRate=%d channels=%d", audioFormat, sampleRate, channels);
+
+    /** Audio data format: PCM 16 bit per sample. Guaranteed to be supported by devices. */
+    const int ENCODING_PCM_16BIT = 2;
+    /** Audio data format: PCM 8 bit per sample. Not guaranteed to be supported by devices. */
+    const int ENCODING_PCM_8BIT = 3;
+    /** Audio data format: single-precision floating-point per sample */
+    const int ENCODING_PCM_FLOAT = 4;
+
+    int audioTrackFormat = ENCODING_PCM_16BIT;
+    //TODO: 나중에 해결하자 
+//     switch(audioFormat) {
+//         case AV_SAMPLE_FMT_U8:
+//         case AV_SAMPLE_FMT_U8P:
+//             audioTrackFormat = ENCODING_PCM_8BIT;
+//             break;
+//         case AV_SAMPLE_FMT_S16:
+//         case AV_SAMPLE_FMT_S16P:
+//             audioTrackFormat = ENCODING_PCM_16BIT;
+//             break;
+//         case AV_SAMPLE_FMT_FLT:
+//         case AV_SAMPLE_FMT_FLTP:
+// //            audioTrackFormat = ENCODING_PCM_FLOAT;
+//             audioTrackFormat = ENCODING_PCM_16BIT;
+//             break;
+//     }
+    LOGD("prepareAudioTrack audioTrackFormat=%d", audioTrackFormat);
 
     // object AudioTrack
-    jobject audio_track = (*env)->CallObjectMethod(env, thiz, player->player_prepare_audio_track_method, sampleRate, channels);
+    jobject audio_track = (*env)->CallObjectMethod(env, thiz, player->player_prepare_audio_track_method, audioTrackFormat, sampleRate, channels);
     LOGD("prepareAudioTrack audio_track=%d", audio_track);
 
     player->audio_track = (*env)->NewGlobalRef(env, audio_track);

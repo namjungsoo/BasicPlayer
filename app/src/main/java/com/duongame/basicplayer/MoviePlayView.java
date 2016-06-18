@@ -128,7 +128,7 @@ public class MoviePlayView extends View {
     }
 
     //ndk에서 불러준다.
-    private AudioTrack prepareAudioTrack(int sampleRateInHz,
+    private AudioTrack prepareAudioTrack(int audioFormat, int sampleRateInHz,
                                          int numberOfChannels) {
 
         for (; ; ) {
@@ -154,11 +154,17 @@ public class MoviePlayView extends View {
                 channelConfig = AudioFormat.CHANNEL_OUT_STEREO;
             }
             try {
+//                int minBufferSize = AudioTrack.getMinBufferSize(sampleRateInHz,
+//                        channelConfig, AudioFormat.ENCODING_PCM_16BIT);
+//                AudioTrack audioTrack = new AudioTrack(
+//                        AudioManager.STREAM_MUSIC, sampleRateInHz,
+//                        channelConfig, AudioFormat.ENCODING_PCM_16BIT,
+//                        minBufferSize, AudioTrack.MODE_STREAM);
                 int minBufferSize = AudioTrack.getMinBufferSize(sampleRateInHz,
-                        channelConfig, AudioFormat.ENCODING_PCM_16BIT);
+                        channelConfig, audioFormat);
                 AudioTrack audioTrack = new AudioTrack(
                         AudioManager.STREAM_MUSIC, sampleRateInHz,
-                        channelConfig, AudioFormat.ENCODING_PCM_16BIT,
+                        channelConfig, audioFormat,
                         minBufferSize, AudioTrack.MODE_STREAM);
                 return audioTrack;
             } catch (IllegalArgumentException e) {
@@ -175,14 +181,14 @@ public class MoviePlayView extends View {
 
     @Override
     protected void onDraw(Canvas canvas) {
-        Log.d(TAG, "onDraw");
+//        Log.d(TAG, "onDraw");
 
         if (mBitmap != null) {
             if (mPlaying) {
-                Log.d(TAG, "onDraw renderFrame BEGIN");
+//                Log.d(TAG, "onDraw renderFrame BEGIN");
 
                 int ret = renderFrame(mBitmap);
-                Log.d(TAG, "onDraw ret=" + ret);
+//                Log.d(TAG, "onDraw ret=" + ret);
 
                 // 렌더링 종료
                 if (ret > 0) {
@@ -197,7 +203,7 @@ public class MoviePlayView extends View {
             // 종횡비를 맞춰서 채워야 한다
             canvas.drawBitmap(mBitmap, new Rect(0, 0, mBitmap.getWidth(), mBitmap.getHeight()), new Rect(0, 0, getWidth(), getHeight()), null);
         }
-        Log.d(TAG, "onDraw END");
+//        Log.d(TAG, "onDraw END");
     }
 
     static {

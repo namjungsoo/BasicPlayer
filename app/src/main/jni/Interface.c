@@ -12,6 +12,7 @@
 #include "Log.h"
 #include "BasicPlayer.h"
 #include "AudioTrack.h"
+#include "AudioFormatMap.h"
 
 jint JNI_OnLoad(JavaVM* vm, void* reserved) {
     LOGD("Hello");
@@ -28,6 +29,7 @@ jint Java_com_duongame_basicplayer_MoviePlayView_initBasicPlayer(JNIEnv *env, jo
 	// ARM 패밀리 이고, NEON 피쳐가 있을경우 av_register_all을 해준다. 
 	//Initializes libavformat and registers all the muxers, demuxers and protocols. 
 	av_register_all();
+	initAudioFormatMap();
 	return 0;
 }
 
@@ -49,24 +51,24 @@ jint Java_com_duongame_basicplayer_MoviePlayView_renderFrame(JNIEnv *env, jobjec
     void *pixels;
 	int result;
 
-	LOGD("renderFrame BEGIN");
+	// LOGD("renderFrame BEGIN");
 
 	// 영상이 종료된 상태임 
 	if(decodeFrame() < 0) {
-		LOGD("closeMovie");
+		// LOGD("closeMovie");
 		closeMovie();
 
-		LOGD("renderFrame END");
+		// LOGD("renderFrame END");
 		return 1;// 종료 상태 
 	}
 	else {
-		LOGD("renderFrame lockPixels");
+		// LOGD("renderFrame lockPixels");
 		if ((result = AndroidBitmap_lockPixels(env, bitmap, &pixels)) < 0)
 			return result;
 
 		copyPixels((uint8_t*)pixels);
 
-		LOGD("renderFrame unlockPixels");
+		// LOGD("renderFrame unlockPixels");
 		AndroidBitmap_unlockPixels(env, bitmap);
 	}
 

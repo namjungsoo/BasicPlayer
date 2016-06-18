@@ -20,7 +20,7 @@ jmethodID java_get_method(JNIEnv *env, jclass class, JavaMethod method);
 static char *player_class_path_name = "com/duongame/basicplayer/MoviePlayView";
 //static JavaField player_m_native_player = {"mNativePlayer", "I"};
 //static JavaMethod player_on_update_time = {"onUpdateTime","(JJZ)V"};
-static JavaMethod player_prepare_audio_track = {"prepareAudioTrack", "(II)Landroid/media/AudioTrack;"};
+static JavaMethod player_prepare_audio_track = {"prepareAudioTrack", "(III)Landroid/media/AudioTrack;"};
 //static JavaMethod player_prepare_frame = {"prepareFrame", "(II)Landroid/graphics/Bitmap;"};
 //static JavaMethod player_set_stream_info = {"setStreamsInfo", "([Lcom/appunite/ffmpeg/FFmpegStreamInfo;)V"};
 
@@ -35,7 +35,7 @@ static JavaMethod audio_track_get_channel_count = {"getChannelCount", "()I"};
 static JavaMethod audio_track_get_sample_rate = {"getSampleRate", "()I"};
 
 void initAudioTrack(JNIEnv *env, jobject thiz);
-void prepareAudioTrack(int sampleRate, int channels);
+void prepareAudioTrack(int audioFormat, int sampleRate, int channels);
 void writeAudioTrack(char* data, int data_size);
 
 void pauseAudioTrack(JNIEnv *env, jobject thiz);
