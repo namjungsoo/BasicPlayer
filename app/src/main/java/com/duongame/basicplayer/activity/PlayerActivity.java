@@ -49,31 +49,46 @@ public class PlayerActivity extends AppCompatActivity {
         mPlay = (ImageButton) findViewById(R.id.play);
 
         mSeekBar = (SeekBar) findViewById(R.id.seekBar);
-//        if (mSeekBar != null) {
-//            mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-//                private boolean startWithPaused = false;
-//                @Override
-//                public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-//                    // 유저가 움직였을 경우에만 탐색
-//                    if (fromUser) {
-//                        Log.d(TAG, "seekMovie "+progress * SEC_TO_US);
-//                        mPlayerView.seekMovie(progress * SEC_TO_US);
-//                    }
-//                }
-//
-//                @Override
-//                public void onStartTrackingTouch(SeekBar seekBar) {
-//                    mPlayerView.pause();
-//                    updatePlayButton();
-//                }
-//
-//                @Override
-//                public void onStopTrackingTouch(SeekBar seekBar) {
-//                    mPlayerView.resume();
-//                    updatePlayButton();
-//                }
-//            });
-//        }
+        if (mSeekBar != null) {
+            mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                private boolean startAtPaused = false;
+                @Override
+                public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                    // 유저가 움직였을 경우에만 탐색
+                    if (fromUser) {
+                    }
+                }
+
+                @Override
+                public void onStartTrackingTouch(SeekBar seekBar) {
+                    if(mPlayerView != null) {
+                        if(!mPlayerView.getPlaying())
+                            startAtPaused = true;
+                        else {
+                            startAtPaused = false;
+                            mPlayerView.pause();
+                            updatePlayButton();
+                        }
+                    }
+                }
+
+                @Override
+                public void onStopTrackingTouch(SeekBar seekBar) {
+                    if(mPlayerView != null) {
+                        int progress = seekBar.getProgress();
+                        long position = progress * SEC_TO_US;
+                        Log.d(TAG, "seekMovie "+ position);
+                        mPlayerView.seekMovie(position);
+
+                        // 플레이 상태 복구
+                        if(!startAtPaused) {
+                            mPlayerView.resume();
+                            updatePlayButton();
+                        }
+                    }
+                }
+            });
+        }
 
         if (mPlay != null) {// 일시정지를 시키자
             mPlay.setOnClickListener(new View.OnClickListener() {
@@ -104,7 +119,7 @@ public class PlayerActivity extends AppCompatActivity {
             // 파일 읽기 성공일때
             if (mPlayerView.openFile(filename)) {
                 final long durationUs = mPlayerView.getMovieDurationUs();
-                long durationSec = durationUs / 1000000L;
+                long durationSec = durationUs / SEC_TO_US;
                 final String duration = convertUsToString(durationUs);
 
                 if (mDurationTime != null)
