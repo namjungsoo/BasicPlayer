@@ -116,12 +116,36 @@ int openVideoStream()
 		return -9;
 	
 	// 픽처 사이즈를 계산한다. 
-	gPictureSize = avpicture_get_size(gPixelFormat, gVideoCodecCtx->width, gVideoCodecCtx->height);
+//	gPictureSize = avpicture_get_size(gPixelFormat, gVideoCodecCtx->width, gVideoCodecCtx->height);
+	gPictureSize = av_image_get_buffer_size(gPixelFormat, gVideoCodecCtx->width, gVideoCodecCtx->height, 1);
+
 	// 비디오 버퍼를 할당한다. 
 	gVideoBuffer = (uint8_t*)(malloc(sizeof(uint8_t) * gPictureSize));
 
 	// 비디오 버퍼 메모리를 설정함
-	avpicture_fill((AVPicture*)gFrameRGB, gVideoBuffer, gPixelFormat, gVideoCodecCtx->width, gVideoCodecCtx->height);
+//	avpicture_fill((AVPicture*)gFrameRGB, gVideoBuffer, gPixelFormat, gVideoCodecCtx->width, gVideoCodecCtx->height);
+	av_image_fill_arrays(gFrameRGB->data, gFrameRGB->linesize, gPixelFormat, gVideoCodecCtx->width, gVideoCodecCtx->height, 1);
+	
+	/*
+	attribute_deprecated int avpicture_fill	(	AVPicture * 	picture,
+	const uint8_t * 	ptr,
+	enum AVPixelFormat 	pix_fmt,
+	int 	width,
+	int 	height 
+	)	
+	*/
+
+	/*
+	int av_image_fill_arrays	(	uint8_t * 	dst_data[4],
+	int 	dst_linesize[4],
+	const uint8_t * 	src,
+	enum AVPixelFormat 	pix_fmt,
+	int 	width,
+	int 	height,
+	int 	align 
+	)	
+	*/
+
 
 	gFps = av_q2d(gFormatCtx->streams[gVideoStreamIdx]->r_frame_rate);
 	LOGD("fps=%f", gFps);
@@ -155,7 +179,7 @@ int openAudioStream()
 	LOGD("audioFormat=%s", audioFormat);
 }
 
-void decodeAudioThread(void *param) 
+void* decodeAudioThread(void *param) 
 {
 	LOGD("decodeAudioThread begin");
 	int frameFinished = 0;
@@ -265,10 +289,10 @@ void decodeAudioThread(void *param)
 					// writeAudioTrack((char*)gFrameAudio->extended_data[0], gFrameAudio->linesize[0]);
 				}
 
-				av_free_packet(&packet);
+				av_packet_unref(&packet);
  			}
 			else {
-				av_free_packet(&packet);
+				av_packet_unref(&packet);
 			}
 
 		}
@@ -277,6 +301,7 @@ void decodeAudioThread(void *param)
 
 	av_free(buffer);
 	av_free(samples);
+	return NULL;
 }
 
 int openMovie(const char filePath[])
@@ -363,13 +388,13 @@ int decodeFrame()
 					gVideoCodecCtx->width, gVideoCodecCtx->height, gVideoCodecCtx->pix_fmt,
 					gVideoCodecCtx->width, gVideoCodecCtx->height, gPixelFormat, SWS_BICUBIC, NULL, NULL, NULL);
 				
-				sws_scale(gImgConvertCtx, gFrame->data, gFrame->linesize, 0, gVideoCodecCtx->height, gFrameRGB->data, gFrameRGB->linesize);
+				sws_scale(gImgConvertCtx, (const uint8_t * const*)gFrame->data, gFrame->linesize, 0, gVideoCodecCtx->height, gFrameRGB->data, gFrameRGB->linesize);
 				
-				av_free_packet(&packet);
+				av_packet_unref(&packet);
 				return 0;
 			}
 			else {
-				av_free_packet(&packet);
+				av_packet_unref(&packet);
 			}
 		}
 		else if(packet.stream_index == gAudioStreamIdx) {
@@ -378,7 +403,7 @@ int decodeFrame()
 		}
 		else {
 			// 처리하지 못했을때 자체적으로 packet을 free 함 
-			av_free_packet(&packet);
+			av_packet_unref(&packet);
 		}
 		usleep(100);
 	}
@@ -458,8 +483,12 @@ void closeMovie()
 	LOGD("closeMovie gFormatCtx");
 
 	closeFrame();
+
 	gVideoStreamIdx = -1;
 	gAudioStreamIdx = -1;
+
+	AudioQ_clear();
+
 	LOGD("closeMovie END");
 }
 
@@ -489,10 +518,10 @@ long getDuration()
 	int i;
 	for(i=0; i<gFormatCtx->nb_streams; i++) {
 		AVStream* stream = gFormatCtx->streams[i];
-		LOGD("stream->duration=%lu", stream->duration);
+		LOGD("stream->duration=%lld", stream->duration);
 
 		long duration = av_rescale_q(stream->duration, stream->time_base, AV_TIME_BASE_Q);
-		LOGD("duration=%lu", duration);
+		LOGD("duration=%ld", duration);
 
 		if(duration != 0)
 			return duration;

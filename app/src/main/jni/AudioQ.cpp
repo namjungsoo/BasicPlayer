@@ -16,4 +16,10 @@ extern "C" {
     size_t AudioQ_size() {
         return gAudioQ.size();
     }
+    void AudioQ_clear() {
+        while(AudioQ_size()) {
+            AVPacket packet = AudioQ_pop();
+            av_packet_unref(&packet);
+        }
+    }
 }

@@ -41,4 +41,4 @@ void writeAudioTrack(char* data, int data_size);
 void pauseAudioTrack(JNIEnv *env, jobject thiz);
 void resumeAudioTrack(JNIEnv *env, jobject thiz);
 
-#endif __AUDIOTRACK_H__
+#endif//__AUDIOTRACK_H__

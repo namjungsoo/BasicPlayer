@@ -50,10 +50,10 @@ void initAudioTrack(JNIEnv *env, jobject thiz)
     player->thiz = (*env)->NewGlobalRef(env, thiz);
 
 	jclass player_class = (*env)->FindClass(env, player_class_path_name);
-	LOGD("initAudioTrack player_class=%d", player_class);
+//	LOGD("initAudioTrack player_class=%d", player_class);
 
 	player->player_prepare_audio_track_method = java_get_method(env, player_class, player_prepare_audio_track);
-	LOGD("initAudioTrack player_prepare_audio_track_method=%d", player->player_prepare_audio_track_method);
+//	LOGD("initAudioTrack player_prepare_audio_track_method=%d", player->player_prepare_audio_track_method);
 
     (*env)->DeleteLocalRef(env, player_class);
 }
@@ -93,7 +93,7 @@ void prepareAudioTrack(int audioFormat, int sampleRate, int channels)
 
     // object AudioTrack
     jobject audio_track = (*env)->CallObjectMethod(env, thiz, player->player_prepare_audio_track_method, audioTrackFormat, sampleRate, channels);
-    LOGD("prepareAudioTrack audio_track=%d", audio_track);
+//    LOGD("prepareAudioTrack audio_track=%d", audio_track);
 
     player->audio_track = (*env)->NewGlobalRef(env, audio_track);
     (*env)->DeleteLocalRef(env, audio_track);
