@@ -9,6 +9,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.LinearLayout;
@@ -42,7 +43,7 @@ public class MainActivity extends AppCompatActivity {
         initView();
 
         // 런타임 퍼미션 체크
-        if(PermissionManager.checkStoragePermissions(this, true, false)) {
+        if (PermissionManager.checkStoragePermissions(this, true, false)) {
             initAdapter();
         }
 
@@ -71,23 +72,53 @@ public class MainActivity extends AppCompatActivity {
         AdInterstitialManager.init(this);
 
         // 루트 레이아웃을 얻어서
-        mSwipeLayout = (SwipeRefreshLayout)getLayoutInflater().inflate(R.layout.activity_main, null);
-        final RelativeLayout relativeLayout = (RelativeLayout)mSwipeLayout.findViewById(R.id.relative);
+        mSwipeLayout = (SwipeRefreshLayout) getLayoutInflater().inflate(R.layout.activity_main, null);
+
+        final RelativeLayout relativeLayout = (RelativeLayout) mSwipeLayout.findViewById(R.id.relative);
+        mSwipeLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                mSwipeLayout.setRefreshing(false);
+            }
+        });
 
         // AdView 생성
         final AdView adView = AdBannerManager.getAdBannerView();
+
         RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         params.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+
         adView.setLayoutParams(params);
         adView.setId(1);// 아이디를 꼭 생성해 주어야 한다
+
         relativeLayout.addView(adView, 0);
 
         params = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         params.addRule(RelativeLayout.ABOVE, adView.getId());
 
         // 파일리스트뷰를 불러오자
-        mListMovie = (ListView)relativeLayout.findViewById(R.id.listMovie);
+        mListMovie = (ListView) relativeLayout.findViewById(R.id.listMovie);
         mListMovie.setLayoutParams(params);
+        mListMovie.setOnScrollListener(new AbsListView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(AbsListView view, int scrollState) {
+
+            }
+
+            @Override
+            public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+                final View child = mListMovie.getChildAt(0);
+                if (child != null) {
+                    int scrollY = -child.getTop();
+                    if (scrollY == 0) {
+                        mSwipeLayout.setEnabled(true);
+                        return;
+                    }
+                }
+
+                mSwipeLayout.setEnabled(false);
+            }
+        });
 
         setContentView(mSwipeLayout);
     }
@@ -109,11 +140,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void findFiles(File path, String[] ext, ArrayList<File> result) {
-        File[] files = path.listFiles();
+        final File[] files = path.listFiles();
+        if (files == null)
+            return;
 
         for (int i = 0; i < files.length; i++) {
-            File each = files[i];
-            String name = each.getName();
+            final File each = files[i];
+            final String name = each.getName();
             if (name.equals(".") || name.equals("..")) {
                 continue;
             }
@@ -139,13 +172,13 @@ public class MainActivity extends AppCompatActivity {
             public void run() {
 
                 // 확장자 별로 파일을 찾자
-                String[] ext = {".avi", ".mp4", ".mov", ".mkv", ".wmv", ".asf", ".flv"};
+                final String[] ext = {".avi", ".mp4", ".mov", ".mkv", ".wmv", ".asf", ".flv"};
 
                 // 찾는 위치는 external root에서부터 찾는다
-                String root = Environment.getExternalStorageDirectory().getAbsolutePath();
+                final String root = Environment.getExternalStorageDirectory().getAbsolutePath();
 
                 // 썸네일도 등록해야 되는데 일단 파일 이름만
-                ArrayList<File> files = new ArrayList<File>();
+                final ArrayList<File> files = new ArrayList<File>();
 
                 findFiles(new File(root), ext, files);
 
@@ -163,8 +196,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public class MovieAdapter extends BaseAdapter {
-
-        ArrayList<File> movieList;
+        private ArrayList<File> movieList;
 
         // 동적으로 파일을 찾자
         public MovieAdapter() {
@@ -197,10 +229,10 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-            LinearLayout layout = (LinearLayout) getLayoutInflater().inflate(R.layout.list_item, parent, false);
-            TextView tv = (TextView) layout.findViewById(R.id.textMovie);
+            //TODO: ViewHolder
+            final LinearLayout layout = (LinearLayout) getLayoutInflater().inflate(R.layout.list_item, parent, false);
+            final TextView tv = (TextView) layout.findViewById(R.id.textMovie);
 
-//            TextView tv = new TextView(MainActivity.this);
             tv.setText(movieList.get(position).getName());
             return layout;
         }
