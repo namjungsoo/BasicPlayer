@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
@@ -32,6 +33,7 @@ public class MainActivity extends AppCompatActivity {
     private ListView mListMovie;
     private MovieAdapter mMovieAdapter;
     private SwipeRefreshLayout mSwipeLayout;
+    private String mExtRoot;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -147,7 +149,15 @@ public class MainActivity extends AppCompatActivity {
         for (int i = 0; i < files.length; i++) {
             final File each = files[i];
             final String name = each.getName();
+
+            // 기본 폴더일 경우 패스
             if (name.equals(".") || name.equals("..")) {
+                continue;
+            }
+
+            // 시스템 폴더일 경우 패스
+            if(each.getAbsolutePath().startsWith(mExtRoot+"/Android/data/")) {
+                Log.d(TAG, "System Folder "+each.getAbsolutePath());
                 continue;
             }
 
@@ -176,6 +186,7 @@ public class MainActivity extends AppCompatActivity {
 
                 // 찾는 위치는 external root에서부터 찾는다
                 final String root = Environment.getExternalStorageDirectory().getAbsolutePath();
+                mExtRoot = root;
 
                 // 썸네일도 등록해야 되는데 일단 파일 이름만
                 final ArrayList<File> files = new ArrayList<File>();
@@ -227,14 +238,33 @@ public class MainActivity extends AppCompatActivity {
             return 0;
         }
 
+        class ViewHolder {
+            public ImageView iv;
+            public TextView tvName;
+            public TextView tvPath;
+        }
+
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
             //TODO: ViewHolder
-            final LinearLayout layout = (LinearLayout) getLayoutInflater().inflate(R.layout.list_item, parent, false);
-            final TextView tv = (TextView) layout.findViewById(R.id.textMovie);
+            ViewHolder viewHolder;
 
-            tv.setText(movieList.get(position).getName());
-            return layout;
+            if(convertView == null) {
+                convertView = getLayoutInflater().inflate(R.layout.list_item, parent, false);
+
+                viewHolder = new ViewHolder();
+                viewHolder.tvName = (TextView) convertView.findViewById(R.id.textName);
+                viewHolder.tvPath = (TextView) convertView.findViewById(R.id.textPath);
+
+                convertView.setTag(viewHolder);
+            }
+            else {
+                viewHolder = (ViewHolder)convertView.getTag();
+            }
+            viewHolder.tvName.setText(movieList.get(position).getName());
+            viewHolder.tvPath.setText(movieList.get(position).getPath());
+
+            return convertView;
         }
     }
 }

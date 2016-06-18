@@ -54,7 +54,7 @@ jint Java_com_duongame_basicplayer_Player_openMovie(JNIEnv *env, jobject thiz, j
 
 jint Java_com_duongame_basicplayer_Player_renderFrame(JNIEnv *env, jobject thiz, jobject bitmap)
 {
-	LOGD("BEGIN renderFrame");
+//	LOGD("BEGIN renderFrame");
     
     void *pixels;
 	int result;
@@ -80,7 +80,7 @@ jint Java_com_duongame_basicplayer_Player_renderFrame(JNIEnv *env, jobject thiz,
 		AndroidBitmap_unlockPixels(env, bitmap);
 	}
 
-	LOGD("END renderFrame");
+//	LOGD("END renderFrame");
 	return 0;
 }
 
@@ -140,8 +140,8 @@ jlong Java_com_duongame_basicplayer_Player_getMovieDurationUs(JNIEnv *env, jobje
 
 jlong Java_com_duongame_basicplayer_Player_getCurrentPositionUs(JNIEnv *env, jobject thiz)
 {
-	LOGD("BEGIN getCurrentPositionUs");
+//	LOGD("BEGIN getCurrentPositionUs");
 	jlong ret = getPosition();
-	LOGD("END getCurrentPositionUs");
+//	LOGD("END getCurrentPositionUs");
 	return ret;
 }
