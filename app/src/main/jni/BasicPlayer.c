@@ -511,6 +511,9 @@ int seekMovie(int64_t positionUs)
         LOGD("FAILED av_seek_frame");
         return -1;
 	}
+	
+	// 오디오 큐를 비운다. 
+	AudioQ_clear();
 	return 0;
 }
 

@@ -43,6 +43,9 @@ public class PlayerActivity extends AppCompatActivity {
 
         setContentView(R.layout.layout_player);
 
+//        Toolbar toolbar = (Toolbar)findViewById(R.id.toolBar);
+//        setSupportActionBar(toolbar);
+
         mPlayerView = (PlayerView) findViewById(R.id.moviePlay);
         mToolBox = (ViewGroup) findViewById(R.id.toolBox);
         mCurrentTime = (TextView) findViewById(R.id.currentTime);

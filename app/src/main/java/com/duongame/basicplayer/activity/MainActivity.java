@@ -2,10 +2,12 @@ package com.duongame.basicplayer.activity;
 
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,7 +15,6 @@ import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -50,6 +51,36 @@ public class MainActivity extends AppCompatActivity {
         }
 
         ShortcutManager.checkShortcut(this);
+
+        // 그림자를 없앤다.
+        getSupportActionBar().setElevation(0);
+    }
+
+    private void initToolbar() {
+        // 툴바 세팅
+        Toolbar toolbar = (Toolbar)findViewById(R.id.toolBar);
+        setSupportActionBar(toolbar);
+
+        // 폰트 세팅
+        Typeface tf = Typeface.defaultFromStyle(Typeface.NORMAL);
+        TextView toolbarTitle = null;
+        for (int i = 0; i < toolbar.getChildCount(); ++i) {
+            View child = toolbar.getChildAt(i);
+
+            // assuming that the title is the first instance of TextView
+            // you can also check if the title string matches
+            if (child instanceof TextView) {
+                toolbarTitle = (TextView)child;
+                break;
+            }
+        }
+        toolbarTitle.setTypeface(tf);
+    }
+
+    private TextView getActionBarTitle() {
+        View v = getWindow().getDecorView();
+        int resId = getResources().getIdentifier("action_bar_title", "id", "android");
+        return (TextView)v.findViewById(resId);
     }
 
     private void initAdapter() {
@@ -74,7 +105,9 @@ public class MainActivity extends AppCompatActivity {
         AdInterstitialManager.init(this);
 
         // 루트 레이아웃을 얻어서
-        mSwipeLayout = (SwipeRefreshLayout) getLayoutInflater().inflate(R.layout.activity_main, null);
+        View root = getLayoutInflater().inflate(R.layout.activity_main, null);
+        mSwipeLayout = (SwipeRefreshLayout)root.findViewById(R.id.swipe);
+//        mSwipeLayout = (SwipeRefreshLayout) getLayoutInflater().inflate(R.layout.activity_main, null);
 
         final RelativeLayout relativeLayout = (RelativeLayout) mSwipeLayout.findViewById(R.id.relative);
         mSwipeLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
@@ -122,7 +155,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        setContentView(mSwipeLayout);
+        setContentView(root);
     }
 
     @Override
