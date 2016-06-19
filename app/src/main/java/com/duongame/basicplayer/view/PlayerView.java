@@ -26,7 +26,7 @@ public class PlayerView extends View {
     private final static String TAG = "PlayerView";
 
     private Bitmap mBitmap;
-//    private int mMovieWidth;
+    //    private int mMovieWidth;
 //    private int mMovieHeight;
     private Timer mTimer;
     private Context mContext;
@@ -34,6 +34,7 @@ public class PlayerView extends View {
     private boolean mPlaying;
     private boolean mSeeking;
     private int mRotation = Surface.ROTATION_0;
+    private boolean mPortrait = true;
 
     public PlayerView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -46,7 +47,6 @@ public class PlayerView extends View {
     public PlayerView(Context context) {
         this(context, null);
     }
-
 
     private void initRenderTimer() {
         double fps = Player.getFps();
@@ -95,6 +95,10 @@ public class PlayerView extends View {
 
     public int getBitmapRotation() {
         return mRotation;
+    }
+
+    public void setPortrait(boolean portrait) {
+        mPortrait = portrait;
     }
 
     public void pause() {
@@ -158,9 +162,6 @@ public class PlayerView extends View {
                     if (activity != null) {
                         activity.updatePlayButton();
                     }
-
-//                    // 플레이 끝났을시 액티비티 종료
-//                    ((PlayerActivity)mContext).finish();
                 } else {
                     final long currentPositionUs = Player.getCurrentPositionUs();
                     final PlayerActivity activity = (PlayerActivity) mContext;
@@ -186,8 +187,6 @@ public class PlayerView extends View {
                     case Surface.ROTATION_90:
                         degree90 = true;
                         rotation = 90.0f;
-//                        width = getHeight();
-//                        height = getWidth();
                         break;
                     case Surface.ROTATION_180:
                         rotation = 180.0f;
@@ -195,76 +194,57 @@ public class PlayerView extends View {
                     case Surface.ROTATION_270:
                         degree90 = true;
                         rotation = 270.0f;
-//                        width = getHeight();
-//                        height = getWidth();
                         break;
                 }
 
-//                canvas.rotate(rotation, bmWidth/2, bmHeight/2);
 
                 // 전체 화면의 기준으로 회전한다
                 // 이미지가 화면에 꽉찼을 경우에
                 canvas.rotate(rotation, width / 2, height / 2);
-//                canvas.rotate(rotation, height/2, width/2);
             }
 
             final float bmRatioInverse = (float) bmWidth / bmHeight;
             final float bmRatio = (float) bmHeight / bmWidth;
             final float ratioInverse = (float) width / height;
 
-//            if (degree90) {
-//                width = getHeight();
-//                height = getWidth();
-//            }
-
-//            if ((bmRatioInverse > ratioInverse) && !degree90) {
             final int adjustedHeight = (int) (width * bmRatio);
             final int startHeight = (height - adjustedHeight) >> 1;
 
             final int adjustedWidth = (int) (height * bmRatioInverse);
             final int startWidth = (width - adjustedWidth) >> 1;
 
-            Log.d(TAG, "adjustedHeight="+adjustedHeight + " startHeight="+startHeight + " adjustedWidth="+adjustedWidth + " startWidth="+startWidth);
+//            Log.d(TAG, "adjustedHeight=" + adjustedHeight + " startHeight=" + startHeight + " adjustedWidth=" + adjustedWidth + " startWidth=" + startWidth);
             Rect target = new Rect();
 
-            if(degree90) {
+            if (degree90) {
                 // 화면은 변함이 없다
-                // 홤면에 회전할 사이즈대로 그리자
-                if ((bmRatioInverse > ratioInverse)) {// 가로 이미지
-                    Log.d(TAG, "target degree90 1");
-
-                    int newHeight = (int)(bmRatio * height);
+                // 화면에 회전할 사이즈대로 그리자
+                if (bmRatioInverse < ratioInverse) {// 가로 이미지
+                    int newHeight = (int) (bmRatio * height);
                     int newWidth = height;
-
                     int newStartY = (height - newHeight) >> 1;
                     int newStartX = (width - newWidth) >> 1;
 
                     target.set(newStartX, newStartY, newStartX + newWidth, newStartY + newHeight);
                 } else {// 세로 이미지
-                    Log.d(TAG, "target degree90 2");
-
                     // width가 미래의 height가 될 것이므로
-                    int newWidth = (int)(bmRatioInverse * width);
+                    int newWidth = (int) (bmRatioInverse * width);
                     int newHeight = width;
                     int newStartY = (height - newHeight) >> 1;
                     int newStartX = (width - newWidth) >> 1;
 
                     target.set(newStartX, newStartY, newStartX + newWidth, newStartY + newHeight);
                 }
-            }
-            else {
+            } else {
                 // 화면은 변함이 없다
-                if ((bmRatioInverse > ratioInverse)) {// 가로 이미지
-                    Log.d(TAG, "target 1");
+                if (bmRatioInverse > ratioInverse) {// 가로 이미지
                     target.set(0, startHeight, width, startHeight + adjustedHeight);
 
                 } else {// 세로 이미지
-                    Log.d(TAG, "target 2");
                     target.set(startWidth, 0, startWidth + adjustedWidth, height);
                 }
             }
 
-            Log.d(TAG, "target "+target);
             canvas.drawBitmap(mBitmap, new Rect(0, 0, bmWidth, bmHeight), target, null);
 
             if (mRotation != Surface.ROTATION_0) {

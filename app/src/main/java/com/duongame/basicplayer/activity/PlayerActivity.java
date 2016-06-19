@@ -309,6 +309,10 @@ public class PlayerActivity extends AppCompatActivity {
     }
 
     private void applyNavigationBarHeight(boolean portrait) {
+        if(mPlayerView != null) {
+            mPlayerView.setPortrait(portrait);
+        }
+
         // 소프트키가 없을 경우에 패스
         if (!NavigationBarManager.hasSoftKeyMenu(this))
             return;
