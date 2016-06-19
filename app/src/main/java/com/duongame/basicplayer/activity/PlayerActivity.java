@@ -56,17 +56,26 @@ public class PlayerActivity extends AppCompatActivity {
         if (mSeekBar != null) {
             mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
                 private boolean startAtPaused = false;
+
                 @Override
                 public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                     // 유저가 움직였을 경우에만 탐색
                     if (fromUser) {
+                        Log.d(TAG, "progress=" + progress);
+
+                        long position = progress * SEC_TO_US;
+                        Log.d(TAG, "seekMovie " + position);
+                        mPlayerView.seekMovie(position);
+
+                        mPlayerView.invalidate();
                     }
                 }
 
                 @Override
                 public void onStartTrackingTouch(SeekBar seekBar) {
-                    if(mPlayerView != null) {
-                        if(!mPlayerView.getPlaying())
+                    if (mPlayerView != null) {
+                        mPlayerView.setSeeking(true);
+                        if (!mPlayerView.getPlaying())
                             startAtPaused = true;
                         else {
                             startAtPaused = false;
@@ -78,17 +87,18 @@ public class PlayerActivity extends AppCompatActivity {
 
                 @Override
                 public void onStopTrackingTouch(SeekBar seekBar) {
-                    if(mPlayerView != null) {
-                        int progress = seekBar.getProgress();
-                        long position = progress * SEC_TO_US;
-                        Log.d(TAG, "seekMovie "+ position);
-                        mPlayerView.seekMovie(position);
+                    if (mPlayerView != null) {
+//                        int progress = seekBar.getProgress();
+//                        long position = progress * SEC_TO_US;
+//                        Log.d(TAG, "seekMovie "+ position);
+//                        mPlayerView.seekMovie(position);
 
                         // 플레이 상태 복구
-                        if(!startAtPaused) {
+                        if (!startAtPaused) {
                             mPlayerView.resume();
                             updatePlayButton();
                         }
+                        mPlayerView.setSeeking(false);
                     }
                 }
             });

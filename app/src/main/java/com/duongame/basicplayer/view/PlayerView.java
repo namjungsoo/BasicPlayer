@@ -31,6 +31,8 @@ public class PlayerView extends View {
     private Context mContext;
     private long mInterval;
     private boolean mPlaying;
+    private boolean mSeeking;
+
 //    private Player mPlayer = new Player();
 
     public PlayerView(Context context, AttributeSet attrs) {
@@ -94,6 +96,10 @@ public class PlayerView extends View {
         return mPlaying;
     }
 
+    public void setSeeking(boolean b) {
+        mSeeking = b;
+    }
+
     public void pause() {
         mPlaying = false;
         pauseTimer();
@@ -141,12 +147,12 @@ public class PlayerView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-//        Log.d(TAG, "onDraw BEGIN");
+        Log.d(TAG, "onDraw BEGIN");
 
         canvas.drawColor(Color.BLACK);
 
         if (mBitmap != null) {
-            if (mPlaying) {
+            if (mPlaying || mSeeking) {
                 int ret = Player.renderFrame(mBitmap);
                 // 렌더링 종료
                 if (ret > 0) {
@@ -241,7 +247,7 @@ public class PlayerView extends View {
                 }
             }
         }
-//        Log.d(TAG, "onDraw END");
+        Log.d(TAG, "onDraw END");
     }
 
 }
