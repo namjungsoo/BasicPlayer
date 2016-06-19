@@ -13,7 +13,8 @@
 #include "BasicPlayer.h"
 #include "AudioTrack.h"
 #include "AudioFormatMap.h"
-
+#include "AudioQ.h"
+ 
 jint JNI_OnLoad(JavaVM* vm, void* reserved) {
     LOGD("Hello");
     return JNI_VERSION_1_6;
@@ -33,6 +34,8 @@ jint Java_com_duongame_basicplayer_Player_initBasicPlayer(JNIEnv *env, jobject t
 	//Initializes libavformat and registers all the muxers, demuxers and protocols. 
 	av_register_all();
 	initAudioFormatMap();
+	AudioQ_init();
+
 	LOGD("END initBasicPlayer");
 	return 0;
 }

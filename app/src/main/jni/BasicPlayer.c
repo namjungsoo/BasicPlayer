@@ -186,8 +186,14 @@ void* decodeAudioThread(void *param)
 	uint8_t *samples = av_malloc(sizeof(uint8_t)*buffer_size);
 
 	while(gAudioThreadRunning) {
-		if(AudioQ_size() > 0) {
-			AVPacket packet = AudioQ_pop();			
+		AudioQ_lock();
+		size_t size = AudioQ_size();
+		AudioQ_unlock();
+
+		if(size > 0) {
+			AudioQ_lock();
+			AVPacket packet = AudioQ_pop();
+			AudioQ_unlock();
 
 			int64_t begin = getTimeNsec();
  			int len = avcodec_decode_audio4(gAudioCodecCtx, gFrameAudio, &frameFinished, &packet);
@@ -405,7 +411,9 @@ int decodeFrame()
 		else if(packet.stream_index == gAudioStreamIdx) {
 			//TODO: 큐 동기화가 필요함 
 			if(gAudioThread != 0) {
-				AudioQ_push(packet);				
+				AudioQ_lock();
+				AudioQ_push(packet);
+				AudioQ_unlock();
 			}
 		}
 		else {
@@ -495,7 +503,9 @@ void closeMovie()
 	gVideoStreamIdx = -1;
 	gAudioStreamIdx = -1;
 
+	AudioQ_lock();
 	AudioQ_clear();
+	AudioQ_unlock();
 
 	LOGD("closeMovie END");
 }
@@ -526,7 +536,9 @@ int seekMovie(int64_t positionUs)
 	}
 
 	// 오디오 큐를 비운다. 
+	AudioQ_lock();
 	AudioQ_clear();
+	AudioQ_unlock();
 	return 0;
 }
 
@@ -547,7 +559,6 @@ int64_t getDuration()
 			stream = gFormatCtx->streams[gAudioStreamIdx];
 		}
 		
-
 		LOGD("stream->duration=%lld", stream->duration);
 		if(stream->duration > 0) {
 			int64_t duration = av_rescale_q(stream->duration, stream->time_base, AV_TIME_BASE_Q);
