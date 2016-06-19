@@ -35,12 +35,15 @@ public class PlayerActivity extends AppCompatActivity {
     private float mAlpha;
 
     private ImageButton mPlay;
+    private ImageButton mRotate;
 
     private TextView mCurrentTime;
     private TextView mDurationTime;
+    private TextView mDegree;
 
     private SeekBar mSeekBar;
     private TextView mSeekTime;
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -53,12 +56,29 @@ public class PlayerActivity extends AppCompatActivity {
 
         mPlayerView = (PlayerView) findViewById(R.id.moviePlay);
         mToolBox = (ViewGroup) findViewById(R.id.toolBox);
+
         mCurrentTime = (TextView) findViewById(R.id.currentTime);
         mDurationTime = (TextView) findViewById(R.id.durationTime);
+        mDegree = (TextView)findViewById(R.id.degree);
+
         mPlay = (ImageButton) findViewById(R.id.play);
+        mRotate = (ImageButton) findViewById(R.id.rotate);
+
         mSeekTime = (TextView)findViewById(R.id.seekTime);
 
         mSeekBar = (SeekBar) findViewById(R.id.seekBar);
+
+        mRotate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(mPlayerView != null) {
+                    final int newRotation = (mPlayerView.getBitmapRotation() + 1) % (Surface.ROTATION_270+1);
+                    mPlayerView.setBitmapRotation(newRotation);
+                    updateBitmapRotation();
+                }
+            }
+        });
+
         if (mSeekBar != null) {
             mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
                 private boolean startAtPaused = false;
@@ -196,6 +216,27 @@ public class PlayerActivity extends AppCompatActivity {
 
         mToolBox.setAlpha(mAlpha);
         updateRotation();
+    }
+
+    private void updateBitmapRotation() {
+        final int rotation = mPlayerView.getBitmapRotation();
+        if(rotation == Surface.ROTATION_0) {
+            mDegree.setVisibility(View.INVISIBLE);
+        }
+        else {
+            switch(rotation) {
+                case Surface.ROTATION_90:
+                    mDegree.setText("90°");
+                    break;
+                case Surface.ROTATION_180:
+                    mDegree.setText("180°");
+                    break;
+                case Surface.ROTATION_270:
+                    mDegree.setText("270°");
+                    break;
+            }
+            mDegree.setVisibility(View.VISIBLE);
+        }
     }
 
     private void updateRotation() {

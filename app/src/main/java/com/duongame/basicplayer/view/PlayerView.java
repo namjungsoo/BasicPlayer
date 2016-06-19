@@ -8,6 +8,7 @@ import android.graphics.Color;
 import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.Surface;
 import android.view.View;
 import android.widget.Toast;
 
@@ -32,6 +33,7 @@ public class PlayerView extends View {
     private long mInterval;
     private boolean mPlaying;
     private boolean mSeeking;
+    private int mRotation = Surface.ROTATION_0;
 
 //    private Player mPlayer = new Player();
 
@@ -39,25 +41,14 @@ public class PlayerView extends View {
         super(context, attrs);
 
         mContext = context;
-        Player.closeMovie();
 
-        init(context);
+        Player.closeMovie();
     }
 
     public PlayerView(Context context) {
         this(context, null);
     }
 
-    public void init(Context context) {
-        Log.d(TAG, "init");
-
-        if (Player.initBasicPlayer() < 0) {
-            Toast.makeText(context, "CPU doesn't support NEON", Toast.LENGTH_LONG).show();
-            ((Activity) context).finish();
-        }
-
-        Player.initAudioTrack();
-    }
 
     private void initRenderTimer() {
         double fps = Player.getFps();
@@ -98,6 +89,14 @@ public class PlayerView extends View {
 
     public void setSeeking(boolean b) {
         mSeeking = b;
+    }
+
+    public void setBitmapRotation(int rotation) {
+        mRotation = rotation;
+    }
+
+    public int getBitmapRotation() {
+        return mRotation;
     }
 
     public void pause() {
@@ -174,25 +173,59 @@ public class PlayerView extends View {
                 }
             }
 
-            // 항상 풀스크린으로 채우는 것은 안된다
-            //TODO: 종횡비를 맞춰서 채워야 한다
+            boolean degree90 = false;
             final int width = getWidth();
             final int height = getHeight();
+
+            if(mRotation != Surface.ROTATION_0) {
+                canvas.save();
+                float rotation = 0.0f;
+
+                switch(mRotation) {
+                    case Surface.ROTATION_90:
+                        degree90 = true;
+                        rotation = 90.0f;
+                        break;
+                    case Surface.ROTATION_180:
+                        rotation = 180.0f;
+                        break;
+                    case Surface.ROTATION_270:
+                        degree90 = true;
+                        rotation = 270.0f;
+                        break;
+                }
+                canvas.rotate(rotation, width/2, height/2);
+            }
+
+            // 항상 풀스크린으로 채우는 것은 안된다
+            //TODO: 종횡비를 맞춰서 채워야 한다
 
             final int bmWidth = mBitmap.getWidth();
             final int bmHeight = mBitmap.getHeight();
 
+            int adjustBmWidth;
+            int adjustBmHeight;
+
+//            if(degree90) {
+//                adjustBmWidth = bmHeight;
+//                adjustBmHeight = bmWidth;
+//            }
+//            else {
+                adjustBmHeight = bmHeight;
+                adjustBmWidth = bmWidth;
+//            }
+
             // 가로
             if (width > height) {
-                final float bmRatioInverse = (float) bmWidth / bmHeight;
+                final float bmRatioInverse = (float) adjustBmWidth / adjustBmHeight;
 
                 // 비트맵 가로
-                if (bmWidth > bmHeight) {
+                if (adjustBmWidth > adjustBmHeight) {
                     final float ratioInverse = (float) width / height;
 
                     // 비트맵이 더 길쭉할때
                     if(bmRatioInverse > ratioInverse) {
-                        final float bmRatio = (float) bmHeight / bmWidth;
+                        final float bmRatio = (float) adjustBmHeight / adjustBmWidth;
                         final int adjustedHeight = (int) (width * bmRatio);
                         final int startHeight = (height >> 1) - (adjustedHeight >> 1);
                         canvas.drawBitmap(mBitmap, new Rect(0, 0, bmWidth, bmHeight), new Rect(0, startHeight, width, startHeight + adjustedHeight), null);
@@ -212,10 +245,10 @@ public class PlayerView extends View {
             }
             // 세로
             else {
-                final float bmRatio = (float) bmHeight / bmWidth;
+                final float bmRatio = (float) adjustBmHeight / adjustBmWidth;
 
                 // 비트맵 가로
-                if (bmWidth > bmHeight) {
+                if (adjustBmWidth > adjustBmHeight) {
                     // 가로를 맞춘다
                     final int adjustedHeight = (int) (width * bmRatio);
                     final int startHeight = (height >> 1) - (adjustedHeight >> 1);
@@ -231,7 +264,7 @@ public class PlayerView extends View {
                         // 세로룰 맞춘다
                         // 세로는 화면 길이
                         // 가로는 비율에 맞게
-                        final float bmRatioInverse = (float) bmWidth / bmHeight;
+                        final float bmRatioInverse = (float) adjustBmWidth / adjustBmHeight;
                         final int adjustedWidth = (int) (height * bmRatioInverse);
                         final int startWidth = (width >> 1) - (adjustedWidth >> 1);
                         canvas.drawBitmap(mBitmap, new Rect(0, 0, bmWidth, bmHeight), new Rect(startWidth, 0, startWidth + adjustedWidth, height), null);
@@ -245,6 +278,10 @@ public class PlayerView extends View {
                         canvas.drawBitmap(mBitmap, new Rect(0, 0, bmWidth, bmHeight), new Rect(0, startHeight, width, startHeight + adjustedHeight), null);
                     }
                 }
+            }
+
+            if(mRotation != Surface.ROTATION_0) {
+                canvas.restore();
             }
         }
         Log.d(TAG, "onDraw END");

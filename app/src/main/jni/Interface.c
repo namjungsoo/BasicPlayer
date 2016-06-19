@@ -37,6 +37,21 @@ jint Java_com_duongame_basicplayer_Player_initBasicPlayer(JNIEnv *env, jobject t
 	return 0;
 }
 
+jint Java_com_duongame_basicplayer_Player_openMovieWithAudio(JNIEnv *env, jobject thiz, jstring filePath, int audio)
+{
+	LOGD("BEGIN openMovieWithAudio");
+	const jbyte *str;
+	int result;
+
+	// 문자열 사용하고 나서 삭제 
+	str = (*env)->GetStringUTFChars(env, filePath, NULL);
+	result = openMovieWithAudio(str, audio);
+	(*env)->ReleaseStringUTFChars(env, filePath, str);
+
+	LOGD("END openMovieWithAudio");
+	return result;
+}
+
 jint Java_com_duongame_basicplayer_Player_openMovie(JNIEnv *env, jobject thiz, jstring filePath)
 {
 	LOGD("BEGIN openMovie");

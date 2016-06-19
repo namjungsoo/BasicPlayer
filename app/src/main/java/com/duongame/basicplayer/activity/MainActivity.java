@@ -2,6 +2,7 @@ package com.duongame.basicplayer.activity;
 
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.graphics.Bitmap;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Environment;
@@ -19,11 +20,13 @@ import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.duongame.basicplayer.Player;
 import com.duongame.basicplayer.R;
 import com.duongame.basicplayer.manager.AdBannerManager;
 import com.duongame.basicplayer.manager.AdInterstitialManager;
 import com.duongame.basicplayer.manager.PermissionManager;
 import com.duongame.basicplayer.manager.ShortcutManager;
+import com.duongame.basicplayer.manager.ThumbnailManager;
 import com.google.android.gms.ads.AdView;
 
 import java.io.File;
@@ -54,6 +57,8 @@ public class MainActivity extends AppCompatActivity {
 
         // 그림자를 없앤다.
         getSupportActionBar().setElevation(0);
+
+        Player.init(this);
     }
 
     private void initToolbar() {
@@ -202,6 +207,19 @@ public class MainActivity extends AppCompatActivity {
                 // 확장자가 맞으면
                 if (each.getName().endsWith(ext[j])) {
                     result.add(each);
+
+                    // 썸네일에 등록하자
+                    if(Player.openMovieWithAudio(each.getAbsolutePath(), 0) >= 0) {
+                        final int width = Player.getMovieWidth();
+                        final int height = Player.getMovieHeight();
+
+                        final Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+                        Player.renderFrame(bitmap);
+
+                        ThumbnailManager.addBitmap(each.getPath(), bitmap);
+                        Player.closeMovie();
+                    }
+
                     break;
                 }
             }
@@ -286,6 +304,7 @@ public class MainActivity extends AppCompatActivity {
                 convertView = getLayoutInflater().inflate(R.layout.list_item, parent, false);
 
                 viewHolder = new ViewHolder();
+                viewHolder.iv = (ImageView) convertView.findViewById(R.id.thumbnail);
                 viewHolder.tvName = (TextView) convertView.findViewById(R.id.textName);
                 viewHolder.tvPath = (TextView) convertView.findViewById(R.id.textPath);
 
@@ -294,6 +313,7 @@ public class MainActivity extends AppCompatActivity {
             else {
                 viewHolder = (ViewHolder)convertView.getTag();
             }
+            viewHolder.iv.setImageBitmap(ThumbnailManager.getBitmap(movieList.get(position).getPath()));
             viewHolder.tvName.setText(movieList.get(position).getName());
             viewHolder.tvPath.setText(movieList.get(position).getPath());
 

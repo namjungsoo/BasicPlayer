@@ -25,6 +25,18 @@ import java.util.TimerTask;
  * Created by namjungsoo on 16. 6. 11..
  */
 public class Player {
+    private final static String TAG = "Player";
+
+    public static void init(Context context) {
+        Log.d(TAG, "init");
+
+        if (Player.initBasicPlayer() < 0) {
+            Toast.makeText(context, "CPU doesn't support NEON", Toast.LENGTH_LONG).show();
+            ((Activity) context).finish();
+        }
+
+        Player.initAudioTrack();
+    }
 
     //ndk에서 불러준다.
     private static AudioTrack prepareAudioTrack(int audioFormat, int sampleRateInHz,
