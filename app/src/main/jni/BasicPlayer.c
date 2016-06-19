@@ -299,9 +299,9 @@ void* decodeAudioThread(void *param)
 	return NULL;
 }
 
-int openMovie(const char filePath[])
+int openMovieWithAudio(const char *filePath, int audio)
 {
-	LOGD("openMovie %s", filePath);
+	LOGD("openMovieWithAudio filePath=%s audio=%d", filePath, audio);
 
 	int i;
 	unsigned char errbuf[128];
@@ -325,10 +325,12 @@ int openMovie(const char filePath[])
 	for (i = 0; i < gFormatCtx->nb_streams; i++) {
 		if (gFormatCtx->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO) {
 			gVideoStreamIdx = i;
+			LOGD("gVideoStreamIdx=%d", gVideoStreamIdx);
 		}
 
 		if (gFormatCtx->streams[i]->codec->codec_type == AVMEDIA_TYPE_AUDIO) {
 			gAudioStreamIdx = i;
+			LOGD("gAudioStreamIdx=%d", gAudioStreamIdx);
 		}		
 	}
 
@@ -337,20 +339,28 @@ int openMovie(const char filePath[])
 	if(ret < 0)
 		return ret;  
 
-	// 오디오는 없을수 있다. 
-	ret = openAudioStream(); 
-	if(ret < 0) {
-		LOGD("Audio NOT FOUND");
-		return 0;
-	}
-	else {
-		prepareAudioTrack(gAudioCodecCtx->sample_fmt, gAudioCodecCtx->sample_rate, gAudioCodecCtx->channels);
-		gAudioThreadRunning = 1;
-		ret = pthread_create(&gAudioThread, NULL, decodeAudioThread, NULL);
+	if(audio) {
+		// 오디오는 없을수 있다. 
+		ret = openAudioStream(); 
+		if(ret < 0) {
+			LOGD("Audio NOT FOUND");
+			return 0;
+		}
+		else {
+			prepareAudioTrack(gAudioCodecCtx->sample_fmt, gAudioCodecCtx->sample_rate, gAudioCodecCtx->channels);
+			gAudioThreadRunning = 1;
+			ret = pthread_create(&gAudioThread, NULL, decodeAudioThread, NULL);
+		}		
 	}
 
-	getDuration();
 	return ret;
+}
+
+int openMovie(const char filePath[])
+{
+	LOGD("openMovie filePath=%s", filePath);
+
+	return openMovieWithAudio(filePath, 1);
 }
 
 // 40ms만에 한번씩 호출된다. 
@@ -394,7 +404,9 @@ int decodeFrame()
 		}
 		else if(packet.stream_index == gAudioStreamIdx) {
 			//TODO: 큐 동기화가 필요함 
-			AudioQ_push(packet);
+			if(gAudioThread != 0) {
+				AudioQ_push(packet);				
+			}
 		}
 		else {
 			// 처리하지 못했을때 자체적으로 packet을 free 함 
@@ -451,6 +463,7 @@ void closeMovie()
 	gAudioThreadRunning = 0;
 
 	pthread_join(gAudioThread, (void**)&status);
+	gAudioThread = 0;
 
 	if (gVideoBuffer != NULL) {
 		free(gVideoBuffer);
@@ -511,7 +524,7 @@ int seekMovie(int64_t positionUs)
         LOGD("FAILED av_seek_frame");
         return -1;
 	}
-	
+
 	// 오디오 큐를 비운다. 
 	AudioQ_clear();
 	return 0;
@@ -525,17 +538,32 @@ int64_t getDuration()
 
 	int i;
 	for(i=0; i<gFormatCtx->nb_streams; i++) {
-		AVStream* stream = gFormatCtx->streams[i];
+		//AVStream* stream = gFormatCtx->streams[i];
+		AVStream* stream;
+		if(i == 0) {
+			stream = gFormatCtx->streams[gVideoStreamIdx];
+		}
+		else {
+			stream = gFormatCtx->streams[gAudioStreamIdx];
+		}
+		
+
 		LOGD("stream->duration=%lld", stream->duration);
+		if(stream->duration > 0) {
+			int64_t duration = av_rescale_q(stream->duration, stream->time_base, AV_TIME_BASE_Q);
+			LOGD("duration=%lld", duration);
 
-		int64_t duration = av_rescale_q(stream->duration, stream->time_base, AV_TIME_BASE_Q);
-		LOGD("duration=%lld", duration);
-
-		if(duration != 0)
-			return duration;
+			if(duration != 0)
+				return duration;
+		}
 	}
 
-	return 0l;
+	LOGD("gFormatCtx->duration=%lld", gFormatCtx->duration);
+	if(gFormatCtx->duration > 0) {
+		return gFormatCtx->duration;		
+	}
+
+	return 0ll;
 }
 
 int64_t getPosition()

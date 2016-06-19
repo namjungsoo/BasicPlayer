@@ -14,6 +14,7 @@
 // return: == 0 - success
 //          < 0 - error code
 int openMovie(const char filePath[]);
+int openMovieWithAudio(const char *filePath, int audio);
 
 int openVideoStream();
 int openAudioStream();

@@ -84,6 +84,7 @@ public class Player {
     public static native int initBasicPlayer();
 
     public static native int openMovie(String filePath);
+    public static native int openMovieWithAudio(String filePath, int audio);
     public static native int renderFrame(Bitmap bitmap);
 
     public static native int getMovieWidth();
