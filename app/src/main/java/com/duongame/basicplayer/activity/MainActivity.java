@@ -315,7 +315,7 @@ public class MainActivity extends AppCompatActivity {
             }
             viewHolder.iv.setImageBitmap(ThumbnailManager.getBitmap(movieList.get(position).getPath()));
             viewHolder.tvName.setText(movieList.get(position).getName());
-            viewHolder.tvPath.setText(movieList.get(position).getPath());
+            viewHolder.tvPath.setText(movieList.get(position).getParent());
 
             return convertView;
         }

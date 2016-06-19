@@ -85,15 +85,13 @@ public class PlayerActivity extends AppCompatActivity {
                 private boolean startAtPaused = false;
 
                 @Override
-                public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                public void onProgressChanged(SeekBar seekBar, final int progress, boolean fromUser) {
                     // 유저가 움직였을 경우에만 탐색
                     if (fromUser) {
                         Log.d(TAG, "progress=" + progress);
-
-                        long positionUs = progress * SEC_TO_US;
+                        final long positionUs = progress * SEC_TO_US;
                         Log.d(TAG, "seekMovie " + positionUs);
                         mPlayerView.seekMovie(positionUs);
-
                         mSeekTime.setText(convertUsToString(positionUs));
                         mPlayerView.invalidate();
                     }
