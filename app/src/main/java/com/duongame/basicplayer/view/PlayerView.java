@@ -26,16 +26,14 @@ public class PlayerView extends View {
     private final static String TAG = "PlayerView";
 
     private Bitmap mBitmap;
-    private int mMovieWidth;
-    private int mMovieHeight;
+//    private int mMovieWidth;
+//    private int mMovieHeight;
     private Timer mTimer;
     private Context mContext;
     private long mInterval;
     private boolean mPlaying;
     private boolean mSeeking;
     private int mRotation = Surface.ROTATION_0;
-
-//    private Player mPlayer = new Player();
 
     public PlayerView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -71,10 +69,10 @@ public class PlayerView extends View {
             ((Activity) mContext).finish();
             return false;
         } else {
-            mMovieWidth = Player.getMovieWidth();
-            mMovieHeight = Player.getMovieHeight();
+            final int movieWidth = Player.getMovieWidth();
+            final int movieHeight = Player.getMovieHeight();
 
-            mBitmap = Bitmap.createBitmap(mMovieWidth, mMovieHeight, Bitmap.Config.ARGB_8888);
+            mBitmap = Bitmap.createBitmap(movieWidth, movieHeight, Bitmap.Config.ARGB_8888);
             Log.d(TAG, "init createBitmap");
 
             initRenderTimer();
@@ -146,7 +144,7 @@ public class PlayerView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        Log.d(TAG, "onDraw BEGIN");
+//        Log.d(TAG, "onDraw BEGIN");
 
         canvas.drawColor(Color.BLACK);
 
@@ -156,35 +154,40 @@ public class PlayerView extends View {
                 // 렌더링 종료
                 if (ret > 0) {
                     pause();
-                    final PlayerActivity activity = (PlayerActivity)mContext;
-                    if(activity != null) {
+                    final PlayerActivity activity = (PlayerActivity) mContext;
+                    if (activity != null) {
                         activity.updatePlayButton();
                     }
 
 //                    // 플레이 끝났을시 액티비티 종료
 //                    ((PlayerActivity)mContext).finish();
-                }
-                else {
+                } else {
                     final long currentPositionUs = Player.getCurrentPositionUs();
-                    final PlayerActivity activity = (PlayerActivity)mContext;
-                    if(activity != null) {
+                    final PlayerActivity activity = (PlayerActivity) mContext;
+                    if (activity != null) {
                         activity.updatePosition(currentPositionUs);
                     }
                 }
             }
 
             boolean degree90 = false;
-            final int width = getWidth();
-            final int height = getHeight();
+            int width = getWidth();
+            int height = getHeight();
 
-            if(mRotation != Surface.ROTATION_0) {
+            // 항상 풀스크린으로 채우는 것은 안된다
+            final int bmWidth = mBitmap.getWidth();
+            final int bmHeight = mBitmap.getHeight();
+
+            if (mRotation != Surface.ROTATION_0) {
                 canvas.save();
                 float rotation = 0.0f;
 
-                switch(mRotation) {
+                switch (mRotation) {
                     case Surface.ROTATION_90:
                         degree90 = true;
                         rotation = 90.0f;
+//                        width = getHeight();
+//                        height = getWidth();
                         break;
                     case Surface.ROTATION_180:
                         rotation = 180.0f;
@@ -192,99 +195,83 @@ public class PlayerView extends View {
                     case Surface.ROTATION_270:
                         degree90 = true;
                         rotation = 270.0f;
+//                        width = getHeight();
+//                        height = getWidth();
                         break;
                 }
-                canvas.rotate(rotation, width/2, height/2);
+
+//                canvas.rotate(rotation, bmWidth/2, bmHeight/2);
+
+                // 전체 화면의 기준으로 회전한다
+                // 이미지가 화면에 꽉찼을 경우에
+                canvas.rotate(rotation, width / 2, height / 2);
+//                canvas.rotate(rotation, height/2, width/2);
             }
 
-            // 항상 풀스크린으로 채우는 것은 안된다
-            //TODO: 종횡비를 맞춰서 채워야 한다
+            final float bmRatioInverse = (float) bmWidth / bmHeight;
+            final float bmRatio = (float) bmHeight / bmWidth;
+            final float ratioInverse = (float) width / height;
 
-            final int bmWidth = mBitmap.getWidth();
-            final int bmHeight = mBitmap.getHeight();
-
-            int adjustBmWidth;
-            int adjustBmHeight;
-
-//            if(degree90) {
-//                adjustBmWidth = bmHeight;
-//                adjustBmHeight = bmWidth;
-//            }
-//            else {
-                adjustBmHeight = bmHeight;
-                adjustBmWidth = bmWidth;
+//            if (degree90) {
+//                width = getHeight();
+//                height = getWidth();
 //            }
 
-            // 가로
-            if (width > height) {
-                final float bmRatioInverse = (float) adjustBmWidth / adjustBmHeight;
+//            if ((bmRatioInverse > ratioInverse) && !degree90) {
+            final int adjustedHeight = (int) (width * bmRatio);
+            final int startHeight = (height - adjustedHeight) >> 1;
 
-                // 비트맵 가로
-                if (adjustBmWidth > adjustBmHeight) {
-                    final float ratioInverse = (float) width / height;
+            final int adjustedWidth = (int) (height * bmRatioInverse);
+            final int startWidth = (width - adjustedWidth) >> 1;
 
-                    // 비트맵이 더 길쭉할때
-                    if(bmRatioInverse > ratioInverse) {
-                        final float bmRatio = (float) adjustBmHeight / adjustBmWidth;
-                        final int adjustedHeight = (int) (width * bmRatio);
-                        final int startHeight = (height >> 1) - (adjustedHeight >> 1);
-                        canvas.drawBitmap(mBitmap, new Rect(0, 0, bmWidth, bmHeight), new Rect(0, startHeight, width, startHeight + adjustedHeight), null);
-                    }
-                    else {// 비트맵 세로랑 동일하다
-                        final int adjustedWidth = (int) (height * bmRatioInverse);
-                        final int startWidth = (width >> 1) - (adjustedWidth >> 1);
-                        canvas.drawBitmap(mBitmap, new Rect(0, 0, bmWidth, bmHeight), new Rect(startWidth, 0, startWidth + adjustedWidth, height), null);
-                    }
-                }
-                // 비트맵 세로
-                else {
-                    final int adjustedWidth = (int) (height * bmRatioInverse);
-                    final int startWidth = (width >> 1) - (adjustedWidth >> 1);
-                    canvas.drawBitmap(mBitmap, new Rect(0, 0, bmWidth, bmHeight), new Rect(startWidth, 0, startWidth + adjustedWidth, height), null);
+            Log.d(TAG, "adjustedHeight="+adjustedHeight + " startHeight="+startHeight + " adjustedWidth="+adjustedWidth + " startWidth="+startWidth);
+            Rect target = new Rect();
+
+            if(degree90) {
+                // 화면은 변함이 없다
+                // 홤면에 회전할 사이즈대로 그리자
+                if ((bmRatioInverse > ratioInverse)) {// 가로 이미지
+                    Log.d(TAG, "target degree90 1");
+
+                    int newHeight = (int)(bmRatio * height);
+                    int newWidth = height;
+
+                    int newStartY = (height - newHeight) >> 1;
+                    int newStartX = (width - newWidth) >> 1;
+
+                    target.set(newStartX, newStartY, newStartX + newWidth, newStartY + newHeight);
+                } else {// 세로 이미지
+                    Log.d(TAG, "target degree90 2");
+
+                    // width가 미래의 height가 될 것이므로
+                    int newWidth = (int)(bmRatioInverse * width);
+                    int newHeight = width;
+                    int newStartY = (height - newHeight) >> 1;
+                    int newStartX = (width - newWidth) >> 1;
+
+                    target.set(newStartX, newStartY, newStartX + newWidth, newStartY + newHeight);
                 }
             }
-            // 세로
             else {
-                final float bmRatio = (float) adjustBmHeight / adjustBmWidth;
+                // 화면은 변함이 없다
+                if ((bmRatioInverse > ratioInverse)) {// 가로 이미지
+                    Log.d(TAG, "target 1");
+                    target.set(0, startHeight, width, startHeight + adjustedHeight);
 
-                // 비트맵 가로
-                if (adjustBmWidth > adjustBmHeight) {
-                    // 가로를 맞춘다
-                    final int adjustedHeight = (int) (width * bmRatio);
-                    final int startHeight = (height >> 1) - (adjustedHeight >> 1);
-                    canvas.drawBitmap(mBitmap, new Rect(0, 0, bmWidth, bmHeight), new Rect(0, startHeight, width, startHeight + adjustedHeight), null);
-                }
-                // 비트맵 세로
-                else {
-                    // 세로-세로 이므로 비율을 계산해야 한다
-                    final float ratio = (float) height / width;
-
-                    // 비트맵이 더 길쭉할때
-                    if(bmRatio > ratio) {
-                        // 세로룰 맞춘다
-                        // 세로는 화면 길이
-                        // 가로는 비율에 맞게
-                        final float bmRatioInverse = (float) adjustBmWidth / adjustBmHeight;
-                        final int adjustedWidth = (int) (height * bmRatioInverse);
-                        final int startWidth = (width >> 1) - (adjustedWidth >> 1);
-                        canvas.drawBitmap(mBitmap, new Rect(0, 0, bmWidth, bmHeight), new Rect(startWidth, 0, startWidth + adjustedWidth, height), null);
-                    }
-                    else {// 비트맵 가로랑 동일하다
-                        // 가로를 맞춘다
-                        // 가로는 화면 길이
-                        // 세로는 비율에 맞게
-                        final int adjustedHeight = (int) (width * bmRatio);
-                        final int startHeight = (height >> 1) - (adjustedHeight >> 1);
-                        canvas.drawBitmap(mBitmap, new Rect(0, 0, bmWidth, bmHeight), new Rect(0, startHeight, width, startHeight + adjustedHeight), null);
-                    }
+                } else {// 세로 이미지
+                    Log.d(TAG, "target 2");
+                    target.set(startWidth, 0, startWidth + adjustedWidth, height);
                 }
             }
 
-            if(mRotation != Surface.ROTATION_0) {
+            Log.d(TAG, "target "+target);
+            canvas.drawBitmap(mBitmap, new Rect(0, 0, bmWidth, bmHeight), target, null);
+
+            if (mRotation != Surface.ROTATION_0) {
                 canvas.restore();
             }
         }
-        Log.d(TAG, "onDraw END");
+//        Log.d(TAG, "onDraw END");
     }
 
 }

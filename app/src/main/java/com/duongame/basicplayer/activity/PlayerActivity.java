@@ -75,6 +75,7 @@ public class PlayerActivity extends AppCompatActivity {
                     final int newRotation = (mPlayerView.getBitmapRotation() + 1) % (Surface.ROTATION_270+1);
                     mPlayerView.setBitmapRotation(newRotation);
                     updateBitmapRotation();
+                    mPlayerView.invalidate();
                 }
             }
         });
