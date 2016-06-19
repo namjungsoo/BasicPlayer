@@ -151,6 +151,11 @@ public class PlayerView extends View {
                 // 렌더링 종료
                 if (ret > 0) {
                     pause();
+                    final PlayerActivity activity = (PlayerActivity)mContext;
+                    if(activity != null) {
+                        activity.updatePlayButton();
+                    }
+
 //                    // 플레이 끝났을시 액티비티 종료
 //                    ((PlayerActivity)mContext).finish();
                 }

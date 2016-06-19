@@ -64,7 +64,9 @@ jint Java_com_duongame_basicplayer_Player_renderFrame(JNIEnv *env, jobject thiz,
 	// 영상이 종료된 상태임 
 	if(decodeFrame() < 0) {
 		// LOGD("closeMovie");
-		closeMovie();
+
+		// 영상이 종료되도 close하지 말자 
+		//closeMovie();
 
 		// LOGD("renderFrame END");
 		return 1;// 종료 상태 

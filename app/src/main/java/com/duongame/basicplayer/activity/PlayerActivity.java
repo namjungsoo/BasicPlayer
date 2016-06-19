@@ -265,7 +265,7 @@ public class PlayerActivity extends AppCompatActivity {
         }
     }
 
-    private void updatePlayButton() {
+    public void updatePlayButton() {
         if (mPlayerView.getPlaying()) {
             mPlay.setImageDrawable(ResourcesCompat.getDrawable(getResources(), R.drawable.pause, getApplicationContext().getTheme()));
         } else {
