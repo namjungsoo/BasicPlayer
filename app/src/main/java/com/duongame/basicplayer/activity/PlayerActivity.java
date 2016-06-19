@@ -30,12 +30,17 @@ public class PlayerActivity extends AppCompatActivity {
     private final static float US_TO_SEC = 0.000001f;
 
     private PlayerView mPlayerView;
+
     private ViewGroup mToolBox;
     private float mAlpha;
+
     private ImageButton mPlay;
+
     private TextView mCurrentTime;
     private TextView mDurationTime;
+
     private SeekBar mSeekBar;
+    private TextView mSeekTime;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -51,6 +56,7 @@ public class PlayerActivity extends AppCompatActivity {
         mCurrentTime = (TextView) findViewById(R.id.currentTime);
         mDurationTime = (TextView) findViewById(R.id.durationTime);
         mPlay = (ImageButton) findViewById(R.id.play);
+        mSeekTime = (TextView)findViewById(R.id.seekTime);
 
         mSeekBar = (SeekBar) findViewById(R.id.seekBar);
         if (mSeekBar != null) {
@@ -63,10 +69,11 @@ public class PlayerActivity extends AppCompatActivity {
                     if (fromUser) {
                         Log.d(TAG, "progress=" + progress);
 
-                        long position = progress * SEC_TO_US;
-                        Log.d(TAG, "seekMovie " + position);
-                        mPlayerView.seekMovie(position);
+                        long positionUs = progress * SEC_TO_US;
+                        Log.d(TAG, "seekMovie " + positionUs);
+                        mPlayerView.seekMovie(positionUs);
 
+                        mSeekTime.setText(convertUsToString(positionUs));
                         mPlayerView.invalidate();
                     }
                 }
@@ -82,6 +89,7 @@ public class PlayerActivity extends AppCompatActivity {
                             mPlayerView.pause();
                             updatePlayButton();
                         }
+                        mSeekTime.setVisibility(View.VISIBLE);
                     }
                 }
 
@@ -99,6 +107,8 @@ public class PlayerActivity extends AppCompatActivity {
                             updatePlayButton();
                         }
                         mPlayerView.setSeeking(false);
+                        mSeekTime.setVisibility(View.INVISIBLE);
+
                     }
                 }
             });
@@ -231,7 +241,10 @@ public class PlayerActivity extends AppCompatActivity {
         long min = (timeUs - (hour * 3600)) / 60;
         long sec = timeUs - (hour * 3600) - min * 60;
 
-        return String.format("%01d:%02d:%02d", hour, min, sec);
+        if(hour > 0)
+            return String.format("%01d:%02d:%02d", hour, min, sec);
+        else
+            return String.format("%02d:%02d", min, sec);
     }
 
     private void setToolBox(boolean newFullscreen) {
