@@ -44,6 +44,8 @@ public class PlayerActivity extends AppCompatActivity {
     private SeekBar mSeekBar;
     private TextView mSeekTime;
 
+    private TextView mDebugCurrent;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -59,6 +61,7 @@ public class PlayerActivity extends AppCompatActivity {
         mCurrentTime = (TextView) findViewById(R.id.currentTime);
         mDurationTime = (TextView) findViewById(R.id.durationTime);
         mDegree = (TextView)findViewById(R.id.degree);
+        mDebugCurrent = (TextView)findViewById(R.id.debugCurrent);
 
         mPlay = (ImageButton) findViewById(R.id.play);
         mRotate = (ImageButton) findViewById(R.id.rotate);
@@ -154,6 +157,7 @@ public class PlayerActivity extends AppCompatActivity {
                 public void onClick(View v) {
                     setToolBox(!FullscreenManager.isFullscreen());
                     FullscreenManager.setFullscreen(PlayerActivity.this, !FullscreenManager.isFullscreen());
+                    mPlayerView.invalidate();
                 }
             });
             final String filename = getIntent().getStringExtra("filename");
@@ -269,6 +273,8 @@ public class PlayerActivity extends AppCompatActivity {
 
             // SeekBar 포지션 업데이트
             mSeekBar.setProgress((int) positionSec);
+
+            mDebugCurrent.setText(""+positionSec*1000);
         }
     }
 
@@ -314,7 +320,7 @@ public class PlayerActivity extends AppCompatActivity {
         if (!NavigationBarManager.hasSoftKeyMenu(this))
             return;
 
-        int size = NavigationBarManager.getNavigationBarHeight(this);
+        final int size = NavigationBarManager.getNavigationBarHeight(this);
         final LinearLayout layout = (LinearLayout) findViewById(R.id.toolBox);
 
         // 수직일때는 하단

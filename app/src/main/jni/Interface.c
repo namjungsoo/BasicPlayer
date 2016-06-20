@@ -123,23 +123,23 @@ void Java_com_duongame_basicplayer_Player_closeMovie(JNIEnv *env, jobject thiz)
 
 void Java_com_duongame_basicplayer_Player_pauseMovie(JNIEnv *env, jobject thiz)
 {
-	LOGD("BEGIN pauseMovie");
+//	LOGD("BEGIN pauseMovie");
 	pauseMovie(env, thiz);
-	LOGD("END pauseMovie");
+//	LOGD("END pauseMovie");
 }
 
 void Java_com_duongame_basicplayer_Player_resumeMovie(JNIEnv *env, jobject thiz)
 {
-	LOGD("BEGIN resumeMovie");
+//	LOGD("BEGIN resumeMovie");
 	resumeMovie(env, thiz);
-	LOGD("END resumeMovie");
+//	LOGD("END resumeMovie");
 }
 
 int Java_com_duongame_basicplayer_Player_seekMovie(JNIEnv *env, jobject thiz, jlong positionUs)
 {
-	LOGD("BEGIN seekMovie");
+//	LOGD("BEGIN seekMovie");
 	int ret = seekMovie(positionUs);
-	LOGD("END seekMovie");
+//	LOGD("END seekMovie");
 	return ret;
 }
 

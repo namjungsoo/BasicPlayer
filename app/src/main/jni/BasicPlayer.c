@@ -524,11 +524,11 @@ void resumeMovie(JNIEnv *env, jobject thiz)
 
 int seekMovie(int64_t positionUs) 
 {
-	LOGD("seekMovie positionUs=%lld", positionUs);
+//	LOGD("seekMovie positionUs=%lld", positionUs);
 
 	// 프레임을 해당 시간으로 이동시킴
 	int64_t seekTarget = av_rescale_q(positionUs, AV_TIME_BASE_Q, gFormatCtx->streams[gVideoStreamIdx]->time_base);
-	LOGD("seekMovie seekTarget=%lld", seekTarget);
+//	LOGD("seekMovie seekTarget=%lld", seekTarget);
 
 	if(av_seek_frame(gFormatCtx, gVideoStreamIdx, seekTarget, AVSEEK_FLAG_FRAME) < 0) {
         LOGD("FAILED av_seek_frame");

@@ -36,75 +36,124 @@ public class SmiParser {
 
     public void load(String smiFile) throws IOException {
         final String charset = CharsetDetector.detectCharset(smiFile);
+        final BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(smiFile), charset));
+        final ArrayList<String> lineList = new ArrayList<String>();
 
-        BufferedReader reader = new BufferedReader(
-                new InputStreamReader(
-                        new FileInputStream(smiFile), charset));
-
-        //final BufferedReader reader = new BufferedReader(new FileReader(new File(smiFile)));
-
-        ArrayList<String> lineList = new ArrayList<String>();
         String line = reader.readLine();
         while(line != null) {
-
-            if(!charset.equals("UTF-8")) {
-//                line = new String(line.getBytes("EUC-KR"), "UTF-8");
-//                CharBuffer cbuffer = CharBuffer.wrap((new String(line.getBytes(), "EUC-KR")).toCharArray());
-//                Charset utf8charset = Charset.forName("UTF-8");
-//                ByteBuffer bbuffer = utf8charset.encode(cbuffer);
-//
-//                //변환된 UTF-8 문자열
-//                line = new String(bbuffer.array());
-            }
             Log.d(TAG, line);
             lineList.add(line);
             line = reader.readLine();
         }
 
-//        final List<String> lineList = Files.readAllLines(Paths.get(smiFile), Charset.forName(charset));
-//        List<String> lineList = Files.readAllLines(Paths.get(smiFile));
-
         Subtitle subtitle = null;
         subtitleList = new ArrayList<Subtitle>();
 
+        Long time = -1l;
+
         for (int i = 0; i < lineList.size(); i++) {
             line = lineList.get(i).toUpperCase();
-            if (line.startsWith(SYNC_START) &&
-                    line.contains(P_CLASS)) {
+
+            // sync start와 pclass가 같이 있는 경우에 처리
+            if (line.startsWith(SYNC_START) && line.contains(P_CLASS)) {
                 // sync 처리
                 String sync = line.replace(SYNC_START, "");
                 sync = sync.substring(0, sync.indexOf(">"));
 
-                Scanner scanner = new Scanner(sync);
-                Long time = scanner.nextLong();
+                final Scanner scanner = new Scanner(sync);
+                time = scanner.nextLong();
 
                 // p class 처리
                 String pclass = line.substring(line.indexOf(P_CLASS));
                 pclass = pclass.substring(pclass.indexOf(">") + 1);
 
-                if (pclass.equals(NBSP)) {
-                    subtitle.end = time;
-                    subtitleList.add(subtitle);
+                // 여기서 종결이 될수도, 안될수도 있다.
+                // nbsp 다음에 content가 올 경우가 있다.
+                // 그래서 무조건 종료하면 안된다.
+                if (pclass.startsWith(NBSP)) {
+                    if(subtitle != null)
+                        subtitle.end = time;
+//                    subtitleList.add(subtitle);
                 } else {
-                    if (subtitle != null && subtitle.end == -1)
+                    // 최초 자막이 아니고, 마지막에 시간이 없을때는 현재시간을 마지막 시간으로 하자
+                    if (subtitle != null) {
+                        if(subtitle.end == -1) {
+                            // 이전 자막 끝나는 시간을 현재 시간으로 하자
+                            subtitle.end = time - 1;// 1을 뺀다.
+                        }
                         subtitleList.add(subtitle);
+                    }
 
                     subtitle = new Subtitle();
                     subtitle.start = time;
                     subtitle.content = pclass;
                 }
             } else {
+                // /body가 있으면 종료 한다.
                 if (line.contains(BODY_CLOSE)) {
-                    if (subtitle != null)
+                    if (subtitle != null) {
                         subtitle.content += line.substring(0, line.indexOf(BODY_CLOSE));
+                    }
                     break;
                 }
-                if (subtitle != null)
+
+                // 그게 아니면 현재 content에 넣는다.
+                if (subtitle != null) {
+                    // content가 왔는데 end가 -1이 아니라면, 새로 생성해야한다.
+                    if (subtitle.end != -1) {
+                        subtitleList.add(subtitle);
+                        subtitle = new Subtitle();
+                        subtitle.start = time;
+                        subtitle.content = "";
+                    }
                     subtitle.content += line;
+                }
             }
         }
 
+        // 마지막의 end는 시간을 찾을 방법이 없다.
+        // end는 다음의 start-1이기 때문이다.
         if (subtitle != null && subtitle.end == -1)
             subtitleList.add(subtitle);
+
+
+        for(int i=0; i<subtitleList.size(); i++) {
+            subtitle = subtitleList.get(i);
+            // B태그 제거
+            subtitle.content = subtitle.content.replace("<B>", "");
+            subtitle.content = subtitle.content.replace("</B>", "");
+
+            // I태그 제거
+            subtitle.content = subtitle.content.replace("<I>", "");
+            subtitle.content = subtitle.content.replace("</I>", "");
+
+            // BR태그 변환
+            subtitle.content = subtitle.content.replace("<BR>", "\n");
+
+            // RUBY, TR태그 음...
+            subtitle.content = subtitle.content.replace("<RUBY>", "");
+            subtitle.content = subtitle.content.replace("</RUBY>", "");
+            subtitle.content = subtitle.content.replace("<TR>", "");
+            subtitle.content = subtitle.content.replace("</TR>", "");
+
+            // FONT COLOR 태그 지금은 지원안함
+            // 폰트는 여러번 올수 있다.
+//            subtitle.content = subtitle.content.replace("<FONT COLOR=", "");
+
+            int indexFont = subtitle.content.indexOf("<FONT COLOR=");
+            while(indexFont != -1) {
+                final int indexClose = subtitle.content.indexOf(">");
+                final String font = subtitle.content.substring(indexFont, indexClose+1);
+
+                subtitle.content = subtitle.content.replace(font, "");
+
+                indexFont = subtitle.content.indexOf("<FONT COLOR=");
+            }
+
+            subtitle.content = subtitle.content.replace("</FONT>", "");
+
+            Log.d(TAG, "i="+i + " start=" +subtitle.start + " end="+subtitle.end + " content="+subtitle.content);
+        }
+        reader.close();
     }
 }

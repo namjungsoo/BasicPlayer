@@ -50,7 +50,7 @@ dependencies {
     compile 'com.google.android.gms:play-services-ads:9.0.2'
 //    compile files('src/main/libs/juniversalchardet-1.0.3.jar')
     compile files('src/main/libs/charset-detector.jar')
-//    compile files('src/main/libs/chardet.jar')
+    compile files('src/main/libs/chardet.jar')
     compile('com.crashlytics.sdk.android:crashlytics:2.5.7@aar') {
         transitive = true;
     }
