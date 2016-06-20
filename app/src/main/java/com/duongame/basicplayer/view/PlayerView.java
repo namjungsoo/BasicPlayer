@@ -66,7 +66,7 @@ public class PlayerView extends View {
         Log.d(TAG, "mInterval=" + mInterval);
     }
 
-    public boolean openFile(String filename) {
+    public boolean openFile(final String filename) {
         // 파일 존재 여부 체크
         final File file = new File(filename);
         Log.d(TAG, String.valueOf(file.exists()));
@@ -83,19 +83,25 @@ public class PlayerView extends View {
             mBitmap = Bitmap.createBitmap(movieWidth, movieHeight, Bitmap.Config.ARGB_8888);
             Log.d(TAG, "init createBitmap");
 
+            mSubtitleList = null;
 
-            // 자막이 있으면 자막을 로딩하자
-            final String smiFile = filename.substring(0, filename.lastIndexOf(".")) + ".smi";
-            Log.d(TAG, "smiFile=" + smiFile);
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    // 자막이 있으면 자막을 로딩하자
+                    final String smiFile = filename.substring(0, filename.lastIndexOf(".")) + ".smi";
+                    Log.d(TAG, "smiFile=" + smiFile);
 
-            final SmiParser parser = new SmiParser();
-            try {
-                parser.load(smiFile);
-                mSubtitleList = parser.getSubtitleList();
-            } catch (IOException e) {
-                e.printStackTrace();
-                mSubtitleList = null;
-            }
+                    final SmiParser parser = new SmiParser();
+                    try {
+                        parser.load(smiFile);
+                        mSubtitleList = parser.getSubtitleList();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        mSubtitleList = null;
+                    }
+                }
+            }).start();
 
             initRenderTimer();
             resume();
@@ -325,7 +331,6 @@ public class PlayerView extends View {
                     subtitleY -= NavigationBarManager.getNavigationBarHeight(mContext);
                 }
             }
-
 
             for (int i = mSubtitleList.size() - 1; i >= 0; i--) {
                 // 역순으로 자막을 가져와서

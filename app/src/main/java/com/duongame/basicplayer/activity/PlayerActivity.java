@@ -22,7 +22,10 @@ import android.widget.TextView;
 import com.duongame.basicplayer.R;
 import com.duongame.basicplayer.manager.FullscreenManager;
 import com.duongame.basicplayer.manager.NavigationBarManager;
+import com.duongame.basicplayer.util.UnitConverter;
 import com.duongame.basicplayer.view.PlayerView;
+
+import java.io.File;
 
 public class PlayerActivity extends AppCompatActivity {
     private final static String TAG = "PlayerActivity";
@@ -152,11 +155,13 @@ public class PlayerActivity extends AppCompatActivity {
         }
 
         if (mPlayerView != null) {
+            // 풀스크린 처리
             mPlayerView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     setToolBox(!FullscreenManager.isFullscreen());
                     FullscreenManager.setFullscreen(PlayerActivity.this, !FullscreenManager.isFullscreen());
+
                     mPlayerView.invalidate();
                 }
             });
@@ -173,8 +178,10 @@ public class PlayerActivity extends AppCompatActivity {
 
                 if (mSeekBar != null)
                     mSeekBar.setMax((int) durationSec);
+                updatePlayButton();
+
+                setTitle(new File(filename).getName());
             }
-            updatePlayButton();
         }
 
         applyNavigationBarHeight(true);
@@ -314,6 +321,13 @@ public class PlayerActivity extends AppCompatActivity {
     private void applyNavigationBarHeight(boolean portrait) {
         if(mPlayerView != null) {
             mPlayerView.setPortrait(portrait);
+        }
+
+        if(portrait) {
+            mSeekTime.setTextSize(UnitConverter.dpToPx(24));
+        }
+        else {
+            mSeekTime.setTextSize(UnitConverter.dpToPx(32));
         }
 
         // 소프트키가 없을 경우에 패스

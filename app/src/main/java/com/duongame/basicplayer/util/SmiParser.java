@@ -1,7 +1,5 @@
 package com.duongame.basicplayer.util;
 
-import android.util.Log;
-
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -41,7 +39,7 @@ public class SmiParser {
 
         String line = reader.readLine();
         while(line != null) {
-            Log.d(TAG, line);
+//            Log.d(TAG, line);
             lineList.add(line);
             line = reader.readLine();
         }
@@ -152,7 +150,7 @@ public class SmiParser {
 
             subtitle.content = subtitle.content.replace("</FONT>", "");
 
-            Log.d(TAG, "i="+i + " start=" +subtitle.start + " end="+subtitle.end + " content="+subtitle.content);
+//            Log.d(TAG, "i="+i + " start=" +subtitle.start + " end="+subtitle.end + " content="+subtitle.content);
         }
         reader.close();
     }
