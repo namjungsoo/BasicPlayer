@@ -64,7 +64,7 @@ public class MainActivity extends AppCompatActivity {
         ShortcutManager.checkShortcut(this);
 
         // 그림자를 없앤다.
-        getSupportActionBar().setElevation(0);
+//        getSupportActionBar().setElevation(0);
 
         Player.init(this);
     }
@@ -325,7 +325,10 @@ public class MainActivity extends AppCompatActivity {
             if(bitmap!= null)
                 holder.iv.setImageBitmap(bitmap);
 
-            holder.tvName.setText(file.getName());
+            String name = file.getName();
+            name = name.substring(0, name.lastIndexOf("."));
+
+            holder.tvName.setText(name);
             holder.tvPath.setText(file.getParent());
 
             holder.itemView.setOnClickListener(new View.OnClickListener() {
