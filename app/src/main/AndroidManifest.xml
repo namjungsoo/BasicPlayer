@@ -23,6 +23,9 @@
             android:configChanges="orientation|keyboardHidden|screenSize">
 
         </activity>
+        <meta-data
+            android:name="io.fabric.ApiKey"
+            android:value="479ae7d868a353eb8da82e059fd1a04418af3cf3" />
     </application>
 
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />

@@ -44,7 +44,6 @@ public class PlayerActivity extends AppCompatActivity {
     private SeekBar mSeekBar;
     private TextView mSeekTime;
 
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

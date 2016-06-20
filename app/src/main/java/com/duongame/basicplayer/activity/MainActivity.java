@@ -20,6 +20,7 @@ import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.crashlytics.android.Crashlytics;
 import com.duongame.basicplayer.Player;
 import com.duongame.basicplayer.R;
 import com.duongame.basicplayer.manager.AdBannerManager;
@@ -29,6 +30,7 @@ import com.duongame.basicplayer.manager.ShortcutManager;
 import com.duongame.basicplayer.manager.ThumbnailManager;
 import com.google.android.gms.ads.AdView;
 
+import io.fabric.sdk.android.Fabric;
 import java.io.File;
 import java.util.ArrayList;
 
@@ -44,6 +46,7 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, "onCreate");
 
         super.onCreate(savedInstanceState);
+        Fabric.with(this, new Crashlytics());
 
         //setContentView(R.layout.activity_main);
         initView();

@@ -5,6 +5,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -14,8 +15,11 @@ import android.widget.Toast;
 
 import com.duongame.basicplayer.Player;
 import com.duongame.basicplayer.activity.PlayerActivity;
+import com.duongame.basicplayer.util.SmiParser;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -35,6 +39,7 @@ public class PlayerView extends View {
     private boolean mSeeking;
     private int mRotation = Surface.ROTATION_0;
     private boolean mPortrait = true;
+    private ArrayList<SmiParser.Subtitle> mSubtitleList;
 
     public PlayerView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -74,6 +79,20 @@ public class PlayerView extends View {
 
             mBitmap = Bitmap.createBitmap(movieWidth, movieHeight, Bitmap.Config.ARGB_8888);
             Log.d(TAG, "init createBitmap");
+
+
+            // 자막이 있으면 자막을 로딩하자
+            final String smiFile = filename.substring(0, filename.lastIndexOf(".")) + ".smi";
+            Log.d(TAG, "smiFile=" + smiFile);
+
+            final SmiParser parser = new SmiParser();
+            try {
+                parser.load(smiFile);
+                mSubtitleList = parser.getSubtitleList();
+            } catch (IOException e) {
+                e.printStackTrace();
+                mSubtitleList = null;
+            }
 
             initRenderTimer();
             resume();
@@ -152,6 +171,7 @@ public class PlayerView extends View {
 
         canvas.drawColor(Color.BLACK);
 
+        long currentPositionUs = -1;
         if (mBitmap != null) {
             if (mPlaying || mSeeking) {
                 int ret = Player.renderFrame(mBitmap);
@@ -163,7 +183,7 @@ public class PlayerView extends View {
                         activity.updatePlayButton();
                     }
                 } else {
-                    final long currentPositionUs = Player.getCurrentPositionUs();
+                    currentPositionUs = Player.getCurrentPositionUs();
                     final PlayerActivity activity = (PlayerActivity) mContext;
                     if (activity != null) {
                         activity.updatePosition(currentPositionUs);
@@ -249,6 +269,26 @@ public class PlayerView extends View {
 
             if (mRotation != Surface.ROTATION_0) {
                 canvas.restore();
+            }
+
+            // 자막이 있으면 렌더링 하자
+            if (mSubtitleList != null && currentPositionUs > -1) {
+                for (int i = mSubtitleList.size()-1; i >= 0; i--) {
+                    SmiParser.Subtitle subtitle = mSubtitleList.get(i);
+
+                    if(currentPositionUs > subtitle.start*1000) {
+                        if(subtitle.end == -1 || currentPositionUs < subtitle.end*1000) {
+                            Paint paint = new Paint();
+                            paint.setColor(Color.WHITE);
+                            paint.setAntiAlias(true);
+                            paint.setTextSize(96);
+                            canvas.drawText(subtitle.content, 0, height /2, paint);
+
+                            Log.d(TAG, "currentPositionUs="+currentPositionUs + " start="+subtitle.start*1000 + " end="+subtitle.end*1000);
+                            break;
+                        }
+                    }
+                }
             }
         }
 //        Log.d(TAG, "onDraw END");
