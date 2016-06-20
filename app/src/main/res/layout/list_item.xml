@@ -1,53 +1,65 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="80dp"
-    android:orientation="horizontal">
+    android:layout_height="wrap_content"
+    android:layout_marginLeft="4dp"
+    android:layout_marginRight="4dp"
+    android:layout_marginTop="2dp"
+    android:layout_marginBottom="2dp"
+    android:background="#333333"
+    app:cardCornerRadius="2dp">
 
-    <com.duongame.basicplayer.view.RoundedImageView
-        android:id="@+id/thumbnail"
-        android:layout_width="100dp"
-        android:layout_height="56dp"
-        android:layout_margin="5dp"
-        android:layout_gravity="center"
-        android:background="@drawable/round_corner"
-        />
-
+    <!--android:padding="20dp"-->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_margin="5dp"
-        android:gravity="center"
-        android:orientation="vertical">
+        android:layout_height="80dp"
+        android:orientation="horizontal">
 
-        <TextView
-            android:id="@+id/textName"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:text="filename"
-            android:textColor="#222222"
-            android:singleLine="true"
-            android:ellipsize="middle"
-            android:scrollHorizontally="true"
-            android:textSize="15sp"></TextView>
+        <com.duongame.basicplayer.view.RoundedImageView
+            android:id="@+id/thumbnail"
+            android:layout_width="100dp"
+            android:layout_height="56dp"
+            android:layout_gravity="center"
+            android:layout_margin="5dp"
+            android:background="@drawable/round_corner" />
 
-        <TextView
-            android:id="@+id/textPath"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:singleLine="true"
-            android:ellipsize="middle"
-            android:text="filepath"
-            android:textSize="12sp"></TextView>
+            android:layout_height="match_parent"
+            android:layout_margin="5dp"
+            android:gravity="center"
+            android:orientation="vertical">
 
-        <ProgressBar
-            android:id="@+id/progressbar"
-            style="?android:attr/progressBarStyleHorizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:max="100"
-            android:progress="100"></ProgressBar>
+            <TextView
+                android:id="@+id/textName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="middle"
+                android:gravity="center_vertical"
+                android:scrollHorizontally="true"
+                android:singleLine="true"
+                android:text="filename"
+                android:textColor="#222222"
+                android:textSize="15sp"></TextView>
+
+            <TextView
+                android:id="@+id/textPath"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="middle"
+                android:gravity="center_vertical"
+                android:singleLine="true"
+                android:text="filepath"
+                android:textSize="12sp"></TextView>
+
+            <ProgressBar
+                android:id="@+id/progressbar"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:max="100"
+                android:progress="100"></ProgressBar>
+        </LinearLayout>
     </LinearLayout>
-</LinearLayout>
+</android.support.v7.widget.CardView>
