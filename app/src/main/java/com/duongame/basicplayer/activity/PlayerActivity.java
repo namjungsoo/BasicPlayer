@@ -22,6 +22,7 @@ import android.widget.TextView;
 import com.duongame.basicplayer.R;
 import com.duongame.basicplayer.manager.FullscreenManager;
 import com.duongame.basicplayer.manager.NavigationBarManager;
+import com.duongame.basicplayer.util.TimeConverter;
 import com.duongame.basicplayer.util.UnitConverter;
 import com.duongame.basicplayer.view.PlayerView;
 
@@ -29,8 +30,6 @@ import java.io.File;
 
 public class PlayerActivity extends AppCompatActivity {
     private final static String TAG = "PlayerActivity";
-    private final static long SEC_TO_US = 1000000L;
-    private final static float US_TO_SEC = 0.000001f;
 
     private PlayerView mPlayerView;
 
@@ -94,10 +93,10 @@ public class PlayerActivity extends AppCompatActivity {
                     // 유저가 움직였을 경우에만 탐색
                     if (fromUser) {
                         Log.d(TAG, "progress=" + progress);
-                        final long positionUs = progress * SEC_TO_US;
+                        final long positionUs = progress * TimeConverter.SEC_TO_US;
                         Log.d(TAG, "seekMovie " + positionUs);
                         mPlayerView.seekMovie(positionUs);
-                        mSeekTime.setText(convertUsToString(positionUs));
+                        mSeekTime.setText(TimeConverter.convertUsToString(positionUs));
                         mPlayerView.invalidate();
                     }
                 }
@@ -170,8 +169,8 @@ public class PlayerActivity extends AppCompatActivity {
             // 파일 읽기 성공일때
             if (mPlayerView.openFile(filename)) {
                 final long durationUs = mPlayerView.getMovieDurationUs();
-                long durationSec = durationUs / SEC_TO_US;
-                final String duration = convertUsToString(durationUs);
+                long durationSec = durationUs / TimeConverter.SEC_TO_US;
+                final String duration = TimeConverter.convertUsToString(durationUs);
 
                 if (mDurationTime != null)
                     mDurationTime.setText(duration);
@@ -273,30 +272,16 @@ public class PlayerActivity extends AppCompatActivity {
     public void updatePosition(long positionUs) {
         if (!FullscreenManager.isFullscreen()) {
             // 시간 텍스트 업데이트
-            final String position = convertUsToString(positionUs);
+            final String position = TimeConverter.convertUsToString(positionUs);
             mCurrentTime.setText(position);
 
-            long positionSec = positionUs / SEC_TO_US;
+            long positionSec = positionUs / TimeConverter.SEC_TO_US;
 
             // SeekBar 포지션 업데이트
             mSeekBar.setProgress((int) positionSec);
 
             mDebugCurrent.setText(""+positionSec*1000);
         }
-    }
-
-    private String convertUsToString(long timeUs) {
-        // 초단위로 변경
-        timeUs = timeUs / SEC_TO_US;
-
-        long hour = timeUs / 3600;
-        long min = (timeUs - (hour * 3600)) / 60;
-        long sec = timeUs - (hour * 3600) - min * 60;
-
-        if(hour > 0)
-            return String.format("%01d:%02d:%02d", hour, min, sec);
-        else
-            return String.format("%02d:%02d", min, sec);
     }
 
     private void setToolBox(boolean newFullscreen) {

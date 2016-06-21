@@ -12,7 +12,6 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -24,6 +23,8 @@ import com.duongame.basicplayer.manager.AdInterstitialManager;
 import com.duongame.basicplayer.manager.PermissionManager;
 import com.duongame.basicplayer.manager.ShortcutManager;
 import com.duongame.basicplayer.manager.ThumbnailManager;
+import com.duongame.basicplayer.util.TimeConverter;
+import com.duongame.basicplayer.view.ThumbnailImageView;
 import com.google.android.gms.ads.AdView;
 
 import java.io.File;
@@ -39,12 +40,9 @@ public class MainActivity extends AppCompatActivity {
     private String mExtRoot;
 
     private RecyclerView mRecyclerView;
-//    private RecyclerView.Adapter mAdapter;
     private RecyclerView.LayoutManager mLayoutManager;
 
-    //    private ListView mListMovie;
     private MovieAdapter mMovieAdapter;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,49 +67,7 @@ public class MainActivity extends AppCompatActivity {
         Player.init(this);
     }
 
-//    private void initToolbar() {
-//        // 툴바 세팅
-//        final Toolbar toolbar = (Toolbar)findViewById(R.id.toolBar);
-//        setSupportActionBar(toolbar);
-//
-//        // 폰트 세팅
-//        final Typeface tf = Typeface.defaultFromStyle(Typeface.NORMAL);
-//        TextView toolbarTitle = null;
-//        for (int i = 0; i < toolbar.getChildCount(); ++i) {
-//            View child = toolbar.getChildAt(i);
-//
-//            // assuming that the title is the first instance of TextView
-//            // you can also check if the title string matches
-//            if (child instanceof TextView) {
-//                toolbarTitle = (TextView)child;
-//                break;
-//            }
-//        }
-//        toolbarTitle.setTypeface(tf);
-//    }
-
-//    private TextView getActionBarTitle() {
-//        View v = getWindow().getDecorView();
-//        int resId = getResources().getIdentifier("action_bar_title", "id", "android");
-//        return (TextView)v.findViewById(resId);
-//    }
-
     private void initAdapter() {
-//        mMovieAdapter = new MovieAdapter();
-//        mListMovie.setAdapter(mMovieAdapter);
-//        // 아이템을 클릭하면 오픈하자
-//        mListMovie.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-//            @Override
-//            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-//                final File file = (File) mMovieAdapter.getItem(position);
-//
-//                final Intent intent = new Intent(MainActivity.this, PlayerActivity.class);
-//                intent.putExtra("filename", file.getAbsolutePath());
-//                startActivity(intent);
-//            }
-//        });
-
-
         mMovieAdapter = new MovieAdapter();
         mRecyclerView.setAdapter(mMovieAdapter);
     }
@@ -122,30 +78,6 @@ public class MainActivity extends AppCompatActivity {
 
         mLayoutManager = new LinearLayoutManager(this);
         mRecyclerView.setLayoutManager(mLayoutManager);
-
-//        mListMovie = (ListView) relativeLayout.findViewById(R.id.listMovie);
-//        mListMovie.setLayoutParams(params);
-//        mListMovie.setOnScrollListener(new AbsListView.OnScrollListener() {
-//            @Override
-//            public void onScrollStateChanged(AbsListView view, int scrollState) {
-//
-//            }
-//
-//            @Override
-//            public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-//                final View child = mListMovie.getChildAt(0);
-//                if (child != null) {
-//                    int scrollY = -child.getTop();
-//                    if (scrollY == 0) {
-//                        mSwipeLayout.setEnabled(true);
-//                        return;
-//                    }
-//                }
-//
-//                mSwipeLayout.setEnabled(false);
-//            }
-//        });
-
     }
 
     private void initView() {
@@ -203,7 +135,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void findFiles(File path, String[] ext, ArrayList<File> result) {
+    private void findFiles(File path, String[] ext, ArrayList<MovieFile> result) {
         final File[] files = path.listFiles();
         if (files == null)
             return;
@@ -230,7 +162,7 @@ public class MainActivity extends AppCompatActivity {
             for (int j = 0; j < ext.length; j++) {
                 // 확장자가 맞으면
                 if (each.getName().endsWith(ext[j])) {
-                    result.add(each);
+                    MovieFile movieFile = new MovieFile(each, "");
 
                     // 썸네일에 등록하자
                     if (Player.openMovieWithAudio(each.getAbsolutePath(), 0) >= 0) {
@@ -241,9 +173,13 @@ public class MainActivity extends AppCompatActivity {
                         Player.renderFrame(bitmap);
 
                         ThumbnailManager.addBitmap(each.getPath(), bitmap);
-                        Player.closeMovie();
-                    }
 
+                        movieFile.timeText = TimeConverter.convertUsToString(Player.getMovieDurationUs());
+                        Player.closeMovie();
+
+
+                    }
+                    result.add(movieFile);
                     break;
                 }
             }
@@ -264,7 +200,7 @@ public class MainActivity extends AppCompatActivity {
                 mExtRoot = root;
 
                 // 썸네일도 등록해야 되는데 일단 파일 이름만
-                final ArrayList<File> files = new ArrayList<File>();
+                final ArrayList<MovieFile> files = new ArrayList<MovieFile>();
 
                 findFiles(new File(root), ext, files);
 
@@ -281,16 +217,26 @@ public class MainActivity extends AppCompatActivity {
         }).start();
     }
 
+    public class MovieFile {
+        public File file;
+        public String timeText;
+
+        public MovieFile(File f, String t) {
+            file = f;
+            timeText = t;
+        }
+    }
+
     //RECYCLERVIEW
     public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder> {
-        private ArrayList<File> movieList;
+        private ArrayList<MovieFile> movieList;
 
         public MovieAdapter() {
             refreshList();
         }
 
         public class ViewHolder extends RecyclerView.ViewHolder {
-            public ImageView iv;
+            public ThumbnailImageView iv;
             public TextView tvName;
             public TextView tvPath;
 
@@ -299,7 +245,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
-        public void setMovieList(ArrayList<File> movieList) {
+        public void setMovieList(ArrayList<MovieFile> movieList) {
             this.movieList = movieList;
         }
 
@@ -308,7 +254,7 @@ public class MainActivity extends AppCompatActivity {
             final View v = getLayoutInflater().inflate(R.layout.list_item, parent, false);
             final ViewHolder holder = new ViewHolder(v);
 
-            holder.iv = (ImageView) v.findViewById(R.id.thumbnail);
+            holder.iv = (ThumbnailImageView) v.findViewById(R.id.thumbnail);
             holder.tvName = (TextView) v.findViewById(R.id.textName);
             holder.tvPath = (TextView) v.findViewById(R.id.textPath);
 
@@ -317,13 +263,15 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onBindViewHolder(MovieAdapter.ViewHolder holder, int position) {
-            final File file = movieList.get(position);
+            final File file = movieList.get(position).file;
 
             Log.v(TAG, file.getPath());
             Bitmap bitmap = ThumbnailManager.getBitmap(file.getPath());
 
-            if(bitmap!= null)
+            if(bitmap!= null) {
                 holder.iv.setImageBitmap(bitmap);
+            }
+            holder.iv.setTimeText(movieList.get(position).timeText);
 
             String name = file.getName();
             name = name.substring(0, name.lastIndexOf("."));
@@ -348,69 +296,4 @@ public class MainActivity extends AppCompatActivity {
             return 0;
         }
     }
-
-    //LISTVIEW
-//    public class MovieAdapter extends BaseAdapter {
-//        private ArrayList<File> movieList;
-//
-//        // 동적으로 파일을 찾자
-//        public MovieAdapter() {
-//            super();
-//            refreshList();
-//        }
-//
-//        public void setMovieList(ArrayList<File> movieList) {
-//            this.movieList = movieList;
-//        }
-//
-//        @Override
-//        public int getCount() {
-//            if (movieList != null)
-//                return movieList.size();
-//            return 0;
-//        }
-//
-//        @Override
-//        public Object getItem(int position) {
-//            if (movieList != null)
-//                return movieList.get(position);
-//            return null;
-//        }
-//
-//        @Override
-//        public long getItemId(int position) {
-//            return 0;
-//        }
-//
-//        class ViewHolder {
-//            public ImageView iv;
-//            public TextView tvName;
-//            public TextView tvPath;
-//        }
-//
-//        @Override
-//        public View getView(int position, View convertView, ViewGroup parent) {
-//            //TODO: ViewHolder
-//            ViewHolder viewHolder;
-//
-//            if(convertView == null) {
-//                convertView = getLayoutInflater().inflate(R.layout.list_item, parent, false);
-//
-//                viewHolder = new ViewHolder();
-//                viewHolder.iv = (ImageView) convertView.findViewById(R.id.thumbnail);
-//                viewHolder.tvName = (TextView) convertView.findViewById(R.id.textName);
-//                viewHolder.tvPath = (TextView) convertView.findViewById(R.id.textPath);
-//
-//                convertView.setTag(viewHolder);
-//            }
-//            else {
-//                viewHolder = (ViewHolder)convertView.getTag();
-//            }
-//            viewHolder.iv.setImageBitmap(ThumbnailManager.getBitmap(movieList.get(position).getPath()));
-//            viewHolder.tvName.setText(movieList.get(position).getName());
-//            viewHolder.tvPath.setText(movieList.get(position).getParent());
-//
-//            return convertView;
-//        }
-//    }
 }

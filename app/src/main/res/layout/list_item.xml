@@ -1,38 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginLeft="12dp"
-    android:layout_marginRight="12dp"
-    android:layout_marginTop="6dp"
-    android:layout_marginBottom="6dp"
-    android:background="#333333"
-    app:cardCornerRadius="6dp"
-    app:cardElevation="3dp">
+    android:layout_margin="8dp"
+>
+    <!--android:layout_marginLeft="12dp"-->
+    <!--android:layout_marginRight="12dp"-->
+    <!--android:layout_marginTop="6dp"-->
+    <!--android:layout_marginBottom="6dp"-->
 
     <!--android:padding="20dp"-->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="80dp"
+        android:layout_height="70dp"
         android:orientation="horizontal">
 
-        <!--<com.duongame.basicplayer.view.RoundedImageView-->
-        <ImageView
+        <com.duongame.basicplayer.view.ThumbnailImageView
             android:id="@+id/thumbnail"
-            android:layout_width="120dp"
-            android:layout_height="80dp"
+            android:layout_width="88dp"
+            android:layout_height="66dp"
             android:layout_gravity="center"
-            android:background="#000000"
             android:scaleType="centerCrop"
+            android:background="@drawable/round_corner"
             />
-        <!--android:background="@drawable/round_corner"-->
 
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_marginLeft="5dp"
-            android:layout_marginRight="5dp">
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp">
             <!--android:gravity="center"-->
 
             <!--android:ellipsize="middle"-->
@@ -40,7 +37,7 @@
             <TextView
                 android:id="@+id/textName"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:gravity="center_vertical"
                 android:singleLine="false"
                 android:maxLines="3"
@@ -66,8 +63,9 @@
                 android:layout_marginBottom="-4dp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:visibility="invisible"
                 android:max="100"
                 android:progress="100"></ProgressBar>
         </RelativeLayout>
     </LinearLayout>
-</android.support.v7.widget.CardView>
+</LinearLayout>
