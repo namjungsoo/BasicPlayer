@@ -67,46 +67,96 @@ public class PlayerActivity extends AppCompatActivity {
 //        Toolbar toolbar = (Toolbar)findViewById(R.id.toolBar);
 //        setSupportActionBar(toolbar);
 
-        mPlayerFrame = (FrameLayout)findViewById(R.id.playerFrame);
+        mPlayerFrame = (FrameLayout) findViewById(R.id.playerFrame);
 
         mPlayerView = (PlayerView) findViewById(R.id.playerView);
         mToolBox = (ViewGroup) findViewById(R.id.toolBox);
 
         mCurrentTime = (TextView) findViewById(R.id.currentTime);
         mDurationTime = (TextView) findViewById(R.id.durationTime);
-        mDegree = (TextView)findViewById(R.id.degree);
-        mDebugCurrent = (TextView)findViewById(R.id.debugCurrent);
+        mDegree = (TextView) findViewById(R.id.degree);
+        mDebugCurrent = (TextView) findViewById(R.id.debugCurrent);
 
         mPlay = (ImageButton) findViewById(R.id.play);
         mRotate = (ImageButton) findViewById(R.id.rotate);
 
-        mSeekTime = (TextView)findViewById(R.id.seekTime);
+        mSeekTime = (TextView) findViewById(R.id.seekTime);
         mSeekBar = (SeekBar) findViewById(R.id.seekBar);
 
-        if(mPlayerFrame != null) {
+        // 광고 처리
+        initAd();
+
+        initSeekBar();
+
+        initRotation();
+
+        initFullscreen();
+
+        initPause();
+
+        initActionBar();
+
+        applyNavigationBarHeight(true);
+        FullscreenManager.setFullscreen(this, true);
+        setToolBox(true);
+
+        updateRotation();
+    }
+
+    @Override
+    public void onPause() {
+        Log.d(TAG, "onPause");
+
+        super.onPause();
+        mPlayerView.pause();
+        updatePlayButton();
+    }
+
+    @Override
+    public void onStop() {
+        Log.d(TAG, "onStop");
+
+        super.onStop();
+
+        mPlayerFrame.removeView(mAdView);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                // API 5+ solution
+                onBackPressed();
+                return true;
+
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+
+        mToolBox.setAlpha(mAlpha);
+        updateRotation();
+    }
+
+    private void initAd() {
+        if (mPlayerFrame != null) {
             mActionBarHeight = ScreenManager.getActionBarHeight(this);
             mStatusBarHeight = ScreenManager.getStatusBarHeight(this);
             final AdView adView = AdBannerManager.getAdTopBannerView();
             final FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
             params.gravity = Gravity.TOP;
             adView.setLayoutParams(params);
-            adView.setY(mActionBarHeight+mStatusBarHeight);
+            adView.setY(mActionBarHeight + mStatusBarHeight);
             mPlayerFrame.addView(adView, 1);
             mAdView = adView;
         }
+    }
 
-        mRotate.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(mPlayerView != null) {
-                    final int newRotation = (mPlayerView.getBitmapRotation() + 1) % (Surface.ROTATION_270+1);
-                    mPlayerView.setBitmapRotation(newRotation);
-                    updateBitmapRotation();
-                    mPlayerView.invalidate();
-                }
-            }
-        });
-
+    private void initSeekBar() {
         if (mSeekBar != null) {
             mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
                 private boolean startAtPaused = false;
@@ -159,23 +209,9 @@ public class PlayerActivity extends AppCompatActivity {
                 }
             });
         }
+    }
 
-        if (mPlay != null) {// 일시정지를 시키자
-            mPlay.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (mPlayerView != null) {
-                        if (mPlayerView.getPlaying()) {
-                            mPlayerView.pause();
-                        } else {
-                            mPlayerView.resume();
-                        }
-                    }
-                    updatePlayButton();
-                }
-            });
-        }
-
+    private void initFullscreen() {
         if (mPlayerView != null) {
             // 풀스크린 처리
             mPlayerView.setOnClickListener(new View.OnClickListener() {
@@ -205,69 +241,57 @@ public class PlayerActivity extends AppCompatActivity {
                 setTitle(new File(filename).getName());
             }
         }
+    }
 
-        applyNavigationBarHeight(true);
-        FullscreenManager.setFullscreen(this, true);
-        setToolBox(true);
+    private void initRotation() {
+        mRotate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mPlayerView != null) {
+                    final int newRotation = (mPlayerView.getBitmapRotation() + 1) % (Surface.ROTATION_270 + 1);
+                    mPlayerView.setBitmapRotation(newRotation);
+                    updateBitmapRotation();
+                    mPlayerView.invalidate();
+                }
+            }
+        });
+    }
 
+    private void initPause() {
+        if (mPlay != null) {// 일시정지를 시키자
+            mPlay.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (mPlayerView != null) {
+                        if (mPlayerView.getPlaying()) {
+                            mPlayerView.pause();
+                        } else {
+                            mPlayerView.resume();
+                        }
+                    }
+                    updatePlayButton();
+                }
+            });
+        }
+    }
+
+    private void initActionBar() {
         // 타이틀바 반투명 블랙
         final ActionBar actionBar = getSupportActionBar();
-        if(actionBar != null) {
+        if (actionBar != null) {
             getSupportActionBar().setBackgroundDrawable(new ColorDrawable(Color.parseColor("#66000000")));
 
             // 타이틀바 백버튼 보이기
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
-
-        updateRotation();
-    }
-
-    @Override
-    public void onPause() {
-        Log.d(TAG, "onPause");
-
-        super.onPause();
-        mPlayerView.pause();
-        updatePlayButton();
-    }
-
-    @Override
-    public void onStop() {
-        Log.d(TAG, "onStop");
-
-        super.onStop();
-
-        mPlayerFrame.removeView(mAdView);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                // API 5+ solution
-                onBackPressed();
-                return true;
-
-            default:
-                return super.onOptionsItemSelected(item);
-        }
-    }
-
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-
-        mToolBox.setAlpha(mAlpha);
-        updateRotation();
     }
 
     private void updateBitmapRotation() {
         final int rotation = mPlayerView.getBitmapRotation();
-        if(rotation == Surface.ROTATION_0) {
+        if (rotation == Surface.ROTATION_0) {
             mDegree.setVisibility(View.INVISIBLE);
-        }
-        else {
-            switch(rotation) {
+        } else {
+            switch (rotation) {
                 case Surface.ROTATION_90:
                     mDegree.setText("90°");
                     break;
@@ -315,7 +339,7 @@ public class PlayerActivity extends AppCompatActivity {
             // SeekBar 포지션 업데이트
             mSeekBar.setProgress((int) positionSec);
 
-            mDebugCurrent.setText(""+positionSec*1000);
+            mDebugCurrent.setText("" + positionSec * 1000);
         }
     }
 
@@ -340,14 +364,13 @@ public class PlayerActivity extends AppCompatActivity {
     }
 
     private void applyNavigationBarHeight(boolean portrait) {
-        if(mPlayerView != null) {
+        if (mPlayerView != null) {
             mPlayerView.setPortrait(portrait);
         }
 
-        if(portrait) {
+        if (portrait) {
             mSeekTime.setTextSize(UnitConverter.dpToPx(24));
-        }
-        else {
+        } else {
             mSeekTime.setTextSize(UnitConverter.dpToPx(32));
         }
 
