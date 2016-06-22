@@ -16,7 +16,7 @@ import android.widget.Toast;
 import com.duongame.basicplayer.Player;
 import com.duongame.basicplayer.activity.PlayerActivity;
 import com.duongame.basicplayer.manager.FullscreenManager;
-import com.duongame.basicplayer.manager.NavigationBarManager;
+import com.duongame.basicplayer.manager.ScreenManager;
 import com.duongame.basicplayer.util.SmiParser;
 import com.duongame.basicplayer.util.UnitConverter;
 
@@ -286,7 +286,7 @@ public class PlayerView extends View {
     }
 
     private void drawSubtitle(Canvas canvas, long currentPositionUs) {
-        Log.d(TAG, "drawSubtitle currentPositionUs="+currentPositionUs);
+//        Log.d(TAG, "drawSubtitle currentPositionUs="+currentPositionUs);
 
         // 자막이 있으면 렌더링 하자
         if (mSubtitleList != null && currentPositionUs > -1) {
@@ -328,7 +328,7 @@ public class PlayerView extends View {
                 subtitleY = height - UnitConverter.dpToPx(120);
 
                 if(mPortrait) {
-                    subtitleY -= NavigationBarManager.getNavigationBarHeight(mContext);
+                    subtitleY -= ScreenManager.getNavigationBarHeight(mContext);
                 }
             }
 

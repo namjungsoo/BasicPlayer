@@ -98,22 +98,20 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // AdView 생성
-        final AdView adView = AdBannerManager.getAdBannerView();
 
+        // 파일리스트뷰를 불러오자
+        initListView(relativeLayout);
+
+        // AdView 생성
+        final AdView adView = AdBannerManager.getAdBottomBannerView();
         RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         params.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-
         adView.setLayoutParams(params);
-        adView.setId(ADVIEW_ID);// 아이디를 꼭 생성해 주어야 한다
-
+        adView.setId(R.id.admob);// 아이디를 꼭 생성해 주어야 한다
         relativeLayout.addView(adView, 0);
 
         params = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         params.addRule(RelativeLayout.ABOVE, adView.getId());
-
-        // 파일리스트뷰를 불러오자
-        initListView(relativeLayout);
         mRecyclerView.setLayoutParams(params);
 
         setContentView(root);

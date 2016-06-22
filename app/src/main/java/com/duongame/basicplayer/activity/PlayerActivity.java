@@ -5,8 +5,10 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.v4.content.res.ResourcesCompat;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.MenuItem;
 import android.view.Surface;
 import android.view.View;
@@ -20,11 +22,13 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.duongame.basicplayer.R;
+import com.duongame.basicplayer.manager.AdBannerManager;
 import com.duongame.basicplayer.manager.FullscreenManager;
-import com.duongame.basicplayer.manager.NavigationBarManager;
+import com.duongame.basicplayer.manager.ScreenManager;
 import com.duongame.basicplayer.util.TimeConverter;
 import com.duongame.basicplayer.util.UnitConverter;
 import com.duongame.basicplayer.view.PlayerView;
+import com.google.android.gms.ads.AdView;
 
 import java.io.File;
 
@@ -47,6 +51,12 @@ public class PlayerActivity extends AppCompatActivity {
     private TextView mSeekTime;
 
     private TextView mDebugCurrent;
+    private FrameLayout mPlayerFrame;
+
+    private AdView mAdView;
+
+    private int mActionBarHeight;
+    private int mStatusBarHeight;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -57,7 +67,9 @@ public class PlayerActivity extends AppCompatActivity {
 //        Toolbar toolbar = (Toolbar)findViewById(R.id.toolBar);
 //        setSupportActionBar(toolbar);
 
-        mPlayerView = (PlayerView) findViewById(R.id.moviePlay);
+        mPlayerFrame = (FrameLayout)findViewById(R.id.playerFrame);
+
+        mPlayerView = (PlayerView) findViewById(R.id.playerView);
         mToolBox = (ViewGroup) findViewById(R.id.toolBox);
 
         mCurrentTime = (TextView) findViewById(R.id.currentTime);
@@ -69,8 +81,19 @@ public class PlayerActivity extends AppCompatActivity {
         mRotate = (ImageButton) findViewById(R.id.rotate);
 
         mSeekTime = (TextView)findViewById(R.id.seekTime);
-
         mSeekBar = (SeekBar) findViewById(R.id.seekBar);
+
+        if(mPlayerFrame != null) {
+            mActionBarHeight = ScreenManager.getActionBarHeight(this);
+            mStatusBarHeight = ScreenManager.getStatusBarHeight(this);
+            final AdView adView = AdBannerManager.getAdTopBannerView();
+            final FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            params.gravity = Gravity.TOP;
+            adView.setLayoutParams(params);
+            adView.setY(mActionBarHeight+mStatusBarHeight);
+            mPlayerFrame.addView(adView, 1);
+            mAdView = adView;
+        }
 
         mRotate.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -188,10 +211,13 @@ public class PlayerActivity extends AppCompatActivity {
         setToolBox(true);
 
         // 타이틀바 반투명 블랙
-        getSupportActionBar().setBackgroundDrawable(new ColorDrawable(Color.parseColor("#66000000")));
+        final ActionBar actionBar = getSupportActionBar();
+        if(actionBar != null) {
+            getSupportActionBar().setBackgroundDrawable(new ColorDrawable(Color.parseColor("#66000000")));
 
-        // 타이틀바 백버튼 보이기
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            // 타이틀바 백버튼 보이기
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
 
         updateRotation();
     }
@@ -203,6 +229,15 @@ public class PlayerActivity extends AppCompatActivity {
         super.onPause();
         mPlayerView.pause();
         updatePlayButton();
+    }
+
+    @Override
+    public void onStop() {
+        Log.d(TAG, "onStop");
+
+        super.onStop();
+
+        mPlayerFrame.removeView(mAdView);
     }
 
     @Override
@@ -301,6 +336,7 @@ public class PlayerActivity extends AppCompatActivity {
         animation.setDuration(300);
         animation.setInterpolator(new AccelerateInterpolator());
         mToolBox.startAnimation(animation);
+        mAdView.startAnimation(animation);
     }
 
     private void applyNavigationBarHeight(boolean portrait) {
@@ -316,10 +352,10 @@ public class PlayerActivity extends AppCompatActivity {
         }
 
         // 소프트키가 없을 경우에 패스
-        if (!NavigationBarManager.hasSoftKeyMenu(this))
+        if (!ScreenManager.hasSoftKeyMenu(this))
             return;
 
-        final int size = NavigationBarManager.getNavigationBarHeight(this);
+        final int size = ScreenManager.getNavigationBarHeight(this);
         final LinearLayout layout = (LinearLayout) findViewById(R.id.toolBox);
 
         // 수직일때는 하단

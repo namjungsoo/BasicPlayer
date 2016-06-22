@@ -3,6 +3,7 @@ package com.duongame.basicplayer.manager;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.content.res.TypedArray;
 import android.graphics.Point;
 import android.os.Build;
 import android.view.Display;
@@ -16,7 +17,7 @@ import java.lang.reflect.InvocationTargetException;
 /**
  * Created by namjungsoo on 16. 6. 18..
  */
-public class NavigationBarManager {
+public class ScreenManager {
     public static Point getNavigationBarSize(Context context) {
         Point appUsableSize = getAppUsableScreenSize(context);
         Point realScreenSize = getRealScreenSize(context);
@@ -84,6 +85,24 @@ public class NavigationBarManager {
                 return c.getResources().getDimensionPixelSize(resourceId);
             }
         }
+        return result;
+    }
+
+    public static int getStatusBarHeight(Context c) {
+        int result = 0;
+        int resourceId = c.getResources().getIdentifier("status_bar_height", "dimen", "android");
+        if (resourceId > 0) {
+            result = c.getResources().getDimensionPixelSize(resourceId);
+        }
+        return result;
+    }
+
+
+    public static int getActionBarHeight(Context c) {
+        final TypedArray styledAttributes = c.getTheme().obtainStyledAttributes(
+                new int[] { android.R.attr.actionBarSize });
+        int result = (int) styledAttributes.getDimension(0, 0);
+        styledAttributes.recycle();
         return result;
     }
 

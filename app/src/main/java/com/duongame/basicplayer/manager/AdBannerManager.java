@@ -15,10 +15,12 @@ public class AdBannerManager {
     private final static String TAG = "AdBannerManager";
 
     // 코믹z뷰어 전용 id
-    private static final String BANNER_ID = "ca-app-pub-5576037828251153/8260818625";
-    private static final String POPUP_ID = "ca-app-pub-5576037828251153/2214285028";
+    private static final String TOP_BANNER_ID    = "ca-app-pub-5576037828251153/1527040225";
+    private static final String BOTTOM_BANNER_ID = "ca-app-pub-5576037828251153/4620107424";
+    private static final String POPUP_ID         = "ca-app-pub-5576037828251153/3003773421";
 
-    private static AdView adBannerView;
+    private static AdView adTopBannerView;
+    private static AdView adBottomBannerView;
     private static AdView adPopupView;
 
     public static AdView createAd(Activity context, String adid, AdSize adtype) {
@@ -36,9 +38,46 @@ public class AdBannerManager {
         return adView;
     }
 
-    public static void initBannerAd(Activity context) {
-        adBannerView = createAd(context, BANNER_ID, AdSize.SMART_BANNER);
-        adBannerView.setAdListener(new AdListener() {
+    public static void initTopBannerAd(Activity context) {
+        adTopBannerView = createAd(context, TOP_BANNER_ID, AdSize.SMART_BANNER);
+        adTopBannerView.setAdListener(new AdListener() {
+            private static final String TAG = "adBannerView";
+
+            @Override
+            public void onAdClosed() {
+                super.onAdClosed();
+                Log.d(TAG, "onAdClosed");
+            }
+
+            @Override
+            public void onAdFailedToLoad(int errorCode) {
+                super.onAdFailedToLoad(errorCode);
+                Log.d(TAG, "onAdFailedToLoad");
+            }
+
+            @Override
+            public void onAdLeftApplication() {
+                super.onAdLeftApplication();
+                Log.d(TAG, "onAdLeftApplication");
+            }
+
+            @Override
+            public void onAdOpened() {
+                super.onAdOpened();
+                Log.d(TAG, "onAdOpened");
+            }
+
+            @Override
+            public void onAdLoaded() {
+                super.onAdLoaded();
+                Log.d(TAG, "onAdLoaded");
+            }
+        });
+    }
+
+    public static void initBottomBannerAd(Activity context) {
+        adBottomBannerView = createAd(context, BOTTOM_BANNER_ID, AdSize.SMART_BANNER);
+        adBottomBannerView.setAdListener(new AdListener() {
             private static final String TAG = "adBannerView";
 
             @Override
@@ -111,12 +150,17 @@ public class AdBannerManager {
     }
 
     public static void init(Activity context) {
-        initBannerAd(context);
+        initBottomBannerAd(context);
+        initTopBannerAd(context);
         initPopupAd(context);
     }
 
-    public static AdView getAdBannerView() {
-        return adBannerView;
+    public static AdView getAdBottomBannerView() {
+        return adBottomBannerView;
+    }
+
+    public static AdView getAdTopBannerView() {
+        return adTopBannerView;
     }
 
     public static AdView getAdPopupView() {
