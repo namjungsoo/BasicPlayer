@@ -100,7 +100,12 @@ public class PlayerActivity extends AppCompatActivity {
 
         applyNavigationBarHeight(true);
         FullscreenManager.setFullscreen(this, true);
-        setToolBox(false);
+
+//        setToolBox(false);
+
+        // 최초에 GONE으로 초기화 해야 초반에 튀는 화면이 보이지 않는다.
+        mAdView.setVisibility(View.GONE);
+        mToolBox.setVisibility(View.GONE);
 
         updateRotation();
     }
@@ -240,6 +245,12 @@ public class PlayerActivity extends AppCompatActivity {
                     // 현재가 풀스크린이 아니면 숨겨준다.
                     setToolBox(!FullscreenManager.isFullscreen());
 
+                    // 포즈 상태이면
+                    if(!mPlayerView.getPlaying()) {
+                        if(mAdView.getVisibility() == View.VISIBLE)
+                            setAdView(!FullscreenManager.isFullscreen());
+                    }
+
                     mPlayerView.invalidate();
                 }
             });
@@ -287,13 +298,15 @@ public class PlayerActivity extends AppCompatActivity {
                         if (mPlayerView.getPlaying()) {
                             mPlayerView.pause();
 
-                            animation = createAlphaAnimation(false);
+//                            animation = createAlphaAnimation(false);
+                            setAdView(true);
                         } else {
                             mPlayerView.resume();
 
-                            animation = createAlphaAnimation(true);
+//                            animation = createAlphaAnimation(true);
+                            setAdView(false);
                         }
-                        mAdView.startAnimation(animation);
+//                        mAdView.startAnimation(animation);
                     }
                     updatePlayButton();
                 }
@@ -385,9 +398,21 @@ public class PlayerActivity extends AppCompatActivity {
         return animation;
     }
 
+    private void setAdView(boolean showing) {
+        Log.d(TAG, "setAdView "+showing);
+
+        mAdView.setVisibility(View.VISIBLE);
+        // 기본값으로 설정후에 애니메이션 한다
+        mAdView.setAlpha(1.0f);
+        final Animation animation = createAlphaAnimation(showing);
+
+        mAdView.startAnimation(animation);
+    }
+
     private void setToolBox(boolean showing) {
         Log.d(TAG, "setToolBox "+showing);
 
+        mToolBox.setVisibility(View.VISIBLE);
         // 기본값으로 설정후에 애니메이션 한다
         mToolBox.setAlpha(1.0f);
 
