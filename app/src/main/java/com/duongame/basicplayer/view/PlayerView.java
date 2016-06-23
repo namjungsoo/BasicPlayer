@@ -33,7 +33,7 @@ public class PlayerView extends View {
     private final static String TAG = "PlayerView";
 
     private Bitmap mBitmap;
-    //    private int mMovieWidth;
+//    private int mMovieWidth;
 //    private int mMovieHeight;
     private Timer mTimer;
     private Context mContext;
