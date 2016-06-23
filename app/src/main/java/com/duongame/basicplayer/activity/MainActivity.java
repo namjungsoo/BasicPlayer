@@ -20,6 +20,7 @@ import com.duongame.basicplayer.R;
 import com.duongame.basicplayer.manager.AdBannerManager;
 import com.duongame.basicplayer.manager.AdInterstitialManager;
 import com.duongame.basicplayer.manager.PermissionManager;
+import com.duongame.basicplayer.manager.PreferenceManager;
 import com.duongame.basicplayer.manager.ShortcutManager;
 import com.duongame.basicplayer.manager.ThumbnailManager;
 import com.duongame.basicplayer.util.TimeConverter;
@@ -64,6 +65,18 @@ public class MainActivity extends BaseActivity {
 //        getSupportActionBar().setElevation(0);
 
         Player.init(this);
+
+        checkRecentFile();
+    }
+
+    private void checkRecentFile() {
+        final String filename = PreferenceManager.getRecentFilename(this);
+        final long time = PreferenceManager.getRecentTime(this);
+
+        if(filename.length() > 0) {
+            // 확인해보고 열자
+            openFile(filename, time);
+        }
     }
 
     private void initAdapter() {
@@ -224,6 +237,13 @@ public class MainActivity extends BaseActivity {
         }
     }
 
+    private void openFile(String filename, long time) {
+        final Intent intent = new Intent(MainActivity.this, PlayerActivity.class);
+        intent.putExtra("filename", filename);
+        intent.putExtra("time", time);
+        startActivity(intent);
+    }
+
     //RECYCLERVIEW
     public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder> {
         private ArrayList<MovieFile> movieList;
@@ -279,10 +299,7 @@ public class MainActivity extends BaseActivity {
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    final Intent intent = new Intent(MainActivity.this, PlayerActivity.class);
-                    intent.putExtra("filename", file.getAbsolutePath());
-                    intent.putExtra("time", 0L);
-                    startActivity(intent);
+                    openFile(file.getAbsolutePath(), 0L);
                 }
             });
         }

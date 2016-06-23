@@ -16,6 +16,7 @@ import android.widget.Toast;
 import com.duongame.basicplayer.Player;
 import com.duongame.basicplayer.activity.PlayerActivity;
 import com.duongame.basicplayer.manager.FullscreenManager;
+import com.duongame.basicplayer.manager.PreferenceManager;
 import com.duongame.basicplayer.manager.ScreenManager;
 import com.duongame.basicplayer.util.SmiParser;
 import com.duongame.basicplayer.util.UnitConverter;
@@ -43,6 +44,7 @@ public class PlayerView extends View {
     private int mRotation = Surface.ROTATION_0;
     private boolean mPortrait = true;
     private ArrayList<SmiParser.Subtitle> mSubtitleList;
+    private String mFilename;
 
     public PlayerView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -105,6 +107,8 @@ public class PlayerView extends View {
 
             initRenderTimer();
             resume();
+
+            mFilename = filename;
             return true;
         }
     }
@@ -133,6 +137,8 @@ public class PlayerView extends View {
         mPlaying = false;
         pauseTimer();
         Player.pauseMovie();
+
+        PreferenceManager.saveRecentFile(mContext, mFilename, Player.getCurrentPositionUs());
     }
 
     public void resume() {

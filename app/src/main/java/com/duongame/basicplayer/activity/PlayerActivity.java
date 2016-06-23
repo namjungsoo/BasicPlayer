@@ -335,7 +335,7 @@ public class PlayerActivity extends BaseActivity {
 
             setTitle(new File(filename).getName());
 
-            saveRecentFile(filename, time);
+            PreferenceManager.saveRecentFile(this, filename, time);
 
             result = true;
         }
@@ -344,11 +344,6 @@ public class PlayerActivity extends BaseActivity {
         }
 
         sendEventOpenFile(filename, result);
-    }
-
-    private void saveRecentFile(String filename, long time) {
-        PreferenceManager.setRecentFilename(this, filename);
-        PreferenceManager.setRecentTime(this, time);
     }
 
     private void sendEventOpenFile(String filename, boolean result) {

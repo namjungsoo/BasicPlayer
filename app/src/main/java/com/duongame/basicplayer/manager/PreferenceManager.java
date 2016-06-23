@@ -90,4 +90,10 @@ public class PreferenceManager {
         editor.putLong(START_COUNT, count);
         editor.apply();
     }
+
+    public static void saveRecentFile(Context context, String filename, long time) {
+        PreferenceManager.setRecentFilename(context, filename);
+        PreferenceManager.setRecentTime(context, time);
+    }
+
 }
