@@ -129,7 +129,7 @@ public class PlayerView extends View {
         mPortrait = portrait;
     }
 
-    public void pause() {
+    public void pause(boolean end) {
         mPlaying = false;
         pauseTimer();
         Player.pauseMovie();
@@ -187,7 +187,7 @@ public class PlayerView extends View {
                 int ret = Player.renderFrame(mBitmap);
                 // 렌더링 종료
                 if (ret > 0) {
-                    pause();
+                    pause(true);
                     final PlayerActivity activity = (PlayerActivity) mContext;
                     if (activity != null) {
                         activity.updatePlayButton();

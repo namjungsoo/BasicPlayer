@@ -7,7 +7,6 @@ import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.res.ResourcesCompat;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.MenuItem;
@@ -31,10 +30,11 @@ import com.duongame.basicplayer.util.TimeConverter;
 import com.duongame.basicplayer.util.UnitConverter;
 import com.duongame.basicplayer.view.PlayerView;
 import com.google.android.gms.ads.AdView;
+import com.google.firebase.analytics.FirebaseAnalytics;
 
 import java.io.File;
 
-public class PlayerActivity extends AppCompatActivity {
+public class PlayerActivity extends BaseActivity {
     private final static String TAG = "PlayerActivity";
 
     private PlayerView mPlayerView;
@@ -116,7 +116,7 @@ public class PlayerActivity extends AppCompatActivity {
         Log.d(TAG, "onPause");
         super.onPause();
 
-        mPlayerView.pause();
+        mPlayerView.pause(false);
         updatePlayButton();
     }
 
@@ -203,7 +203,7 @@ public class PlayerActivity extends AppCompatActivity {
                             startAtPaused = true;
                         else {
                             startAtPaused = false;
-                            mPlayerView.pause();
+                            mPlayerView.pause(false);
                             updatePlayButton();
                         }
                         mSeekTime.setVisibility(View.VISIBLE);
@@ -257,6 +257,9 @@ public class PlayerActivity extends AppCompatActivity {
             });
             final String filename = getIntent().getStringExtra("filename");
 
+            final Bundle bundle = new Bundle();
+            bundle.putString("filename", filename);
+
             // 파일 읽기 성공일때
             if (mPlayerView.openFile(filename)) {
                 final long durationUs = mPlayerView.getMovieDurationUs();
@@ -271,7 +274,13 @@ public class PlayerActivity extends AppCompatActivity {
                 updatePlayButton();
 
                 setTitle(new File(filename).getName());
+                bundle.putBoolean("result", true);
             }
+            else {
+                bundle.putBoolean("result", false);
+            }
+
+            mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);
         }
     }
 
@@ -297,7 +306,7 @@ public class PlayerActivity extends AppCompatActivity {
                     if (mPlayerView != null) {
                         Animation animation;
                         if (mPlayerView.getPlaying()) {
-                            mPlayerView.pause();
+                            mPlayerView.pause(false);
 
 //                            animation = createAlphaAnimation(false);
                             setAdView(true);
