@@ -15,6 +15,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -106,8 +107,8 @@ public class PlayerActivity extends AppCompatActivity {
     @Override
     public void onPause() {
         Log.d(TAG, "onPause");
-
         super.onPause();
+
         mPlayerView.pause();
         updatePlayButton();
     }
@@ -115,8 +116,13 @@ public class PlayerActivity extends AppCompatActivity {
     @Override
     public void onStop() {
         Log.d(TAG, "onStop");
-
         super.onStop();
+    }
+
+    @Override
+    public void onDestroy() {
+        Log.d(TAG, "onDestroy");
+        super.onDestroy();
 
         mPlayerFrame.removeView(mAdView);
     }
@@ -263,11 +269,17 @@ public class PlayerActivity extends AppCompatActivity {
                 @Override
                 public void onClick(View v) {
                     if (mPlayerView != null) {
+                        Animation animation;
                         if (mPlayerView.getPlaying()) {
                             mPlayerView.pause();
+
+                            animation = createAlphaAnimation(false);
                         } else {
                             mPlayerView.resume();
+
+                            animation = createAlphaAnimation(true);
                         }
+                        mAdView.startAnimation(animation);
                     }
                     updatePlayButton();
                 }
@@ -343,24 +355,30 @@ public class PlayerActivity extends AppCompatActivity {
         }
     }
 
-    private void setToolBox(boolean newFullscreen) {
-        final AlphaAnimation animation;
+    private Animation createAlphaAnimation(boolean showing) {
+        AlphaAnimation animation;
 
-        // 기본값으로 설정후에 애니메이션 한다
-        mToolBox.setAlpha(1.0f);
-        if (newFullscreen) {
-            mAlpha = 0.0f;
-            animation = new AlphaAnimation(1.f, 0.0f);
-        } else {
-            mAlpha = 1.0f;
+        if(showing) {
             animation = new AlphaAnimation(0.0f, 1.0f);
+        }
+        else {
+            animation = new AlphaAnimation(1.0f, 0.0f);
         }
         animation.setFillAfter(true);
         animation.setFillEnabled(true);
         animation.setDuration(300);
         animation.setInterpolator(new AccelerateInterpolator());
+        return animation;
+    }
+
+    private void setToolBox(boolean newFullscreen) {
+
+        // 기본값으로 설정후에 애니메이션 한다
+        mToolBox.setAlpha(1.0f);
+
+        final Animation animation = createAlphaAnimation(!newFullscreen);
+
         mToolBox.startAnimation(animation);
-        mAdView.startAnimation(animation);
     }
 
     private void applyNavigationBarHeight(boolean portrait) {

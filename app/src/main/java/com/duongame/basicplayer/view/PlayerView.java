@@ -248,7 +248,19 @@ public class PlayerView extends View {
             if (degree90) {
                 // 화면은 변함이 없다
                 // 화면에 회전할 사이즈대로 그리자
-                if (bmRatioInverse < ratioInverse) {// 가로 이미지
+
+                boolean landscapeImage = bmRatioInverse < ratioInverse;
+
+                final int rotation = ((PlayerActivity)mContext).getWindowManager().getDefaultDisplay().getRotation();
+                switch(rotation) {
+                    case Surface.ROTATION_90:
+                    case Surface.ROTATION_270:
+                        landscapeImage = !landscapeImage;
+                        break;
+                }
+
+                //if (bmRatioInverse < ratioInverse) {// 가로 이미지
+                if (landscapeImage) {// 가로 이미지
                     int newHeight = (int) (bmRatio * height);
                     int newWidth = height;
                     int newStartY = (height - newHeight) >> 1;
