@@ -81,6 +81,7 @@ public class PlayerActivity extends AppCompatActivity {
         mPlay = (ImageButton) findViewById(R.id.play);
         mRotate = (ImageButton) findViewById(R.id.rotate);
 
+        // 전체화면에 그려지는 흰색 탐색 시간
         mSeekTime = (TextView) findViewById(R.id.seekTime);
         mSeekBar = (SeekBar) findViewById(R.id.seekBar);
 
@@ -99,7 +100,7 @@ public class PlayerActivity extends AppCompatActivity {
 
         applyNavigationBarHeight(true);
         FullscreenManager.setFullscreen(this, true);
-        setToolBox(true);
+        setToolBox(false);
 
         updateRotation();
     }
@@ -144,7 +145,15 @@ public class PlayerActivity extends AppCompatActivity {
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
 
-        mToolBox.setAlpha(mAlpha);
+        if(mToolBox.getVisibility() == View.GONE)
+            mToolBox.setAlpha(0.0f);
+        else {
+            if(FullscreenManager.isFullscreen())
+                mToolBox.setAlpha(0.0f);
+            else
+                mToolBox.setAlpha(1.0f);
+        }
+
         updateRotation();
     }
 
@@ -223,8 +232,13 @@ public class PlayerActivity extends AppCompatActivity {
             mPlayerView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    setToolBox(!FullscreenManager.isFullscreen());
+
+                    // 풀스크린 모드를 반전한다.
                     FullscreenManager.setFullscreen(PlayerActivity.this, !FullscreenManager.isFullscreen());
+
+                    // 현재가 풀스크린이면 보여주고
+                    // 현재가 풀스크린이 아니면 숨겨준다.
+                    setToolBox(!FullscreenManager.isFullscreen());
 
                     mPlayerView.invalidate();
                 }
@@ -371,17 +385,19 @@ public class PlayerActivity extends AppCompatActivity {
         return animation;
     }
 
-    private void setToolBox(boolean newFullscreen) {
+    private void setToolBox(boolean showing) {
+        Log.d(TAG, "setToolBox "+showing);
 
         // 기본값으로 설정후에 애니메이션 한다
         mToolBox.setAlpha(1.0f);
 
-        final Animation animation = createAlphaAnimation(!newFullscreen);
+        final Animation animation = createAlphaAnimation(showing);
 
         mToolBox.startAnimation(animation);
     }
 
     private void applyNavigationBarHeight(boolean portrait) {
+        // 플레이어에게 회전정보를 입력
         if (mPlayerView != null) {
             mPlayerView.setPortrait(portrait);
         }
