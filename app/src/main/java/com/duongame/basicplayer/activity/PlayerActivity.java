@@ -4,6 +4,7 @@ import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.content.res.ResourcesCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -185,9 +186,9 @@ public class PlayerActivity extends AppCompatActivity {
                 public void onProgressChanged(SeekBar seekBar, final int progress, boolean fromUser) {
                     // 유저가 움직였을 경우에만 탐색
                     if (fromUser) {
-                        Log.d(TAG, "progress=" + progress);
+//                        Log.d(TAG, "progress=" + progress);
                         final long positionUs = progress * TimeConverter.SEC_TO_US;
-                        Log.d(TAG, "seekMovie " + positionUs);
+//                        Log.d(TAG, "seekMovie " + positionUs);
                         mPlayerView.seekMovie(positionUs);
                         mSeekTime.setText(TimeConverter.convertUsToString(positionUs));
                         mPlayerView.invalidate();
@@ -329,6 +330,7 @@ public class PlayerActivity extends AppCompatActivity {
         final int rotation = mPlayerView.getBitmapRotation();
         if (rotation == Surface.ROTATION_0) {
             mDegree.setVisibility(View.INVISIBLE);
+            mRotate.setColorFilter(Color.WHITE);
         } else {
             switch (rotation) {
                 case Surface.ROTATION_90:
@@ -342,6 +344,7 @@ public class PlayerActivity extends AppCompatActivity {
                     break;
             }
             mDegree.setVisibility(View.VISIBLE);
+            mRotate.setColorFilter(ContextCompat.getColor(this, R.color.colorPrimary));
         }
     }
 
