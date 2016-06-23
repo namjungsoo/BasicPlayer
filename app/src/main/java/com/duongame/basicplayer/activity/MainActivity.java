@@ -281,6 +281,7 @@ public class MainActivity extends BaseActivity {
                 public void onClick(View view) {
                     final Intent intent = new Intent(MainActivity.this, PlayerActivity.class);
                     intent.putExtra("filename", file.getAbsolutePath());
+                    intent.putExtra("time", 0L);
                     startActivity(intent);
                 }
             });

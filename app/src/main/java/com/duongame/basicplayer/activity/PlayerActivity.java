@@ -25,6 +25,7 @@ import android.widget.TextView;
 import com.duongame.basicplayer.R;
 import com.duongame.basicplayer.manager.AdBannerManager;
 import com.duongame.basicplayer.manager.FullscreenManager;
+import com.duongame.basicplayer.manager.PreferenceManager;
 import com.duongame.basicplayer.manager.ScreenManager;
 import com.duongame.basicplayer.util.TimeConverter;
 import com.duongame.basicplayer.util.UnitConverter;
@@ -109,6 +110,8 @@ public class PlayerActivity extends BaseActivity {
         mToolBox.setVisibility(View.GONE);
 
         updateRotation();
+
+        openFile();
     }
 
     @Override
@@ -255,32 +258,6 @@ public class PlayerActivity extends BaseActivity {
                     mPlayerView.invalidate();
                 }
             });
-            final String filename = getIntent().getStringExtra("filename");
-
-            final Bundle bundle = new Bundle();
-            bundle.putString("filename", filename);
-
-            // 파일 읽기 성공일때
-            if (mPlayerView.openFile(filename)) {
-                final long durationUs = mPlayerView.getMovieDurationUs();
-                long durationSec = durationUs / TimeConverter.SEC_TO_US;
-                final String duration = TimeConverter.convertUsToString(durationUs);
-
-                if (mDurationTime != null)
-                    mDurationTime.setText(duration);
-
-                if (mSeekBar != null)
-                    mSeekBar.setMax((int) durationSec);
-                updatePlayButton();
-
-                setTitle(new File(filename).getName());
-                bundle.putBoolean("result", true);
-            }
-            else {
-                bundle.putBoolean("result", false);
-            }
-
-            mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);
         }
     }
 
@@ -333,6 +310,53 @@ public class PlayerActivity extends BaseActivity {
             // 타이틀바 백버튼 보이기
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
+    }
+
+    private void openFile() {
+        final String filename = getIntent().getStringExtra("filename");
+        final Long time = getIntent().getLongExtra("time", 0L);
+
+        boolean result;
+
+        // 파일 읽기 성공일때
+        if (mPlayerView.openFile(filename)) {
+            mPlayerView.seekMovie(time);
+
+            final long durationUs = mPlayerView.getMovieDurationUs();
+            long durationSec = durationUs / TimeConverter.SEC_TO_US;
+            final String duration = TimeConverter.convertUsToString(durationUs);
+
+            if (mDurationTime != null)
+                mDurationTime.setText(duration);
+
+            if (mSeekBar != null)
+                mSeekBar.setMax((int) durationSec);
+            updatePlayButton();
+
+            setTitle(new File(filename).getName());
+
+            saveRecentFile(filename, time);
+
+            result = true;
+        }
+        else {
+            result = false;
+        }
+
+        sendEventOpenFile(filename, result);
+    }
+
+    private void saveRecentFile(String filename, long time) {
+        PreferenceManager.setRecentFilename(this, filename);
+        PreferenceManager.setRecentTime(this, time);
+    }
+
+    private void sendEventOpenFile(String filename, boolean result) {
+        final Bundle bundle = new Bundle();
+        bundle.putString("filename", filename);
+
+        bundle.putBoolean("result", result);
+        mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);
     }
 
     private void updateBitmapRotation() {

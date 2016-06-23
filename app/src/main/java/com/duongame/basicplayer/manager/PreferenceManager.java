@@ -18,6 +18,9 @@ public class PreferenceManager {
     // 3번중에서 1번을 보여준다.
     private static final String START_COUNT = "start_count";
 
+    private static final String RECENT_FILENAME = "recent_filename";
+    private static final String RECENT_TIME = "recent_time";
+
     private static SharedPreferences pref = null;
 
     private static void checkPrefManager(Context context) {
@@ -27,35 +30,31 @@ public class PreferenceManager {
 
     public static boolean isShortcut(Context context) {
         checkPrefManager(context);
-        final boolean prefIsShortcut = pref.getBoolean(PREF_IS_SHORTCUT, false);
-        return prefIsShortcut;
+        return pref.getBoolean(PREF_IS_SHORTCUT, false);
     }
 
     public static boolean isExplorerHelp(Context context) {
         checkPrefManager(context);
-        final boolean prefIsExplorerHelp = pref.getBoolean(PREF_IS_EXPLORER_HELP, true);
-        return prefIsExplorerHelp;
+        return pref.getBoolean(PREF_IS_EXPLORER_HELP, true);
     }
 
     public static void setShortcut(Context context, boolean shortcut) {
         checkPrefManager(context);
         final SharedPreferences.Editor editor = pref.edit();
         editor.putBoolean(PREF_IS_SHORTCUT, shortcut);
-        editor.commit();
+        editor.apply();
     }
 
     public static void setExplorerHelp(Context context, boolean explorerHelp) {
         checkPrefManager(context);
         final SharedPreferences.Editor editor = pref.edit();
         editor.putBoolean(PREF_IS_EXPLORER_HELP, explorerHelp);
-        editor.commit();
+        editor.apply();
     }
-
 
     public static int getStartCount(Context context) {
         checkPrefManager(context);
-        final int startCount = pref.getInt(START_COUNT, 0);
-        return startCount;
+        return pref.getInt(START_COUNT, 0);
     }
 
     public static void setStartCount(Context context, int count) {
@@ -64,8 +63,31 @@ public class PreferenceManager {
         checkPrefManager(context);
         final SharedPreferences.Editor editor = pref.edit();
         editor.putInt(START_COUNT, count);
-        editor.commit();
+        editor.apply();
     }
 
 
+    public static String getRecentFilename(Context context) {
+        checkPrefManager(context);
+        return pref.getString(RECENT_FILENAME, "");
+    }
+
+    public static void setRecentFilename(Context context, String filename) {
+        checkPrefManager(context);
+        final SharedPreferences.Editor editor = pref.edit();
+        editor.putString(RECENT_FILENAME, filename);
+        editor.apply();
+    }
+
+    public static long getRecentTime(Context context) {
+        checkPrefManager(context);
+        return pref.getLong(RECENT_TIME, 0);
+    }
+
+    public static void setRecentTime(Context context, long count) {
+        checkPrefManager(context);
+        final SharedPreferences.Editor editor = pref.edit();
+        editor.putLong(START_COUNT, count);
+        editor.apply();
+    }
 }
