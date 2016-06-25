@@ -19,6 +19,7 @@ import com.duongame.basicplayer.Player;
 import com.duongame.basicplayer.R;
 import com.duongame.basicplayer.manager.AdBannerManager;
 import com.duongame.basicplayer.manager.AdInterstitialManager;
+import com.duongame.basicplayer.manager.AlertManager;
 import com.duongame.basicplayer.manager.PermissionManager;
 import com.duongame.basicplayer.manager.PreferenceManager;
 import com.duongame.basicplayer.manager.ShortcutManager;
@@ -49,6 +50,8 @@ public class MainActivity extends BaseActivity {
         Log.d(TAG, "onCreate");
 
         super.onCreate(savedInstanceState);
+        Player.init(this);
+
         Fabric.with(this, new Crashlytics());
 
         //setContentView(R.layout.activity_main);
@@ -62,9 +65,7 @@ public class MainActivity extends BaseActivity {
         ShortcutManager.checkShortcut(this);
 
         // 그림자를 없앤다.
-//        getSupportActionBar().setElevation(0);
-
-        Player.init(this);
+        getSupportActionBar().setElevation(0);
 
         checkRecentFile();
     }
@@ -75,7 +76,8 @@ public class MainActivity extends BaseActivity {
 
         if(filename.length() > 0) {
             // 확인해보고 열자
-            openFile(filename, time);
+//            openFile(filename, time);
+            AlertManager.showAlertRecentFile(this, filename, time);
         }
     }
 
@@ -175,7 +177,11 @@ public class MainActivity extends BaseActivity {
                     MovieFile movieFile = new MovieFile(each, "");
 
                     // 썸네일에 등록하자
-                    if (Player.openMovieWithAudio(each.getAbsolutePath(), 0) >= 0) {
+                    int ret = Player.openMovieWithAudio(each.getAbsolutePath(), 0);
+                    //int ret = Player.openMovie(each.getAbsolutePath());
+
+                    Log.d(TAG, "openMovieWithAudio filename="+each.getAbsolutePath() + " ret="+ret);
+                    if (ret >= 0) {
                         final int width = Player.getMovieWidth();
                         final int height = Player.getMovieHeight();
 
@@ -186,9 +192,11 @@ public class MainActivity extends BaseActivity {
 
                         movieFile.timeText = TimeConverter.convertUsToString(Player.getMovieDurationUs());
                         Player.closeMovie();
-
+                    }
+                    else {
 
                     }
+
                     result.add(movieFile);
                     break;
                 }
@@ -196,11 +204,11 @@ public class MainActivity extends BaseActivity {
         }
     }
 
-    private void refreshList() {
+    private void refreshList(ArrayList<MovieFile> files) {
         // 동적으로 refeshList를 호출한다
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
+//        new Thread(new Runnable() {
+//            @Override
+//            public void run() {
 
                 // 확장자 별로 파일을 찾자
                 final String[] ext = {".avi", ".mp4", ".mov", ".mkv", ".wmv", ".asf", ".flv"};
@@ -210,21 +218,21 @@ public class MainActivity extends BaseActivity {
                 mExtRoot = root;
 
                 // 썸네일도 등록해야 되는데 일단 파일 이름만
-                final ArrayList<MovieFile> files = new ArrayList<MovieFile>();
+//                final ArrayList<MovieFile> files = new ArrayList<MovieFile>();
 
                 findFiles(new File(root), ext, files);
 
                 // 썸네일은 첫번째 이미지 프레임을 가지고 온다
-                mMovieAdapter.setMovieList(files);
+//                mMovieAdapter.setMovieList(files);
 
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        mMovieAdapter.notifyDataSetChanged();
-                    }
-                });
-            }
-        }).start();
+//                runOnUiThread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        mMovieAdapter.notifyDataSetChanged();
+//                    }
+//                });
+//            }
+//        }).start();
     }
 
     public class MovieFile {
@@ -237,7 +245,7 @@ public class MainActivity extends BaseActivity {
         }
     }
 
-    private void openFile(String filename, long time) {
+    public void openFile(String filename, long time) {
         final Intent intent = new Intent(MainActivity.this, PlayerActivity.class);
         intent.putExtra("filename", filename);
         intent.putExtra("time", time);
@@ -246,10 +254,10 @@ public class MainActivity extends BaseActivity {
 
     //RECYCLERVIEW
     public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder> {
-        private ArrayList<MovieFile> movieList;
+        private ArrayList<MovieFile> movieList = new ArrayList<MovieFile> ();
 
         public MovieAdapter() {
-            refreshList();
+            refreshList(movieList);
         }
 
         public class ViewHolder extends RecyclerView.ViewHolder {

@@ -84,10 +84,10 @@ public class PreferenceManager {
         return pref.getLong(RECENT_TIME, 0);
     }
 
-    public static void setRecentTime(Context context, long count) {
+    public static void setRecentTime(Context context, long time) {
         checkPrefManager(context);
         final SharedPreferences.Editor editor = pref.edit();
-        editor.putLong(START_COUNT, count);
+        editor.putLong(RECENT_TIME, time);
         editor.apply();
     }
 

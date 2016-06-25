@@ -314,7 +314,7 @@ public class PlayerActivity extends BaseActivity {
 
     private void openFile() {
         final String filename = getIntent().getStringExtra("filename");
-        final Long time = getIntent().getLongExtra("time", 0L);
+        final long time = getIntent().getLongExtra("time", 0L);
 
         boolean result;
 
