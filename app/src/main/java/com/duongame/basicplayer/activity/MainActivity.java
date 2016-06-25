@@ -1,5 +1,6 @@
 package com.duongame.basicplayer.activity;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
@@ -70,15 +71,34 @@ public class MainActivity extends BaseActivity {
         checkRecentFile();
     }
 
-    private void checkRecentFile() {
+    private boolean checkRecentFile(final String newFilename) {
         final String filename = PreferenceManager.getRecentFilename(this);
         final long time = PreferenceManager.getRecentTime(this);
 
-        if(filename.length() > 0) {
+        if(newFilename.equals(filename)) {
+            AlertManager.showAlertRecentFile(this, filename, time, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    // 처음부터 읽자
+                    openFile(newFilename, 0L);
+                }
+            });
+            return true;
+        }
+        return false;
+    }
+
+    private boolean checkRecentFile() {
+        final String filename = PreferenceManager.getRecentFilename(this);
+        final long time = PreferenceManager.getRecentTime(this);
+
+        if (filename.length() > 0) {
             // 확인해보고 열자
 //            openFile(filename, time);
-            AlertManager.showAlertRecentFile(this, filename, time);
+            AlertManager.showAlertRecentFile(this, filename, time, null);
+            return true;
         }
+        return false;
     }
 
     private void initAdapter() {
@@ -180,7 +200,7 @@ public class MainActivity extends BaseActivity {
                     int ret = Player.openMovieWithAudio(each.getAbsolutePath(), 0);
                     //int ret = Player.openMovie(each.getAbsolutePath());
 
-                    Log.d(TAG, "openMovieWithAudio filename="+each.getAbsolutePath() + " ret="+ret);
+                    Log.d(TAG, "openMovieWithAudio filename=" + each.getAbsolutePath() + " ret=" + ret);
                     if (ret >= 0) {
                         final int width = Player.getMovieWidth();
                         final int height = Player.getMovieHeight();
@@ -192,8 +212,7 @@ public class MainActivity extends BaseActivity {
 
                         movieFile.timeText = TimeConverter.convertUsToString(Player.getMovieDurationUs());
                         Player.closeMovie();
-                    }
-                    else {
+                    } else {
 
                     }
 
@@ -210,19 +229,19 @@ public class MainActivity extends BaseActivity {
 //            @Override
 //            public void run() {
 
-                // 확장자 별로 파일을 찾자
-                final String[] ext = {".avi", ".mp4", ".mov", ".mkv", ".wmv", ".asf", ".flv"};
+        // 확장자 별로 파일을 찾자
+        final String[] ext = {".avi", ".mp4", ".mov", ".mkv", ".wmv", ".asf", ".flv"};
 
-                // 찾는 위치는 external root에서부터 찾는다
-                final String root = Environment.getExternalStorageDirectory().getAbsolutePath();
-                mExtRoot = root;
+        // 찾는 위치는 external root에서부터 찾는다
+        final String root = Environment.getExternalStorageDirectory().getAbsolutePath();
+        mExtRoot = root;
 
-                // 썸네일도 등록해야 되는데 일단 파일 이름만
+        // 썸네일도 등록해야 되는데 일단 파일 이름만
 //                final ArrayList<MovieFile> files = new ArrayList<MovieFile>();
 
-                findFiles(new File(root), ext, files);
+        findFiles(new File(root), ext, files);
 
-                // 썸네일은 첫번째 이미지 프레임을 가지고 온다
+        // 썸네일은 첫번째 이미지 프레임을 가지고 온다
 //                mMovieAdapter.setMovieList(files);
 
 //                runOnUiThread(new Runnable() {
@@ -254,7 +273,7 @@ public class MainActivity extends BaseActivity {
 
     //RECYCLERVIEW
     public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder> {
-        private ArrayList<MovieFile> movieList = new ArrayList<MovieFile> ();
+        private ArrayList<MovieFile> movieList = new ArrayList<MovieFile>();
 
         public MovieAdapter() {
             refreshList(movieList);
@@ -293,7 +312,7 @@ public class MainActivity extends BaseActivity {
             Log.v(TAG, file.getPath());
             Bitmap bitmap = ThumbnailManager.getBitmap(file.getPath());
 
-            if(bitmap!= null) {
+            if (bitmap != null) {
                 holder.iv.setImageBitmap(bitmap);
             }
             holder.iv.setTimeText(movieList.get(position).timeText);
@@ -307,7 +326,12 @@ public class MainActivity extends BaseActivity {
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    openFile(file.getAbsolutePath(), 0L);
+
+                    // 무조건 열지 말고 기존에 읽었던 파일인지 테스트
+                    if(!checkRecentFile(file.getAbsolutePath())) {
+                        openFile(file.getAbsolutePath(), 0L);
+                    }
+
                 }
             });
         }

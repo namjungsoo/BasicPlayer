@@ -114,6 +114,7 @@ public class AdBannerManager {
 
     public static void initPopupAd(Activity context) {
         adPopupView = createAd(context, POPUP_ID, AdSize.MEDIUM_RECTANGLE);
+
         adPopupView.setAdListener(new AdListener() {
             private static final String TAG = "adPopupView";
 
