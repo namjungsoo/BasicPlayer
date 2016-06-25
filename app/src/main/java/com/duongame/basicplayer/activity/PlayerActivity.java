@@ -315,11 +315,15 @@ public class PlayerActivity extends BaseActivity {
     private void openFile() {
         final String filename = getIntent().getStringExtra("filename");
         final long time = getIntent().getLongExtra("time", 0L);
+        final int rotation = getIntent().getIntExtra("rotation", 0);
 
         boolean result;
 
         // 파일 읽기 성공일때
         if (mPlayerView.openFile(filename)) {
+            mPlayerView.setBitmapRotation(rotation);
+            updateBitmapRotation();
+            
             mPlayerView.seekMovie(time);
 
             final long durationUs = mPlayerView.getMovieDurationUs();
@@ -335,7 +339,7 @@ public class PlayerActivity extends BaseActivity {
 
             setTitle(new File(filename).getName());
 
-            PreferenceManager.saveRecentFile(this, filename, time);
+            PreferenceManager.saveRecentFile(this, filename, time, mPlayerView.getBitmapRotation());
 
             result = true;
         }

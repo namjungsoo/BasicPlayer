@@ -74,13 +74,14 @@ public class MainActivity extends BaseActivity {
     private boolean checkRecentFile(final String newFilename) {
         final String filename = PreferenceManager.getRecentFilename(this);
         final long time = PreferenceManager.getRecentTime(this);
+        final int rotation = PreferenceManager.getRecentRotation(this);
 
         if(newFilename.equals(filename)) {
-            AlertManager.showAlertRecentFile(this, filename, time, new DialogInterface.OnClickListener() {
+            AlertManager.showAlertRecentFile(this, filename, time, rotation, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialogInterface, int i) {
                     // 처음부터 읽자
-                    openFile(newFilename, 0L);
+                    openFile(newFilename, 0L, 0);
                 }
             });
             return true;
@@ -91,11 +92,12 @@ public class MainActivity extends BaseActivity {
     private boolean checkRecentFile() {
         final String filename = PreferenceManager.getRecentFilename(this);
         final long time = PreferenceManager.getRecentTime(this);
+        final int rotation = PreferenceManager.getRecentRotation(this);
 
         if (filename.length() > 0) {
             // 확인해보고 열자
 //            openFile(filename, time);
-            AlertManager.showAlertRecentFile(this, filename, time, null);
+            AlertManager.showAlertRecentFile(this, filename, time, rotation, null);
             return true;
         }
         return false;
@@ -264,10 +266,11 @@ public class MainActivity extends BaseActivity {
         }
     }
 
-    public void openFile(String filename, long time) {
+    public void openFile(String filename, long time, int rotation) {
         final Intent intent = new Intent(MainActivity.this, PlayerActivity.class);
         intent.putExtra("filename", filename);
         intent.putExtra("time", time);
+        intent.putExtra("rotation", rotation);
         startActivity(intent);
     }
 
@@ -329,7 +332,7 @@ public class MainActivity extends BaseActivity {
 
                     // 무조건 열지 말고 기존에 읽었던 파일인지 테스트
                     if(!checkRecentFile(file.getAbsolutePath())) {
-                        openFile(file.getAbsolutePath(), 0L);
+                        openFile(file.getAbsolutePath(), 0L, 0);
                     }
 
                 }

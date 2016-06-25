@@ -138,7 +138,7 @@ public class PlayerView extends View {
         pauseTimer();
         Player.pauseMovie();
 
-        PreferenceManager.saveRecentFile(mContext, mFilename, Player.getCurrentPositionUs());
+        PreferenceManager.saveRecentFile(mContext, mFilename, Player.getCurrentPositionUs(), getBitmapRotation());
     }
 
     public void resume() {
@@ -338,7 +338,7 @@ public class PlayerView extends View {
 
             float subtitleY;
 
-            // 풀스크린은 위치를 조정한다.
+            // 풀스크린은 위치를 조정 안한다.
             if(FullscreenManager.isFullscreen()) {
                 subtitleY = height - UnitConverter.dpToPx(60);
             }
@@ -346,7 +346,12 @@ public class PlayerView extends View {
                 subtitleY = height - UnitConverter.dpToPx(120);
 
                 if(mPortrait) {
-                    subtitleY -= ScreenManager.getNavigationBarHeight(mContext);
+                    int actionBarHeight = ScreenManager.getNavigationBarHeight(mContext);
+                    if(actionBarHeight == 0) {
+                        actionBarHeight = UnitConverter.dpToPx(48);
+                    }
+
+                    subtitleY -= actionBarHeight;
                 }
             }
 

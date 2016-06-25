@@ -20,6 +20,7 @@ public class PreferenceManager {
 
     private static final String RECENT_FILENAME = "recent_filename";
     private static final String RECENT_TIME = "recent_time";
+    private static final String RECENT_ROTATION = "recent_rotation";
 
     private static SharedPreferences pref = null;
 
@@ -91,9 +92,25 @@ public class PreferenceManager {
         editor.apply();
     }
 
-    public static void saveRecentFile(Context context, String filename, long time) {
+
+    public static int getRecentRotation(Context context) {
+        checkPrefManager(context);
+        return pref.getInt(RECENT_ROTATION, 0);
+    }
+
+    public static void setRecentRotation(Context context, int rotation) {
+        checkPrefManager(context);
+        final SharedPreferences.Editor editor = pref.edit();
+        editor.putInt(RECENT_ROTATION, rotation);
+        editor.apply();
+    }
+
+
+
+    public static void saveRecentFile(Context context, String filename, long time, int rotation) {
         PreferenceManager.setRecentFilename(context, filename);
         PreferenceManager.setRecentTime(context, time);
+        PreferenceManager.setRecentRotation(context, rotation);
     }
 
 }

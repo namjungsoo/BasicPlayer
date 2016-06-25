@@ -18,14 +18,14 @@ import java.io.File;
 public class AlertManager {
     private static final String TAG = "AlertManager";
 
-    public static void showAlertRecentFile(final Activity context, final String filename, final long time, DialogInterface.OnClickListener negListener) {
+    public static void showAlertRecentFile(final Activity context, final String filename, final long time, final int rotation, DialogInterface.OnClickListener negListener) {
         final File file = new File(filename);
 
         AlertManager.showAlertWithBanner(context, context.getResources().getString(R.string.dialog_recentfile), file.getName(), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 final MainActivity activity = (MainActivity) context;
-                activity.openFile(filename, time);
+                activity.openFile(filename, time, rotation);
             }
         }, negListener, null);
 
