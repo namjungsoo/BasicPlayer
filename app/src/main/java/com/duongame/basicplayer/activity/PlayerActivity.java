@@ -88,7 +88,8 @@ public class PlayerActivity extends BaseActivity {
         mSeekBar = (SeekBar) findViewById(R.id.seekBar);
 
         // 광고 처리
-        initAd();
+        //PRO
+        //initAd();
 
         initSeekBar();
 
@@ -106,7 +107,10 @@ public class PlayerActivity extends BaseActivity {
 //        setToolBox(false);
 
         // 최초에 GONE으로 초기화 해야 초반에 튀는 화면이 보이지 않는다.
-        mAdView.setVisibility(View.GONE);
+        if(mAdView != null) {
+            mAdView.setVisibility(View.GONE);
+        }
+
         mToolBox.setVisibility(View.GONE);
 
         updateRotation();
@@ -134,7 +138,9 @@ public class PlayerActivity extends BaseActivity {
         Log.d(TAG, "onDestroy");
         super.onDestroy();
 
-        mPlayerFrame.removeView(mAdView);
+        if(mAdView != null) {
+            mPlayerFrame.removeView(mAdView);
+        }
     }
 
     @Override
@@ -251,7 +257,7 @@ public class PlayerActivity extends BaseActivity {
 
                     // 포즈 상태이면
                     if(!mPlayerView.getPlaying()) {
-                        if(mAdView.getVisibility() == View.VISIBLE)
+                        if(mAdView != null && mAdView.getVisibility() == View.VISIBLE)
                             setAdView(!FullscreenManager.isFullscreen());
                     }
 
@@ -436,12 +442,14 @@ public class PlayerActivity extends BaseActivity {
     private void setAdView(boolean showing) {
         Log.d(TAG, "setAdView "+showing);
 
-        mAdView.setVisibility(View.VISIBLE);
-        // 기본값으로 설정후에 애니메이션 한다
-        mAdView.setAlpha(1.0f);
-        final Animation animation = createAlphaAnimation(showing);
+        if(mAdView != null) {
+            mAdView.setVisibility(View.VISIBLE);
+            // 기본값으로 설정후에 애니메이션 한다
+            mAdView.setAlpha(1.0f);
+            final Animation animation = createAlphaAnimation(showing);
 
-        mAdView.startAnimation(animation);
+            mAdView.startAnimation(animation);
+        }
     }
 
     private void setToolBox(boolean showing) {

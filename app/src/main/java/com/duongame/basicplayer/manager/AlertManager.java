@@ -21,7 +21,9 @@ public class AlertManager {
     public static void showAlertRecentFile(final Activity context, final String filename, final long time, final int rotation, DialogInterface.OnClickListener negListener) {
         final File file = new File(filename);
 
-        AlertManager.showAlertWithBanner(context, context.getResources().getString(R.string.dialog_recentfile), file.getName(), new DialogInterface.OnClickListener() {
+        //PRO
+        AlertManager.showAlert(context, context.getResources().getString(R.string.dialog_recentfile), file.getName(), new DialogInterface.OnClickListener() {
+//        AlertManager.showAlertWithBanner(context, context.getResources().getString(R.string.dialog_recentfile), file.getName(), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 final MainActivity activity = (MainActivity) context;

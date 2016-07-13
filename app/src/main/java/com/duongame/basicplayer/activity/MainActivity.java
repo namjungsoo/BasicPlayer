@@ -116,6 +116,20 @@ public class MainActivity extends BaseActivity {
         mRecyclerView.setLayoutManager(mLayoutManager);
     }
 
+    private void initAd(RelativeLayout relativeLayout) {
+        // AdView 생성
+        final AdView adView = AdBannerManager.getAdBottomBannerView();
+        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        params.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+        adView.setLayoutParams(params);
+        adView.setId(R.id.admob);// 아이디를 꼭 생성해 주어야 한다
+        relativeLayout.addView(adView, 0);
+
+        params = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+        params.addRule(RelativeLayout.ABOVE, adView.getId());
+        mRecyclerView.setLayoutParams(params);
+    }
+
     private void initView() {
         // 광고들 초기화
         AdBannerManager.init(this);
@@ -138,17 +152,9 @@ public class MainActivity extends BaseActivity {
         // 파일리스트뷰를 불러오자
         initListView(relativeLayout);
 
-        // AdView 생성
-        final AdView adView = AdBannerManager.getAdBottomBannerView();
-        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        params.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-        adView.setLayoutParams(params);
-        adView.setId(R.id.admob);// 아이디를 꼭 생성해 주어야 한다
-        relativeLayout.addView(adView, 0);
-
-        params = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-        params.addRule(RelativeLayout.ABOVE, adView.getId());
-        mRecyclerView.setLayoutParams(params);
+        // 하단 배너 광고를 추가해 주자
+        //PRO
+        //initAd(relativeLayout);
 
         setContentView(root);
     }
