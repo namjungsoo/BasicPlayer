@@ -20,13 +20,12 @@ android {
     buildToolsVersion "24.0.0"
 
     defaultConfig {
-        applicationId "com.duongame.basicplayer"
+        applicationId "com.duongame.basicplayer.pro"
         minSdkVersion 15
         targetSdkVersion 24
         versionCode 2
         versionName "1.0.1"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
-
     }
     sourceSets {
         main {
@@ -69,4 +68,5 @@ dependencies {
 
 }
 // Add to the bottom of the file
+//PRO
 apply plugin: 'com.google.gms.google-services'

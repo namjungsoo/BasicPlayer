@@ -36,6 +36,37 @@
           "status": 2
         }
       }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:284613056843:android:391be8420c9a1dc1",
+        "android_client_info": {
+          "package_name": "com.duongame.basicplayer.pro"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "284613056843-52fhh4oi2upc75v5q24oo24kroedbarc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA9ixA3s-KHcO3Lrg2GJz3uipcwIftlovs"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
     }
   ],
   "configuration_version": "1"
