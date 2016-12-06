@@ -23,7 +23,7 @@ public class AlertManager {
 
         //PRO
         AlertManager.showAlert(context, context.getResources().getString(R.string.dialog_recentfile), file.getName(), new DialogInterface.OnClickListener() {
-//        AlertManager.showAlertWithBanner(context, context.getResources().getString(R.string.dialog_recentfile), file.getName(), new DialogInterface.OnClickListener() {
+            //        AlertManager.showAlertWithBanner(context, context.getResources().getString(R.string.dialog_recentfile), file.getName(), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 final MainActivity activity = (MainActivity) context;
@@ -58,8 +58,8 @@ public class AlertManager {
     public static void showAlertWithBanner(Activity context, String title, String message, DialogInterface.OnClickListener posListener, DialogInterface.OnClickListener negListener, DialogInterface.OnKeyListener keyListener) {
         final AdView view = AdBannerManager.getAdPopupView();
         final ViewParent parent = view.getParent();
-        if(parent != null) {
-            final ViewGroup vg = (ViewGroup)parent;
+        if (parent != null) {
+            final ViewGroup vg = (ViewGroup) parent;
             vg.removeView(view);
         }
 

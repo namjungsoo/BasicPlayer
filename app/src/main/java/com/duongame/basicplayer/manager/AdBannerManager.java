@@ -15,9 +15,9 @@ public class AdBannerManager {
     private final static String TAG = "AdBannerManager";
 
     // 코믹z뷰어 전용 id
-    private static final String TOP_BANNER_ID    = "ca-app-pub-5576037828251153/1527040225";
+    private static final String TOP_BANNER_ID = "ca-app-pub-5576037828251153/1527040225";
     private static final String BOTTOM_BANNER_ID = "ca-app-pub-5576037828251153/4620107424";
-    private static final String POPUP_ID         = "ca-app-pub-5576037828251153/3003773421";
+    private static final String POPUP_ID = "ca-app-pub-5576037828251153/3003773421";
 
     private static AdView adTopBannerView;
     private static AdView adBottomBannerView;

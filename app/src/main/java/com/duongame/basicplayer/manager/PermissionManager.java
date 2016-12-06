@@ -25,20 +25,20 @@ public class PermissionManager {
 
             final ArrayList<String> requestList = new ArrayList<String>();
 
-            if(writeRequest) {
-                if(context.checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            if (writeRequest) {
+                if (context.checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
                     requestList.add(Manifest.permission.WRITE_EXTERNAL_STORAGE);
                 }
             }
-            if(readRequest) {
+            if (readRequest) {
                 if (context.checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
                     requestList.add(Manifest.permission.READ_EXTERNAL_STORAGE);
                 }
             }
 
-            if(requestList.size() > 0) {
+            if (requestList.size() > 0) {
                 final String[] requestArray = new String[requestList.size()];
-                for(int i=0; i<requestList.size(); i++) {
+                for (int i = 0; i < requestList.size(); i++) {
                     requestArray[i] = requestList.get(i);
                 }
 

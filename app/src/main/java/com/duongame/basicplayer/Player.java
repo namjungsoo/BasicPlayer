@@ -40,9 +40,9 @@ public class Player {
 
     //ndk에서 불러준다.
     private static AudioTrack prepareAudioTrack(int audioFormat, int sampleRateInHz,
-                                         int numberOfChannels) {
+                                                int numberOfChannels) {
 
-        while(true) {
+        while (true) {
             int channelConfig;
             if (numberOfChannels == 1) {
                 channelConfig = AudioFormat.CHANNEL_OUT_MONO;
@@ -93,21 +93,29 @@ public class Player {
     }
 
     public static native void initAudioTrack();
+
     public static native int initBasicPlayer();
 
     public static native int openMovie(String filePath);
+
     public static native int openMovieWithAudio(String filePath, int audio);
+
     public static native int renderFrame(Bitmap bitmap);
 
     public static native int getMovieWidth();
+
     public static native int getMovieHeight();
+
     public static native void closeMovie();
 
     public static native void pauseMovie();
+
     public static native void resumeMovie();
+
     public static native int seekMovie(long positionUs);
 
     public static native long getMovieDurationUs();
+
     public static native double getFps();
 
     public static native long getCurrentPositionUs();

@@ -262,6 +262,14 @@ public class MainActivity extends BaseActivity {
 //        }).start();
     }
 
+    public void openFile(String filename, long time, int rotation) {
+        final Intent intent = new Intent(MainActivity.this, PlayerActivity.class);
+        intent.putExtra("filename", filename);
+        intent.putExtra("time", time);
+        intent.putExtra("rotation", rotation);
+        startActivity(intent);
+    }
+
     public class MovieFile {
         public File file;
         public String timeText;
@@ -272,30 +280,12 @@ public class MainActivity extends BaseActivity {
         }
     }
 
-    public void openFile(String filename, long time, int rotation) {
-        final Intent intent = new Intent(MainActivity.this, PlayerActivity.class);
-        intent.putExtra("filename", filename);
-        intent.putExtra("time", time);
-        intent.putExtra("rotation", rotation);
-        startActivity(intent);
-    }
-
     //RECYCLERVIEW
     public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder> {
         private ArrayList<MovieFile> movieList = new ArrayList<MovieFile>();
 
         public MovieAdapter() {
             refreshList(movieList);
-        }
-
-        public class ViewHolder extends RecyclerView.ViewHolder {
-            public ThumbnailImageView iv;
-            public TextView tvName;
-            public TextView tvPath;
-
-            public ViewHolder(View itemView) {
-                super(itemView);
-            }
         }
 
         public void setMovieList(ArrayList<MovieFile> movieList) {
@@ -350,6 +340,16 @@ public class MainActivity extends BaseActivity {
             if (movieList != null)
                 return movieList.size();
             return 0;
+        }
+
+        public class ViewHolder extends RecyclerView.ViewHolder {
+            public ThumbnailImageView iv;
+            public TextView tvName;
+            public TextView tvPath;
+
+            public ViewHolder(View itemView) {
+                super(itemView);
+            }
         }
     }
 }

@@ -8,7 +8,7 @@ import android.util.Log;
  * Created by 정수 on 2015-11-15.
  */
 public class PreferenceManager {
-    private static final String TAG="PreferenceManager";
+    private static final String TAG = "PreferenceManager";
 
     private static final String PREF_NAME = "BasicPlayer";
 
@@ -59,7 +59,7 @@ public class PreferenceManager {
     }
 
     public static void setStartCount(Context context, int count) {
-        Log.e(TAG, "setStartCount count="+count);
+        Log.e(TAG, "setStartCount count=" + count);
 
         checkPrefManager(context);
         final SharedPreferences.Editor editor = pref.edit();
@@ -104,7 +104,6 @@ public class PreferenceManager {
         editor.putInt(RECENT_ROTATION, rotation);
         editor.apply();
     }
-
 
 
     public static void saveRecentFile(Context context, String filename, long time, int rotation) {

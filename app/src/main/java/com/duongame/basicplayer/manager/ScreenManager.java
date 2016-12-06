@@ -100,7 +100,7 @@ public class ScreenManager {
 
     public static int getActionBarHeight(Context c) {
         final TypedArray styledAttributes = c.getTheme().obtainStyledAttributes(
-                new int[] { android.R.attr.actionBarSize });
+                new int[]{android.R.attr.actionBarSize});
         int result = (int) styledAttributes.getDimension(0, 0);
         styledAttributes.recycle();
         return result;

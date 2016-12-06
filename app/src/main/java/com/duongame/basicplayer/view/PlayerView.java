@@ -257,8 +257,8 @@ public class PlayerView extends View {
 
                 boolean landscapeImage = bmRatioInverse < ratioInverse;
 
-                final int rotation = ((PlayerActivity)mContext).getWindowManager().getDefaultDisplay().getRotation();
-                switch(rotation) {
+                final int rotation = ((PlayerActivity) mContext).getWindowManager().getDefaultDisplay().getRotation();
+                switch (rotation) {
                     case Surface.ROTATION_90:
                     case Surface.ROTATION_270:
                         landscapeImage = !landscapeImage;
@@ -324,11 +324,10 @@ public class PlayerView extends View {
 
             float textSize;
             float strokeWidth;
-            if(mPortrait) {
+            if (mPortrait) {
                 textSize = UnitConverter.dpToPx(13);
                 strokeWidth = UnitConverter.dpToPx(2);
-            }
-            else {
+            } else {
                 textSize = UnitConverter.dpToPx(20);
                 strokeWidth = UnitConverter.dpToPx(3);
             }
@@ -339,15 +338,14 @@ public class PlayerView extends View {
             float subtitleY;
 
             // 풀스크린은 위치를 조정 안한다.
-            if(FullscreenManager.isFullscreen()) {
+            if (FullscreenManager.isFullscreen()) {
                 subtitleY = height - UnitConverter.dpToPx(60);
-            }
-            else {
+            } else {
                 subtitleY = height - UnitConverter.dpToPx(120);
 
-                if(mPortrait) {
+                if (mPortrait) {
                     int actionBarHeight = ScreenManager.getNavigationBarHeight(mContext);
-                    if(actionBarHeight == 0) {
+                    if (actionBarHeight == 0) {
                         actionBarHeight = UnitConverter.dpToPx(48);
                     }
 

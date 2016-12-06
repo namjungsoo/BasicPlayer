@@ -16,6 +16,7 @@ public class FullscreenManager {
     public static boolean isFullscreen() {
         return mIsFullscreen;
     }
+
     /**
      * Detects and toggles immersive mode (also known as "hidey bar" mode).
      */
