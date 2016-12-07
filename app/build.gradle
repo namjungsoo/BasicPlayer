@@ -20,7 +20,7 @@ android {
     buildToolsVersion "24.0.0"
 
     defaultConfig {
-        applicationId "com.duongame.basicplayer.pro"
+        applicationId "com.duongame.basicplayer.free"
         minSdkVersion 15
         targetSdkVersion 24
         versionCode 2

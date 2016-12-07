@@ -22,8 +22,8 @@ public class AlertManager {
         final File file = new File(filename);
 
         //PRO
-        AlertManager.showAlert(context, context.getResources().getString(R.string.dialog_recentfile), file.getName(), new DialogInterface.OnClickListener() {
-//        AlertManager.showAlertWithBanner(context, context.getResources().getString(R.string.dialog_recentfile), file.getName(), new DialogInterface.OnClickListener() {
+//        AlertManager.showAlert(context, context.getResources().getString(R.string.dialog_recentfile), file.getName(), new DialogInterface.OnClickListener() {
+        AlertManager.showAlertWithBanner(context, context.getResources().getString(R.string.dialog_recentfile), file.getName(), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 final MainActivity activity = (MainActivity) context;

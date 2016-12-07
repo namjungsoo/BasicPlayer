@@ -154,7 +154,7 @@ public class MainActivity extends BaseActivity {
 
         // 하단 배너 광고를 추가해 주자
         //PRO
-        //initAd(relativeLayout);
+        initAd(relativeLayout);
 
         setContentView(root);
     }

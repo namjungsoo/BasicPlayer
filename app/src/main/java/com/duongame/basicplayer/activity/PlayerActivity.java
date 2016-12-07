@@ -89,7 +89,7 @@ public class PlayerActivity extends BaseActivity {
 
         // 광고 처리
         //PRO
-        //initAd();
+        initAd();
 
         initSeekBar();
 
