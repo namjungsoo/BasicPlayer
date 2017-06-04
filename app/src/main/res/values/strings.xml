@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">ZMPlayer</string>
+    <string name="app_name">JamongPlayer</string>
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
     <string name="dialog_recentfile">Do you want to play recent file?</string>

@@ -5,6 +5,7 @@ android {
     buildToolsVersion "25.0.0"
     defaultConfig {
         applicationId 'com.duongame.basicplayer'
+        buildConfigField "boolean", "SHOW_AD", "true"
         minSdkVersion 15
         targetSdkVersion 25
         versionCode 2
@@ -27,12 +28,14 @@ android {
     }
     productFlavors {
         main {
-
+            buildConfigField "boolean", "SHOW_AD", "true"
         }
         pro {
+            buildConfigField "boolean", "SHOW_AD", "false"
             applicationIdSuffix  '.pro'
         }
         free {
+            buildConfigField "boolean", "SHOW_AD", "true"
             applicationIdSuffix '.free'
         }
     }
