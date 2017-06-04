@@ -1,1 +1,1 @@
-include ':app', ':free', ':pro', ':lib'
+include ':app'
