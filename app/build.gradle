@@ -29,13 +29,16 @@ android {
     productFlavors {
         main {
             buildConfigField "boolean", "SHOW_AD", "true"
+            resValue "string", "app_name", "@string/app_name_free"
         }
         pro {
             buildConfigField "boolean", "SHOW_AD", "false"
-            applicationIdSuffix  '.pro'
+            resValue "string", "app_name", "@string/app_name_pro"
+            applicationIdSuffix '.pro'
         }
         free {
             buildConfigField "boolean", "SHOW_AD", "true"
+            resValue "string", "app_name", "@string/app_name_free"
             applicationIdSuffix '.free'
         }
     }

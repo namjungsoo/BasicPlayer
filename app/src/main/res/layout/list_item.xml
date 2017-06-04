@@ -3,8 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="8dp"
->
+    android:layout_margin="8dp">
     <!--android:layout_marginLeft="12dp"-->
     <!--android:layout_marginRight="12dp"-->
     <!--android:layout_marginTop="6dp"-->
@@ -21,9 +20,8 @@
             android:layout_width="88dp"
             android:layout_height="66dp"
             android:layout_gravity="center"
-            android:scaleType="centerCrop"
             android:background="@drawable/round_corner"
-            />
+            android:scaleType="centerCrop" />
 
         <RelativeLayout
             android:layout_width="match_parent"
@@ -39,7 +37,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:gravity="center_vertical"
-                android:singleLine="false"
                 android:maxLines="3"
                 android:text="filename"
                 android:textColor="#222222"
@@ -51,21 +48,21 @@
                 android:layout_height="wrap_content"
                 android:ellipsize="middle"
                 android:gravity="center_vertical"
-                android:singleLine="true"
+                android:maxLines="1"
                 android:text="filepath"
-                android:visibility="invisible"
-                android:textSize="12sp"></TextView>
+                android:textSize="12sp"
+                android:visibility="invisible"></TextView>
 
             <ProgressBar
-                android:layout_alignParentBottom="true"
                 android:id="@+id/progressbar"
                 style="?android:attr/progressBarStyleHorizontal"
-                android:layout_marginBottom="-4dp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:visibility="invisible"
+                android:layout_alignParentBottom="true"
+                android:layout_marginBottom="-4dp"
                 android:max="100"
-                android:progress="100"></ProgressBar>
+                android:progress="100"
+                android:visibility="invisible"></ProgressBar>
         </RelativeLayout>
     </LinearLayout>
 </LinearLayout>

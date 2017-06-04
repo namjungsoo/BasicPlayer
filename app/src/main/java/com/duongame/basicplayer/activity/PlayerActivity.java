@@ -64,7 +64,7 @@ public class PlayerActivity extends BaseActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.layout_player);
+        setContentView(R.layout.activity_player);
 
 //        Toolbar toolbar = (Toolbar)findViewById(R.id.toolBar);
 //        setSupportActionBar(toolbar);
