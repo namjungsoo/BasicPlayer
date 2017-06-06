@@ -3,6 +3,10 @@
 
 #include <jni.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct {
     const char* name;
     const char* signature;
@@ -14,7 +18,7 @@ typedef struct {
 } JavaField;
 
 jfieldID java_get_field(JNIEnv *env, char * class_name, JavaField field);
-jmethodID java_get_method(JNIEnv *env, jclass class, JavaMethod method);
+jmethodID java_get_method(JNIEnv *env, jclass cls, JavaMethod method);
 
 // FFmpegPlayer
 static char *player_class_path_name = "com/duongame/basicplayer/Player";
@@ -40,5 +44,9 @@ void writeAudioTrack(char* data, int data_size);
 
 void pauseAudioTrack(JNIEnv *env, jobject thiz);
 void resumeAudioTrack(JNIEnv *env, jobject thiz);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif//__AUDIOTRACK_H__

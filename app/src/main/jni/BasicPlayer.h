@@ -11,6 +11,10 @@
 #ifndef BASICPLAYER_H__INCED__110326
 #define BASICPLAYER_H__INCED__110326
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // return: == 0 - success
 //          < 0 - error code
 int openMovie(const char filePath[]);
@@ -37,5 +41,9 @@ int seekMovie(int64_t positionUs);
 double getFps();
 int64_t getDuration();
 int64_t getPosition();
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

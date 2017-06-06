@@ -13,12 +13,18 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
+#include <time.h> // clock_gettime
+//#include <ctime>
+//#include <chrono>
 
 // ffmpeg lib
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
 #include <libswscale/swscale.h>
 #include <libavutil/pixfmt.h>
+
+#include <libavutil/imgutils.h>// av_image_fill_arrays, av_image_get_buffer_size
+#include <libavutil/mem.h>
 
 // android lib
 #include <android/log.h>
@@ -116,31 +122,13 @@ int openVideoStream()
 		return -9;
 	
 	// 픽처 사이즈를 계산한다. 
-//	gPictureSize = avpicture_get_size(gPixelFormat, gVideoCodecCtx->width, gVideoCodecCtx->height);
 	gPictureSize = av_image_get_buffer_size(gPixelFormat, gVideoCodecCtx->width, gVideoCodecCtx->height, 1);
 
 	// 비디오 버퍼를 할당한다. 
 	gVideoBuffer = (uint8_t*)(malloc(sizeof(uint8_t) * gPictureSize));
 
 	// 비디오 버퍼 메모리를 설정함
-//	avpicture_fill((AVPicture*)gFrameRGB, gVideoBuffer, gPixelFormat, gVideoCodecCtx->width, gVideoCodecCtx->height);
 	av_image_fill_arrays(gFrameRGB->data, gFrameRGB->linesize, gVideoBuffer, gPixelFormat, gVideoCodecCtx->width, gVideoCodecCtx->height, 1);
-
-	// attribute_deprecated int avpicture_fill	(	AVPicture * 	picture,
-	// const uint8_t * 	ptr,
-	// enum AVPixelFormat 	pix_fmt,
-	// int 	width,
-	// int 	height 
-	// )	
-
-	// int av_image_fill_arrays	(	uint8_t * 	dst_data[4],
-	// int 	dst_linesize[4],
-	// const uint8_t * 	src,
-	// enum AVPixelFormat 	pix_fmt,
-	// int 	width,
-	// int 	height,
-	// int 	align 
-	// )	
 
 	gFps = av_q2d(gFormatCtx->streams[gVideoStreamIdx]->r_frame_rate);
 	LOGD("fps=%f", gFps);
@@ -234,17 +222,7 @@ void* decodeAudioThread(void *param)
 							write_p++;
 						}
 					}
-					writeAudioTrack(samples, (plane_size / sizeof(float)) * sizeof(uint16_t) * gAudioCodecCtx->channels);
-					
-					// float
-					// float *out = (float *)samples;
-					// for (nb = 0; nb < plane_size / sizeof(float); nb++) {
-					// 	for (ch = 0; ch < gAudioCodecCtx->channels; ch++) {
-					// 		out[write_p] = ((float *) gFrameAudio->extended_data[ch])[nb];
-					// 		write_p++;
-					// 	}
-					// }
-					// writeAudioTrack(samples, plane_size * gAudioCodecCtx->channels);
+					writeAudioTrack(samples, (plane_size / sizeof(float)) * sizeof(uint16_t) * gAudioCodecCtx->channels);					
 				}
 				else if(sfmt == AV_SAMPLE_FMT_U8P) {
 					uint16_t *out = (uint16_t *)samples;
@@ -255,16 +233,6 @@ void* decodeAudioThread(void *param)
                         }
                     }
 					writeAudioTrack(samples, (plane_size / sizeof(uint8_t)) * sizeof(uint16_t) * gAudioCodecCtx->channels);
-
-					// uint8
-					// uint8_t *out = (uint8_t *)samples;
-                    // for (nb = 0; nb < plane_size / sizeof(uint8_t); nb++) {
-                    //     for (ch = 0; ch < gAudioCodecCtx->channels; ch++) {
-                    //         out[write_p] = ((uint8_t *) gFrameAudio->extended_data[ch])[nb];
-                    //         write_p++;
-                    //     }
-                    // }
-					// writeAudioTrack(samples, plane_size * gAudioCodecCtx->channels);
 				}
 
 				// 채널 구분이 없음 
@@ -277,8 +245,6 @@ void* decodeAudioThread(void *param)
                         out[nb] = (short) ( ((float *) gFrameAudio->extended_data[0])[nb] * SHRT_MAX);
                     }
                     writeAudioTrack(samples, (plane_size / sizeof(float)) * sizeof(uint16_t));
-
-                    // writeAudioTrack((char*)gFrameAudio->extended_data[0], gFrameAudio->linesize[0]);
 				}
 				else if(sfmt == AV_SAMPLE_FMT_U8) {
 					uint16_t *out = (uint16_t *)samples;
@@ -286,8 +252,6 @@ void* decodeAudioThread(void *param)
                         out[nb] = (short) ( (((uint8_t *) gFrameAudio->extended_data[0])[nb] - 127) * SHRT_MAX / 127);
                     }					
 					writeAudioTrack(samples, (plane_size / sizeof(uint8_t)) * sizeof(uint16_t));	
-
-					// writeAudioTrack((char*)gFrameAudio->extended_data[0], gFrameAudio->linesize[0]);
 				}
 
 				av_packet_unref(&packet);
