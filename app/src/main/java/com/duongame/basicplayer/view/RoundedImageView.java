@@ -5,14 +5,13 @@ import android.graphics.Canvas;
 import android.graphics.Path;
 import android.graphics.RectF;
 import android.util.AttributeSet;
-import android.widget.ImageView;
 
 import com.duongame.basicplayer.util.UnitConverter;
 
 /**
  * Created by namjungsoo on 2016-06-19.
  */
-public class RoundedImageView extends ImageView {
+public class RoundedImageView extends android.support.v7.widget.AppCompatImageView {
     public RoundedImageView(Context context) {
         super(context);
     }
