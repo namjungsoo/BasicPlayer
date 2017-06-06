@@ -44,7 +44,7 @@ include $(PREBUILT_SHARED_LIBRARY)
 include $(CLEAR_VARS)
 
 LOCAL_MODULE := libbasicplayer
-LOCAL_SRC_FILES := BasicPlayer.c Interface.c AudioQ.cpp AudioTrack.cpp AudioFormatMap.cpp
+LOCAL_SRC_FILES := BasicPlayer.c Interface.c AudioQ.cpp AudioTrack.cpp AudioFormatMap.cpp PlayerMap.cpp
 LOCAL_C_INCLUDES := $(LOCAL_PATH)/../include/ \
                     $(LOCAL_PATH)/../include/libavcodec \
                     $(LOCAL_PATH)/../include/libavformat \

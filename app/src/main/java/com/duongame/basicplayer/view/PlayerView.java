@@ -45,13 +45,16 @@ public class PlayerView extends View {
     private boolean mPortrait = true;
     private ArrayList<SmiParser.Subtitle> mSubtitleList;
     private String mFilename;
+    private Player mPlayer = new Player();
 
     public PlayerView(Context context, AttributeSet attrs) {
         super(context, attrs);
 
         mContext = context;
 
-        Player.closeMovie();
+//        Player.closeMovie();
+        mPlayer.init();
+
     }
 
     public PlayerView(Context context) {
@@ -59,7 +62,7 @@ public class PlayerView extends View {
     }
 
     private void initRenderTimer() {
-        double fps = Player.getFps();
+        double fps = mPlayer.getFps();
         Log.d(TAG, "fps=" + fps);
 
         mInterval = (long) (1000. / fps);
@@ -73,14 +76,14 @@ public class PlayerView extends View {
         final File file = new File(filename);
         Log.d(TAG, String.valueOf(file.exists()));
 
-        int openResult = Player.openMovie(filename);
+        int openResult = mPlayer.openMovie(filename);
         if (openResult < 0) {
             Toast.makeText(mContext, "Open Movie Error: " + openResult, Toast.LENGTH_LONG).show();
             ((Activity) mContext).finish();
             return false;
         } else {
-            final int movieWidth = Player.getMovieWidth();
-            final int movieHeight = Player.getMovieHeight();
+            final int movieWidth = mPlayer.getMovieWidth();
+            final int movieHeight = mPlayer.getMovieHeight();
 
             mBitmap = Bitmap.createBitmap(movieWidth, movieHeight, Bitmap.Config.ARGB_8888);
             Log.d(TAG, "init createBitmap");
@@ -138,7 +141,7 @@ public class PlayerView extends View {
         pauseTimer();
         Player.pauseMovie();
 
-        PreferenceManager.saveRecentFile(mContext, mFilename, Player.getCurrentPositionUs(), getBitmapRotation());
+        PreferenceManager.saveRecentFile(mContext, mFilename, mPlayer.getCurrentPositionUs(), getBitmapRotation());
     }
 
     public void resume() {
@@ -172,11 +175,11 @@ public class PlayerView extends View {
     }
 
     public int seekMovie(long positionUs) {
-        return Player.seekMovie(positionUs);
+        return mPlayer.seekMovie(positionUs);
     }
 
     public long getMovieDurationUs() {
-        return Player.getMovieDurationUs();
+        return mPlayer.getMovieDurationUs();
     }
 
     @Override
@@ -188,9 +191,9 @@ public class PlayerView extends View {
 
         long currentPositionUs = -1;
         if (mBitmap != null) {
-            currentPositionUs = Player.getCurrentPositionUs();
+            currentPositionUs = mPlayer.getCurrentPositionUs();
             if (mPlaying || mSeeking) {
-                int ret = Player.renderFrame(mBitmap);
+                int ret = mPlayer.renderFrame(mBitmap);
                 // 렌더링 종료
                 if (ret > 0) {
                     pause(true);

@@ -27,7 +27,8 @@ public class LoadThumbnailTask extends AsyncTask<Void, Integer, Boolean> {
 
     @Override
     protected Boolean doInBackground(Void... params) {
-        return loadThumbnail(movieFile);
+//        return loadThumbnail(movieFile);
+        return false;
     }
 
     @Override
@@ -44,21 +45,24 @@ public class LoadThumbnailTask extends AsyncTask<Void, Integer, Boolean> {
 
     private boolean loadThumbnail(MovieFile movieFile) {
         // 썸네일에 등록하자
-        int ret = Player.openMovieWithAudio(movieFile.file.getAbsolutePath(), 0);
+        final Player player = new Player();
+        player.init();
+
+        int ret = player.openMovieWithAudio(movieFile.file.getAbsolutePath(), 0);
         //int ret = Player.openMovie(each.getAbsolutePath());
 
         Log.d(TAG, "openMovieWithAudio filename=" + movieFile.file.getAbsolutePath() + " ret=" + ret);
         if (ret >= 0) {
-            final int width = Player.getMovieWidth();
-            final int height = Player.getMovieHeight();
+            final int width = player.getMovieWidth();
+            final int height = player.getMovieHeight();
 
             final Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-            Player.renderFrame(bitmap);
+            player.renderFrame(bitmap);
 
             ThumbnailManager.addBitmap(movieFile.file.getPath(), bitmap);
 
-            movieFile.timeText = TimeConverter.convertUsToString(Player.getMovieDurationUs());
-            Player.closeMovie();
+            movieFile.timeText = TimeConverter.convertUsToString(player.getMovieDurationUs());
+            player.closeMovie();
             return true;
         } else {
             return false;

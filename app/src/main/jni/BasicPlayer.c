@@ -33,7 +33,6 @@
 // linux lib
 #include <sys/types.h>
 #include <unistd.h>
-#include <pthread.h>
 
 #include "BasicPlayer.h"
 #include "Log.h"

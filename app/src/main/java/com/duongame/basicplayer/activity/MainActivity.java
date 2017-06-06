@@ -44,7 +44,6 @@ public class MainActivity extends BaseActivity {
         Log.d(TAG, "onCreate");
 
         super.onCreate(savedInstanceState);
-        Player.init(this);
 
         initView();
 

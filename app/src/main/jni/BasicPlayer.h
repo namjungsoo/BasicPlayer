@@ -8,56 +8,14 @@
  * version 2.1 of the License, or (at your option) any later version.
  */
 
-#ifndef BASICPLAYER_H__INCED__110326
-#define BASICPLAYER_H__INCED__110326
+#ifndef __BASICPLAYER_H__
+#define __BASICPLAYER_H__
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-// ffmpeg lib
-#include <libavcodec/avcodec.h>
-#include <libavformat/avformat.h>
-#include <libswscale/swscale.h>
-#include <libavutil/pixfmt.h>
-
-#include <libavutil/imgutils.h>// av_image_fill_arrays, av_image_get_buffer_size
-#include <libavutil/mem.h>
-#include <pthread.h>
-
-typedef struct {
-    AVFormatContext *gFormatCtx;
-
-    // 비디오 관련 
-    AVCodecContext *gVideoCodecCtx;
-    AVCodec *gVideoCodec;
-    int gVideoStreamIdx;
-
-    AVFrame *gFrame;
-    AVFrame *gFrameRGB;
-
-    struct SwsContext *gImgConvertCtx;
-
-    int gPictureSize;
-    uint8_t *gVideoBuffer;
-
-    AVDictionary *optionsDict;
-
-    int gPixelFormat;
-    double gFps;
-    int64_t gCurrentTimeUs;
-
-    // 오디오 관련 
-    AVCodecContext *gAudioCodecCtx;
-    AVCodec *gAudioCodec;
-    int gAudioStreamIdx;
-    AVFrame *gFrameAudio;
-
-    pthread_t gAudioThread;
-    int gAudioThreadRunning;
-
-    enum AVSampleFormat sfmt;
-} Movie;
+#include "Movie.h"
 
 void initMovie(Movie *movie);
 
@@ -94,4 +52,4 @@ int64_t getPosition(Movie *movie);
 }
 #endif
 
-#endif
+#endif//__BASICPLAYER_H__

@@ -14,8 +14,7 @@
 #include "AudioTrack.h"
 #include "AudioFormatMap.h"
 #include "AudioQ.h"
- 
-Movie *gMovie;
+#include "PlayerMap.h" 
 
 jint JNI_OnLoad(JavaVM* vm, void* reserved) {
     LOGD("Hello");
@@ -38,16 +37,24 @@ jint Java_com_duongame_basicplayer_Player_initBasicPlayer(JNIEnv *env, jobject t
 	initAudioFormatMap();
 	AudioQ_init();
 
+	Movie *gMovie;
 	gMovie = (Movie*)malloc(sizeof(Movie));
-	LOGD("END initBasicPlayer");
-	return 0;
+	initMovie(gMovie);
+	int id = MovieMap_insert(gMovie);
+
+	LOGD("END initBasicPlayer id=%d", id);
+	return id;
 }
 
-jint Java_com_duongame_basicplayer_Player_openMovieWithAudio(JNIEnv *env, jobject thiz, jstring filePath, int audio)
+jint Java_com_duongame_basicplayer_Player_openMovieWithAudio(JNIEnv *env, jobject thiz, int id, jstring filePath, int audio)
 {
 	LOGD("BEGIN openMovieWithAudio");
 	const jbyte *str;
 	int result;
+
+	Movie *gMovie = MovieMap_get(id);
+	if(gMovie == NULL)
+		return -1;
 
 	// 문자열 사용하고 나서 삭제 
 	str = (*env)->GetStringUTFChars(env, filePath, NULL);
@@ -58,14 +65,21 @@ jint Java_com_duongame_basicplayer_Player_openMovieWithAudio(JNIEnv *env, jobjec
 	return result;
 }
 
-jint Java_com_duongame_basicplayer_Player_openMovie(JNIEnv *env, jobject thiz, jstring filePath)
+jint Java_com_duongame_basicplayer_Player_openMovie(JNIEnv *env, jobject thiz, int id, jstring filePath)
 {
-	LOGD("BEGIN openMovie");
+	LOGD("BEGIN openMovie id=%d filePath=%d", id, filePath);
+
+	Movie *gMovie = MovieMap_get(id);
+	LOGD("openMovie id=%d gMovie=%d", id, gMovie);
+	if(gMovie == NULL)
+		return -1;
+
 	const jbyte *str;
 	int result;
 
 	// 문자열 사용하고 나서 삭제 
 	str = (*env)->GetStringUTFChars(env, filePath, NULL);
+	LOGD("openMovie str=%s", str);
 	result = openMovie(gMovie, str);
 	(*env)->ReleaseStringUTFChars(env, filePath, str);
 
@@ -73,12 +87,16 @@ jint Java_com_duongame_basicplayer_Player_openMovie(JNIEnv *env, jobject thiz, j
 	return result;
 }
 
-jint Java_com_duongame_basicplayer_Player_renderFrame(JNIEnv *env, jobject thiz, jobject bitmap)
+jint Java_com_duongame_basicplayer_Player_renderFrame(JNIEnv *env, jobject thiz, int id, jobject bitmap)
 {
 //	LOGD("BEGIN renderFrame");
     
     void *pixels;
 	int result;
+
+	Movie *gMovie = MovieMap_get(id);
+	if(gMovie == NULL)
+		return -1;
 
 	// LOGD("renderFrame BEGIN");
 
@@ -107,21 +125,35 @@ jint Java_com_duongame_basicplayer_Player_renderFrame(JNIEnv *env, jobject thiz,
 	return 0;
 }
 
-jint Java_com_duongame_basicplayer_Player_getMovieWidth(JNIEnv *env, jobject thiz)
+jint Java_com_duongame_basicplayer_Player_getMovieWidth(JNIEnv *env, jobject thiz, int id)
 {
+	Movie *gMovie = MovieMap_get(id);
+	if(gMovie == NULL)
+		return 0;
+
 	return getWidth(gMovie);
 }
 
-jint Java_com_duongame_basicplayer_Player_getMovieHeight(JNIEnv *env, jobject thiz)
+jint Java_com_duongame_basicplayer_Player_getMovieHeight(JNIEnv *env, jobject thiz, int id)
 {
+	Movie *gMovie = MovieMap_get(id);
+	if(gMovie == NULL)
+		return 0;
+
 	return getHeight(gMovie);
 }
 
-void Java_com_duongame_basicplayer_Player_closeMovie(JNIEnv *env, jobject thiz)
+void Java_com_duongame_basicplayer_Player_closeMovie(JNIEnv *env, jobject thiz, int id)
 {
+	Movie *gMovie = MovieMap_get(id);
+	if(gMovie == NULL)
+		return;
+
 	LOGD("BEGIN closeMovie");
 	closeMovie(gMovie);
 	free(gMovie);
+	MovieMap_remove(id);
+	
 	LOGD("END closeMovie");
 }
 
@@ -139,31 +171,47 @@ void Java_com_duongame_basicplayer_Player_resumeMovie(JNIEnv *env, jobject thiz)
 //	LOGD("END resumeMovie");
 }
 
-int Java_com_duongame_basicplayer_Player_seekMovie(JNIEnv *env, jobject thiz, jlong positionUs)
+int Java_com_duongame_basicplayer_Player_seekMovie(JNIEnv *env, jobject thiz, int id, jlong positionUs)
 {
+	Movie *gMovie = MovieMap_get(id);
+	if(gMovie == NULL)
+		return 0;
+
 //	LOGD("BEGIN seekMovie");
 	int ret = seekMovie(gMovie, positionUs);
 //	LOGD("END seekMovie");
 	return ret;
 }
 
-jdouble Java_com_duongame_basicplayer_Player_getFps(JNIEnv *env, jobject thiz)
+jdouble Java_com_duongame_basicplayer_Player_getFps(JNIEnv *env, jobject thiz, int id)
 {
+	Movie *gMovie = MovieMap_get(id);
+	if(gMovie == NULL)
+		return 0.0;
+
 	jdouble fps = getFps(gMovie);
 	LOGD("interface fps=%f", fps);
 	return fps;
 }
 
-jlong Java_com_duongame_basicplayer_Player_getMovieDurationUs(JNIEnv *env, jobject thiz)
+jlong Java_com_duongame_basicplayer_Player_getMovieDurationUs(JNIEnv *env, jobject thiz, int id)
 {
 	LOGD("BEGIN getMovieDurationUs");
+	Movie *gMovie = MovieMap_get(id);
+	if(gMovie == NULL)
+		return 0;
+
 	jlong ret =  getDuration(gMovie);
 	LOGD("END getMovieDurationUs");
 	return ret;
 }
 
-jlong Java_com_duongame_basicplayer_Player_getCurrentPositionUs(JNIEnv *env, jobject thiz)
+jlong Java_com_duongame_basicplayer_Player_getCurrentPositionUs(JNIEnv *env, jobject thiz, int id)
 {
+	Movie *gMovie = MovieMap_get(id);
+	if(gMovie == NULL)
+		return 0;
+
 //	LOGD("BEGIN getCurrentPositionUs");
 	jlong ret = getPosition(gMovie);
 //	LOGD("END getCurrentPositionUs");

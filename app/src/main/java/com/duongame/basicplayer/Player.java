@@ -14,16 +14,12 @@ import android.widget.Toast;
  */
 public class Player {
     private final static String TAG = "Player";
+    private int id = -1;
 
-    public static void init(Context context) {
+    public void init() {
         Log.d(TAG, "init");
 
-        if (Player.initBasicPlayer() < 0) {
-            Toast.makeText(context, "CPU doesn't support NEON", Toast.LENGTH_LONG).show();
-            ((Activity) context).finish();
-            return;
-        }
-
+        id = initBasicPlayer();
         Player.initAudioTrack();
     }
 
@@ -81,23 +77,65 @@ public class Player {
         System.loadLibrary("basicplayer");
     }
 
+    public int openMovie(String path) {
+        return openMovie(id, path);
+    }
+
+    public int openMovieWithAudio(String path, int audio) {
+        return openMovieWithAudio(id, path, audio);
+    }
+
+    public int renderFrame(Bitmap bitmap) {
+        return renderFrame(id, bitmap);
+    }
+
+    public int getMovieWidth() {
+        return getMovieWidth(id);
+    }
+
+    public int getMovieHeight() {
+        return getMovieHeight(id);
+    }
+
+    public void closeMovie() {
+        closeMovie(id);
+    }
+
+    public int seekMovie(long positionUs) {
+        return seekMovie(id, positionUs);
+    }
+
+    public long getMovieDurationUs() {
+        return getMovieDurationUs(id);
+    }
+
+    public double getFps() {
+        return getFps(id);
+    }
+
+    public long getCurrentPositionUs() {
+        return getCurrentPositionUs(id);
+    }
+
+    // 오디오 관련(static)
     public static native void initAudioTrack();
-    public static native int initBasicPlayer();
-
-    public static native int openMovie(String filePath);
-    public static native int openMovieWithAudio(String filePath, int audio);
-    public static native int renderFrame(Bitmap bitmap);
-
-    public static native int getMovieWidth();
-    public static native int getMovieHeight();
-    public static native void closeMovie();
-
     public static native void pauseMovie();
     public static native void resumeMovie();
-    public static native int seekMovie(long positionUs);
 
-    public static native long getMovieDurationUs();
-    public static native double getFps();
+    private native int initBasicPlayer();
 
-    public static native long getCurrentPositionUs();
+    private native int openMovie(int id, String filePath);
+    private native int openMovieWithAudio(int id, String filePath, int audio);
+    private native int renderFrame(int id, Bitmap bitmap);
+
+    private native int getMovieWidth(int id);
+    private native int getMovieHeight(int id);
+    private native void closeMovie(int id);
+
+    private native int seekMovie(int id, long positionUs);
+
+    private native long getMovieDurationUs(int id);
+    private native double getFps(int id);
+
+    private native long getCurrentPositionUs(int id);
 }
