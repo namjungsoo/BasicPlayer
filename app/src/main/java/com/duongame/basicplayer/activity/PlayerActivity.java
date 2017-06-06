@@ -22,6 +22,7 @@ import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import com.duongame.basicplayer.BuildConfig;
 import com.duongame.basicplayer.R;
 import com.duongame.basicplayer.manager.AdBannerManager;
 import com.duongame.basicplayer.manager.FullscreenManager;
@@ -88,7 +89,8 @@ public class PlayerActivity extends BaseActivity {
 
         // 광고 처리
         //PRO
-        initAd();
+        if(BuildConfig.SHOW_AD)
+            initAd();
 
         initSeekBar();
 

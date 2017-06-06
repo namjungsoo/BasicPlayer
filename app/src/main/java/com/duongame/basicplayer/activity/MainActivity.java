@@ -15,6 +15,7 @@ import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.duongame.basicplayer.BuildConfig;
 import com.duongame.basicplayer.Player;
 import com.duongame.basicplayer.R;
 import com.duongame.basicplayer.manager.AdBannerManager;
@@ -155,7 +156,8 @@ public class MainActivity extends BaseActivity {
 
         // 하단 배너 광고를 추가해 주자
         //PRO
-        initAd(relativeLayout);
+        if(BuildConfig.SHOW_AD)
+            initAd(relativeLayout);
 
         setContentView(root);
     }

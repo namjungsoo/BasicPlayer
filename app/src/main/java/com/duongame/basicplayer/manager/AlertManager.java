@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.view.ViewGroup;
 import android.view.ViewParent;
 
+import com.duongame.basicplayer.BuildConfig;
 import com.duongame.basicplayer.activity.MainActivity;
 import com.duongame.basicplayer.R;
 import com.google.android.gms.ads.AdView;
@@ -22,14 +23,23 @@ public class AlertManager {
         final File file = new File(filename);
 
         //PRO
-//        AlertManager.showAlert(context, context.getResources().getString(R.string.dialog_recentfile), file.getName(), new DialogInterface.OnClickListener() {
-        AlertManager.showAlertWithBanner(context, context.getResources().getString(R.string.dialog_recentfile), file.getName(), new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialogInterface, int i) {
-                final MainActivity activity = (MainActivity) context;
-                activity.openFile(filename, time, rotation);
-            }
-        }, negListener, null);
+        if (BuildConfig.SHOW_AD) {
+            AlertManager.showAlertWithBanner(context, context.getResources().getString(R.string.dialog_recentfile), file.getName(), new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    final MainActivity activity = (MainActivity) context;
+                    activity.openFile(filename, time, rotation);
+                }
+            }, negListener, null);
+        } else {
+            AlertManager.showAlert(context, context.getResources().getString(R.string.dialog_recentfile), file.getName(), new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    final MainActivity activity = (MainActivity) context;
+                    activity.openFile(filename, time, rotation);
+                }
+            }, negListener, null);
+        }
 
     }
 
@@ -58,8 +68,8 @@ public class AlertManager {
     public static void showAlertWithBanner(Activity context, String title, String message, DialogInterface.OnClickListener posListener, DialogInterface.OnClickListener negListener, DialogInterface.OnKeyListener keyListener) {
         final AdView view = AdBannerManager.getAdPopupView();
         final ViewParent parent = view.getParent();
-        if(parent != null) {
-            final ViewGroup vg = (ViewGroup)parent;
+        if (parent != null) {
+            final ViewGroup vg = (ViewGroup) parent;
             vg.removeView(view);
         }
 
