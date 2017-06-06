@@ -45,38 +45,6 @@
 
 #define AVCODEC_MAX_AUDIO_FRAME_SIZE 192000
 
-AVFormatContext *gFormatCtx = NULL;
-
-// 비디오 관련 
-AVCodecContext *gVideoCodecCtx = NULL;
-AVCodec *gVideoCodec = NULL;
-int gVideoStreamIdx = -1;
-
-AVFrame *gFrame = NULL;
-AVFrame *gFrameRGB = NULL;
-
-struct SwsContext *gImgConvertCtx = NULL;
-
-int gPictureSize = 0;
-uint8_t *gVideoBuffer = NULL;
-
-AVDictionary *optionsDict = NULL;
-
-int gPixelFormat = AV_PIX_FMT_BGR32;
-double gFps = 0.0;
-int64_t gCurrentTimeUs = 0l;
-
-// 오디오 관련 
-AVCodecContext *gAudioCodecCtx = NULL;
-AVCodec *gAudioCodec = NULL;
-int gAudioStreamIdx = -1;
-AVFrame *gFrameAudio = NULL;
-
-pthread_t gAudioThread = 0;
-int gAudioThreadRunning = 1;
-
-enum AVSampleFormat sfmt;
-
 int64_t getTimeNsec() 
 {
     struct timespec now;
@@ -84,85 +52,96 @@ int64_t getTimeNsec()
     return (int64_t) now.tv_sec*1000000000LL + now.tv_nsec;
 }
 
-// 현재 사용안함 
-double getFps() 
+// 구조체를 초기화한다.
+void initMovie(Movie *movie)
 {
-	LOGD("getFps %f", gFps);
-	return gFps;
+	memset(movie, 0, sizeof(Movie));
+	
+	movie->gPixelFormat = AV_PIX_FMT_BGR32;
+	movie->gVideoStreamIdx = -1;
+	movie->gAudioStreamIdx = -1;
+	movie->gAudioThreadRunning = 1;
 }
 
-int openVideoStream() 
+// 현재 사용안함 
+double getFps(Movie *movie) 
+{
+	LOGD("getFps %f", movie->gFps);
+	return movie->gFps;
+}
+
+int openVideoStream(Movie *movie) 
 {
 	LOGD("openVideoStream");
 
 	// 비디오 스트림 인덱스를 체크한다. 
-	if (gVideoStreamIdx == -1)
+	if (movie->gVideoStreamIdx == -1)
 		return -4;
 
 	// 비디오 코텍을 찾아서 오픈한다. 
-	gVideoCodecCtx = gFormatCtx->streams[gVideoStreamIdx]->codec;
-	gVideoCodec = avcodec_find_decoder(gVideoCodecCtx->codec_id);
-	if (gVideoCodec == NULL)
+	movie->gVideoCodecCtx = movie->gFormatCtx->streams[movie->gVideoStreamIdx]->codec;
+	movie->gVideoCodec = avcodec_find_decoder(movie->gVideoCodecCtx->codec_id);
+	if (movie->gVideoCodec == NULL)
 		return -5;
 
-	if (avcodec_open2(gVideoCodecCtx, gVideoCodec, &optionsDict) < 0)
+	if (avcodec_open2(movie->gVideoCodecCtx, movie->gVideoCodec, &movie->optionsDict) < 0)
 		return -6;
 
 	// 프레임을 할당한다. frame은 원본 frameRGB는 변환용 
-	gFrame = av_frame_alloc();
-	if (gFrame == NULL)
+	movie->gFrame = av_frame_alloc();
+	if (movie->gFrame == NULL)
 		return -7;
-	gFrameRGB = av_frame_alloc();
-	if (gFrameRGB == NULL)
+	movie->gFrameRGB = av_frame_alloc();
+	if (movie->gFrameRGB == NULL)
 		return -8;
 
 	// 오디오를 위해 추가됨 
-	gFrameAudio = av_frame_alloc();
-	if (gFrameAudio == NULL)
+	movie->gFrameAudio = av_frame_alloc();
+	if (movie->gFrameAudio == NULL)
 		return -9;
 	
 	// 픽처 사이즈를 계산한다. 
-	gPictureSize = av_image_get_buffer_size(gPixelFormat, gVideoCodecCtx->width, gVideoCodecCtx->height, 1);
+	movie->gPictureSize = av_image_get_buffer_size(movie->gPixelFormat, movie->gVideoCodecCtx->width, movie->gVideoCodecCtx->height, 1);
 
 	// 비디오 버퍼를 할당한다. 
-	gVideoBuffer = (uint8_t*)(malloc(sizeof(uint8_t) * gPictureSize));
+	movie->gVideoBuffer = (uint8_t*)(malloc(sizeof(uint8_t) * movie->gPictureSize));
 
 	// 비디오 버퍼 메모리를 설정함
-	av_image_fill_arrays(gFrameRGB->data, gFrameRGB->linesize, gVideoBuffer, gPixelFormat, gVideoCodecCtx->width, gVideoCodecCtx->height, 1);
+	av_image_fill_arrays(movie->gFrameRGB->data, movie->gFrameRGB->linesize, movie->gVideoBuffer, movie->gPixelFormat, movie->gVideoCodecCtx->width, movie->gVideoCodecCtx->height, 1);
 
-	gFps = av_q2d(gFormatCtx->streams[gVideoStreamIdx]->r_frame_rate);
-	LOGD("fps=%f", gFps);
+	movie->gFps = av_q2d(movie->gFormatCtx->streams[movie->gVideoStreamIdx]->r_frame_rate);
+	LOGD("fps=%f", movie->gFps);
 	return 0;
 }
 
-int openAudioStream() 
+int openAudioStream(Movie *movie) 
 {
-	LOGD("openAudioStream gAudioStreamIdx=%d", gAudioStreamIdx);
+	LOGD("openAudioStream gAudioStreamIdx=%d", movie->gAudioStreamIdx);
 
 	// 오디오 스트림 인덱스를 체크한다. 
-	if (gAudioStreamIdx == -1)
+	if (movie->gAudioStreamIdx == -1)
 		return -4;
 
 	// 오디오 코텍을 찾아서 오픈한다. 
-	gAudioCodecCtx = gFormatCtx->streams[gAudioStreamIdx]->codec;
-	gAudioCodec = avcodec_find_decoder(gAudioCodecCtx->codec_id);
-	if (gAudioCodec == NULL)
+	movie->gAudioCodecCtx = movie->gFormatCtx->streams[movie->gAudioStreamIdx]->codec;
+	movie->gAudioCodec = avcodec_find_decoder(movie->gAudioCodecCtx->codec_id);
+	if (movie->gAudioCodec == NULL)
 		return -5;
 
-	if (avcodec_open2(gAudioCodecCtx, gAudioCodec, &optionsDict) < 0)
+	if (avcodec_open2(movie->gAudioCodecCtx, movie->gAudioCodec, &movie->optionsDict) < 0)
 		return -6;
 
-	LOGD("gAudioCodecCtx->sample_fmt=%d", gAudioCodecCtx->sample_fmt);
-	LOGD("gAudioCodecCtx->sample_rate=%d", gAudioCodecCtx->sample_rate);
-	LOGD("gAudioCodecCtx->channels=%d", gAudioCodecCtx->channels);
+	LOGD("gAudioCodecCtx->sample_fmt=%d", movie->gAudioCodecCtx->sample_fmt);
+	LOGD("gAudioCodecCtx->sample_rate=%d", movie->gAudioCodecCtx->sample_rate);
+	LOGD("gAudioCodecCtx->channels=%d", movie->gAudioCodecCtx->channels);
 
-	sfmt = gAudioCodecCtx->sample_fmt;
+	movie->sfmt = movie->gAudioCodecCtx->sample_fmt;
 
-	const char *audioFormat = getAudioFormatString(sfmt);
+	const char *audioFormat = getAudioFormatString(movie->sfmt);
 	LOGD("audioFormat=%s", audioFormat);
 }
 
-void* decodeAudioThread(void *param) 
+void* decodeAudioThread(Movie *movie, void *param) 
 {
 	LOGD("decodeAudioThread begin");
 	int frameFinished = 0;
@@ -173,7 +152,7 @@ void* decodeAudioThread(void *param)
 	uint8_t *buffer = av_malloc(sizeof(uint8_t)*buffer_size);
 	uint8_t *samples = av_malloc(sizeof(uint8_t)*buffer_size);
 
-	while(gAudioThreadRunning) {
+	while(movie->gAudioThreadRunning) {
 		AudioQ_lock();
 		size_t size = AudioQ_size();
 		AudioQ_unlock();
@@ -184,7 +163,7 @@ void* decodeAudioThread(void *param)
 			AudioQ_unlock();
 
 			int64_t begin = getTimeNsec();
- 			int len = avcodec_decode_audio4(gAudioCodecCtx, gFrameAudio, &frameFinished, &packet);
+ 			int len = avcodec_decode_audio4(movie->gAudioCodecCtx, movie->gFrameAudio, &frameFinished, &packet);
 			int64_t end = getTimeNsec();
 			int64_t diff = end - begin;
 
@@ -193,63 +172,63 @@ void* decodeAudioThread(void *param)
 			}
 			
  			// 이게 전부 0.0에서 변화가 없음
- 			double pts = av_frame_get_best_effort_timestamp(gFrameAudio);
- 			double pts_clock = pts * av_q2d(gFormatCtx->streams[gAudioStreamIdx]->time_base);
+ 			double pts = av_frame_get_best_effort_timestamp(movie->gFrameAudio);
+ 			double pts_clock = pts * av_q2d(movie->gFormatCtx->streams[movie->gAudioStreamIdx]->time_base);
 
  			if (frameFinished) {
                 int write_p = 0;
 				int plane_size;
-				int data_size = av_samples_get_buffer_size(&plane_size, gAudioCodecCtx->channels, gFrameAudio->nb_samples, gAudioCodecCtx->sample_fmt, 1);
+				int data_size = av_samples_get_buffer_size(&plane_size, movie->gAudioCodecCtx->channels, movie->gFrameAudio->nb_samples, movie->gAudioCodecCtx->sample_fmt, 1);
 				uint16_t nb, ch;
 
-				if(sfmt == AV_SAMPLE_FMT_S16P) {
+				if(movie->sfmt == AV_SAMPLE_FMT_S16P) {
 					uint16_t *out = (uint16_t *)samples;
 					for (nb = 0; nb < plane_size / sizeof(uint16_t); nb++) {
-						for (ch = 0; ch < gAudioCodecCtx->channels; ch++) {
-							out[write_p] = ((uint16_t *) gFrameAudio->extended_data[ch])[nb];
+						for (ch = 0; ch < movie->gAudioCodecCtx->channels; ch++) {
+							out[write_p] = ((uint16_t *) movie->gFrameAudio->extended_data[ch])[nb];
 							write_p++;
 						}
 					}
-					writeAudioTrack(samples, plane_size * gAudioCodecCtx->channels);
+					writeAudioTrack(samples, plane_size * movie->gAudioCodecCtx->channels);
 				}
-				else if(sfmt == AV_SAMPLE_FMT_FLTP) {
+				else if(movie->sfmt == AV_SAMPLE_FMT_FLTP) {
 					// LOGD("decodeAudioThread AV_SAMPLE_FMT_FLTP");
 					// resample: float -> short
 					uint16_t *out = (uint16_t *)samples;
 					for (nb = 0; nb < plane_size / sizeof(float); nb++) {
-						for (ch = 0; ch < gAudioCodecCtx->channels; ch++) {
-							out[write_p] = (short)(((float *) gFrameAudio->extended_data[ch])[nb] * SHRT_MAX);
+						for (ch = 0; ch < movie->gAudioCodecCtx->channels; ch++) {
+							out[write_p] = (short)(((float *) movie->gFrameAudio->extended_data[ch])[nb] * SHRT_MAX);
 							write_p++;
 						}
 					}
-					writeAudioTrack(samples, (plane_size / sizeof(float)) * sizeof(uint16_t) * gAudioCodecCtx->channels);					
+					writeAudioTrack(samples, (plane_size / sizeof(float)) * sizeof(uint16_t) * movie->gAudioCodecCtx->channels);
 				}
-				else if(sfmt == AV_SAMPLE_FMT_U8P) {
+				else if(movie->sfmt == AV_SAMPLE_FMT_U8P) {
 					uint16_t *out = (uint16_t *)samples;
                     for (nb = 0; nb < plane_size / sizeof(uint8_t); nb++) {
-                        for (ch = 0; ch < gFrameAudio->channels; ch++) {
-                            out[write_p] = (((uint8_t *) gFrameAudio->extended_data[0])[nb] - 127) * SHRT_MAX / 127;
+                        for (ch = 0; ch < movie->gFrameAudio->channels; ch++) {
+                            out[write_p] = (((uint8_t *) movie->gFrameAudio->extended_data[0])[nb] - 127) * SHRT_MAX / 127;
                             write_p++;
                         }
                     }
-					writeAudioTrack(samples, (plane_size / sizeof(uint8_t)) * sizeof(uint16_t) * gAudioCodecCtx->channels);
+					writeAudioTrack(samples, (plane_size / sizeof(uint8_t)) * sizeof(uint16_t) * movie->gAudioCodecCtx->channels);
 				}
 
 				// 채널 구분이 없음 
-				else if(sfmt == AV_SAMPLE_FMT_S16) {
-					writeAudioTrack((char*)gFrameAudio->extended_data[0], gFrameAudio->linesize[0]);
+				else if(movie->sfmt == AV_SAMPLE_FMT_S16) {
+					writeAudioTrack((char*)movie->gFrameAudio->extended_data[0], movie->gFrameAudio->linesize[0]);
 				}
-				else if(sfmt == AV_SAMPLE_FMT_FLT) {
+				else if(movie->sfmt == AV_SAMPLE_FMT_FLT) {
 					uint16_t *out = (uint16_t *)samples;
                     for (nb = 0; nb < plane_size / sizeof(float); nb++) {
-                        out[nb] = (short) ( ((float *) gFrameAudio->extended_data[0])[nb] * SHRT_MAX);
+                        out[nb] = (short) ( ((float *) movie->gFrameAudio->extended_data[0])[nb] * SHRT_MAX);
                     }
                     writeAudioTrack(samples, (plane_size / sizeof(float)) * sizeof(uint16_t));
 				}
-				else if(sfmt == AV_SAMPLE_FMT_U8) {
+				else if(movie->sfmt == AV_SAMPLE_FMT_U8) {
 					uint16_t *out = (uint16_t *)samples;
                     for (nb = 0; nb < plane_size / sizeof(uint8_t); nb++) {
-                        out[nb] = (short) ( (((uint8_t *) gFrameAudio->extended_data[0])[nb] - 127) * SHRT_MAX / 127);
+                        out[nb] = (short) ( (((uint8_t *) movie->gFrameAudio->extended_data[0])[nb] - 127) * SHRT_MAX / 127);
                     }					
 					writeAudioTrack(samples, (plane_size / sizeof(uint8_t)) * sizeof(uint16_t));	
 				}
@@ -269,7 +248,7 @@ void* decodeAudioThread(void *param)
 	return NULL;
 }
 
-int openMovieWithAudio(const char *filePath, int audio)
+int openMovieWithAudio(Movie *movie, const char *filePath, int audio)
 {
 	LOGD("openMovieWithAudio filePath=%s audio=%d", filePath, audio);
 
@@ -277,11 +256,11 @@ int openMovieWithAudio(const char *filePath, int audio)
 	unsigned char errbuf[128];
 	
 	// 최초에 컨텍스트가 null이 맞는지 확인한다. 
-	if (gFormatCtx != NULL)
+	if (movie->gFormatCtx != NULL)
 		return -1;
 
 	// 파일을 연다. 
-	int err = avformat_open_input(&gFormatCtx, filePath, NULL, NULL);
+	int err = avformat_open_input(&movie->gFormatCtx, filePath, NULL, NULL);
 	if(err < 0) {
 		av_strerror(err, errbuf, sizeof(errbuf));
 		LOGD("%s", errbuf);  
@@ -289,81 +268,81 @@ int openMovieWithAudio(const char *filePath, int audio)
 	}
 
 	// 스트짐 정보를 포맷 컨텍스트에 리턴한다. 
-	if (avformat_find_stream_info(gFormatCtx, NULL) < 0)
+	if (avformat_find_stream_info(movie->gFormatCtx, NULL) < 0)
 		return -3;
 
-	for (i = 0; i < gFormatCtx->nb_streams; i++) {
-		if (gFormatCtx->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO) {
-			gVideoStreamIdx = i;
-			LOGD("gVideoStreamIdx=%d", gVideoStreamIdx);
+	for (i = 0; i < movie->gFormatCtx->nb_streams; i++) {
+		if (movie->gFormatCtx->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO) {
+			movie->gVideoStreamIdx = i;
+			LOGD("gVideoStreamIdx=%d", movie->gVideoStreamIdx);
 		}
 
-		if (gFormatCtx->streams[i]->codec->codec_type == AVMEDIA_TYPE_AUDIO) {
-			gAudioStreamIdx = i;
-			LOGD("gAudioStreamIdx=%d", gAudioStreamIdx);
+		if (movie->gFormatCtx->streams[i]->codec->codec_type == AVMEDIA_TYPE_AUDIO) {
+			movie->gAudioStreamIdx = i;
+			LOGD("gAudioStreamIdx=%d", movie->gAudioStreamIdx);
 		}		
 	}
 
 	int ret;
-	ret = openVideoStream();
+	ret = openVideoStream(movie);
 	if(ret < 0)
 		return ret;  
 
 	if(audio) {
 		// 오디오는 없을수 있다. 
-		ret = openAudioStream(); 
+		ret = openAudioStream(movie);
 		if(ret < 0) {
 			LOGD("Audio NOT FOUND");
 			return 0;
 		}
 		else {
-			prepareAudioTrack(gAudioCodecCtx->sample_fmt, gAudioCodecCtx->sample_rate, gAudioCodecCtx->channels);
-			gAudioThreadRunning = 1;
-			ret = pthread_create(&gAudioThread, NULL, decodeAudioThread, NULL);
+			prepareAudioTrack(movie->gAudioCodecCtx->sample_fmt, movie->gAudioCodecCtx->sample_rate, movie->gAudioCodecCtx->channels);
+			movie->gAudioThreadRunning = 1;
+			ret = pthread_create(&movie->gAudioThread, NULL, decodeAudioThread, NULL);
 		}		
 	}
 
 	return ret;
 }
 
-int openMovie(const char filePath[])
+int openMovie(Movie *movie, const char filePath[])
 {
 	LOGD("openMovie filePath=%s", filePath);
 
-	return openMovieWithAudio(filePath, 1);
+	return openMovieWithAudio(movie, filePath, 1);
 }
 
 // 40ms만에 한번씩 호출된다. 
-int decodeFrame()
+int decodeFrame(Movie *movie)
 {
 	int frameFinished = 0;
 	AVPacket packet;
 
-	if(gFormatCtx == NULL) {
+	if(movie->gFormatCtx == NULL) {
 		LOGD("decodeFrame END");
 		return -1;
 	}
 	
 	// 한번에 하나를 읽고 종료하자 
-	while (av_read_frame(gFormatCtx, &packet) >= 0) {
-		if (packet.stream_index == gVideoStreamIdx) {
+	while (av_read_frame(movie->gFormatCtx, &packet) >= 0) {
+		if (packet.stream_index == movie->gVideoStreamIdx) {
 			int64_t begin = getTimeNsec();
-			avcodec_decode_video2(gVideoCodecCtx, gFrame, &frameFinished, &packet);
+			avcodec_decode_video2(movie->gVideoCodecCtx, movie->gFrame, &frameFinished, &packet);
 			int64_t end = getTimeNsec();
 			int64_t diff = end - begin;
 
 			// 이게 전부 0.0에서 변화가 없음
-			int64_t pts = av_frame_get_best_effort_timestamp(gFrame);
+			int64_t pts = av_frame_get_best_effort_timestamp(movie->gFrame);
 //			double pts_clock = pts * av_q2d(gFormatCtx->streams[gVideoStreamIdx]->time_base);
-			gCurrentTimeUs = av_rescale_q(pts, gFormatCtx->streams[gVideoStreamIdx]->time_base, AV_TIME_BASE_Q);
+			movie->gCurrentTimeUs = av_rescale_q(pts, movie->gFormatCtx->streams[movie->gVideoStreamIdx]->time_base, AV_TIME_BASE_Q);
 //			LOGD("pts=%f pts_clock=%f pts_long=%lu", pts, pts_clock, pts_long);
 
 			if (frameFinished) {
-				gImgConvertCtx = sws_getCachedContext(gImgConvertCtx,
-					gVideoCodecCtx->width, gVideoCodecCtx->height, gVideoCodecCtx->pix_fmt,
-					gVideoCodecCtx->width, gVideoCodecCtx->height, gPixelFormat, SWS_BICUBIC, NULL, NULL, NULL);
+				movie->gImgConvertCtx = sws_getCachedContext(movie->gImgConvertCtx,
+					movie->gVideoCodecCtx->width, movie->gVideoCodecCtx->height, movie->gVideoCodecCtx->pix_fmt,
+					movie->gVideoCodecCtx->width, movie->gVideoCodecCtx->height, movie->gPixelFormat, SWS_BICUBIC, NULL, NULL, NULL);
 				
-				sws_scale(gImgConvertCtx, (const uint8_t * const*)gFrame->data, gFrame->linesize, 0, gVideoCodecCtx->height, gFrameRGB->data, gFrameRGB->linesize);
+				sws_scale(movie->gImgConvertCtx, (const uint8_t * const*)movie->gFrame->data, movie->gFrame->linesize, 0, movie->gVideoCodecCtx->height, movie->gFrameRGB->data, movie->gFrameRGB->linesize);
 				
 				av_packet_unref(&packet);
 				return 0;
@@ -372,9 +351,9 @@ int decodeFrame()
 				av_packet_unref(&packet);
 			}
 		}
-		else if(packet.stream_index == gAudioStreamIdx) {
+		else if(packet.stream_index == movie->gAudioStreamIdx) {
 			//TODO: 큐 동기화가 필요함 
-			if(gAudioThread != 0) {
+			if(movie->gAudioThread != 0) {
 				AudioQ_lock();
 				AudioQ_push(packet);
 				AudioQ_unlock();
@@ -391,81 +370,81 @@ int decodeFrame()
 	return -1;
 }
 
-void copyPixels(uint8_t *pixels)
+void copyPixels(Movie *movie, uint8_t *pixels)
 {
-	memcpy(pixels, gFrameRGB->data[0], gPictureSize);
+	memcpy(pixels, movie->gFrameRGB->data[0], movie->gPictureSize);
 }
 
-int getWidth()
+int getWidth(Movie *movie)
 {
-	return gVideoCodecCtx->width;
+	return movie->gVideoCodecCtx->width;
 }
 
-int getHeight()
+int getHeight(Movie *movie)
 {
-	return gVideoCodecCtx->height;
+	return movie->gVideoCodecCtx->height;
 }
 
-void closeFrame() 
+void closeFrame(Movie *movie) 
 {
-	if (gFrame != NULL) {
-		av_frame_free(&gFrame);
-		gFrame = NULL;
+	if (movie->gFrame != NULL) {
+		av_frame_free(&movie->gFrame);
+		movie->gFrame = NULL;
 	}
 	LOGD("closeMovie gFrame");
 
-	if (gFrameRGB != NULL) {
-		av_frame_free(&gFrameRGB);
-		gFrameRGB = NULL;
+	if (movie->gFrameRGB != NULL) {
+		av_frame_free(&movie->gFrameRGB);
+		movie->gFrameRGB = NULL;
 	}
 	LOGD("closeMovie gFrameRGB");
 
-	if (gFrameAudio != NULL) {
-		av_frame_free(&gFrameAudio);
-		gFrameAudio = NULL;
+	if (movie->gFrameAudio != NULL) {
+		av_frame_free(&movie->gFrameAudio);
+		movie->gFrameAudio = NULL;
 	}
 	LOGD("closeMovie gFrameAudio");
 }
 
-void closeMovie()
+void closeMovie(Movie *movie)
 {
 	int status;
 
 	LOGD("closeMovie BEGIN");
-	gAudioThreadRunning = 0;
+	movie->gAudioThreadRunning = 0;
 
-	pthread_join(gAudioThread, (void**)&status);
-	gAudioThread = 0;
+	pthread_join(movie->gAudioThread, (void**)&status);
+	movie->gAudioThread = 0;
 
-	if (gVideoBuffer != NULL) {
-		free(gVideoBuffer);
-		gVideoBuffer = NULL;
+	if (movie->gVideoBuffer != NULL) {
+		free(movie->gVideoBuffer);
+		movie->gVideoBuffer = NULL;
 	}
 	LOGD("closeMovie gVideoBuffer");
 	
-	if (gVideoCodecCtx != NULL) {
-		avcodec_close(gVideoCodecCtx);
-		gVideoCodecCtx = NULL;
+	if (movie->gVideoCodecCtx != NULL) {
+		avcodec_close(movie->gVideoCodecCtx);
+		movie->gVideoCodecCtx = NULL;
 	}
 	LOGD("closeMovie gVideoCodecCtx");
 	
 	//Audio 
-	if(gAudioCodecCtx != NULL) {
-		avcodec_close(gAudioCodecCtx);
-		gAudioCodecCtx = NULL;
+	if(movie->gAudioCodecCtx != NULL) {
+		avcodec_close(movie->gAudioCodecCtx);
+		movie->gAudioCodecCtx = NULL;
 	}
 	LOGD("closeMovie gAudioCodecCtx");
 
-	if (gFormatCtx != NULL) {
-        avformat_close_input(&gFormatCtx);
-		gFormatCtx = NULL;
+	if (movie->gFormatCtx != NULL) {
+        avformat_close_input(&movie->gFormatCtx);
+		movie->gFormatCtx = NULL;
 	}
 	LOGD("closeMovie gFormatCtx");
 
-	closeFrame();
+	closeFrame(movie);
 
-	gVideoStreamIdx = -1;
-	gAudioStreamIdx = -1;
+	movie->gVideoStreamIdx = -1;
+	movie->gAudioStreamIdx = -1;
 
 	AudioQ_lock();
 	AudioQ_clear();
@@ -486,15 +465,15 @@ void resumeMovie(JNIEnv *env, jobject thiz)
 	resumeAudioTrack(env, thiz); 
 }
 
-int seekMovie(int64_t positionUs) 
+int seekMovie(Movie *movie, int64_t positionUs) 
 {
 //	LOGD("seekMovie positionUs=%lld", positionUs);
 
 	// 프레임을 해당 시간으로 이동시킴
-	int64_t seekTarget = av_rescale_q(positionUs, AV_TIME_BASE_Q, gFormatCtx->streams[gVideoStreamIdx]->time_base);
+	int64_t seekTarget = av_rescale_q(positionUs, AV_TIME_BASE_Q, movie->gFormatCtx->streams[movie->gVideoStreamIdx]->time_base);
 //	LOGD("seekMovie seekTarget=%lld", seekTarget);
 
-	if(av_seek_frame(gFormatCtx, gVideoStreamIdx, seekTarget, AVSEEK_FLAG_FRAME) < 0) {
+	if(av_seek_frame(movie->gFormatCtx, movie->gVideoStreamIdx, seekTarget, AVSEEK_FLAG_FRAME) < 0) {
         LOGD("FAILED av_seek_frame");
         return -1;
 	}
@@ -506,21 +485,21 @@ int seekMovie(int64_t positionUs)
 	return 0;
 }
 
-int64_t getDuration() 
+int64_t getDuration(Movie *movie) 
 {
 	// 이건 믿음녀 안됨 
 	// LOGD("gFormatCtx->duration=%lu", gFormatCtx->duration);
-	LOGD("gFormatCtx->nb_streams=%d", gFormatCtx->nb_streams);
+	LOGD("gFormatCtx->nb_streams=%d", movie->gFormatCtx->nb_streams);
 
 	int i;
-	for(i=0; i<gFormatCtx->nb_streams; i++) {
+	for(i=0; i<movie->gFormatCtx->nb_streams; i++) {
 		//AVStream* stream = gFormatCtx->streams[i];
 		AVStream* stream;
 		if(i == 0) {
-			stream = gFormatCtx->streams[gVideoStreamIdx];
+			stream = movie->gFormatCtx->streams[movie->gVideoStreamIdx];
 		}
 		else {
-			stream = gFormatCtx->streams[gAudioStreamIdx];
+			stream = movie->gFormatCtx->streams[movie->gAudioStreamIdx];
 		}
 		
 		LOGD("stream->duration=%lld", stream->duration);
@@ -533,15 +512,15 @@ int64_t getDuration()
 		}
 	}
 
-	LOGD("gFormatCtx->duration=%lld", gFormatCtx->duration);
-	if(gFormatCtx->duration > 0) {
-		return gFormatCtx->duration;		
+	LOGD("gFormatCtx->duration=%lld", movie->gFormatCtx->duration);
+	if(movie->gFormatCtx->duration > 0) {
+		return movie->gFormatCtx->duration;		
 	}
 
 	return 0ll;
 }
 
-int64_t getPosition()
+int64_t getPosition(Movie *movie)
 {
-	return gCurrentTimeUs;
+	return movie->gCurrentTimeUs;
 }

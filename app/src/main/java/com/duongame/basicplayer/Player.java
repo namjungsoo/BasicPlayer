@@ -21,6 +21,7 @@ public class Player {
         if (Player.initBasicPlayer() < 0) {
             Toast.makeText(context, "CPU doesn't support NEON", Toast.LENGTH_LONG).show();
             ((Activity) context).finish();
+            return;
         }
 
         Player.initAudioTrack();

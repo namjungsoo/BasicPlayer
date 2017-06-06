@@ -15,6 +15,8 @@
 #include "AudioFormatMap.h"
 #include "AudioQ.h"
  
+Movie *gMovie;
+
 jint JNI_OnLoad(JavaVM* vm, void* reserved) {
     LOGD("Hello");
     return JNI_VERSION_1_6;
@@ -36,6 +38,7 @@ jint Java_com_duongame_basicplayer_Player_initBasicPlayer(JNIEnv *env, jobject t
 	initAudioFormatMap();
 	AudioQ_init();
 
+	gMovie = (Movie*)malloc(sizeof(Movie));
 	LOGD("END initBasicPlayer");
 	return 0;
 }
@@ -48,7 +51,7 @@ jint Java_com_duongame_basicplayer_Player_openMovieWithAudio(JNIEnv *env, jobjec
 
 	// 문자열 사용하고 나서 삭제 
 	str = (*env)->GetStringUTFChars(env, filePath, NULL);
-	result = openMovieWithAudio(str, audio);
+	result = openMovieWithAudio(gMovie, str, audio);
 	(*env)->ReleaseStringUTFChars(env, filePath, str);
 
 	LOGD("END openMovieWithAudio");
@@ -63,7 +66,7 @@ jint Java_com_duongame_basicplayer_Player_openMovie(JNIEnv *env, jobject thiz, j
 
 	// 문자열 사용하고 나서 삭제 
 	str = (*env)->GetStringUTFChars(env, filePath, NULL);
-	result = openMovie(str);
+	result = openMovie(gMovie, str);
 	(*env)->ReleaseStringUTFChars(env, filePath, str);
 
 	LOGD("END openMovie");
@@ -80,7 +83,7 @@ jint Java_com_duongame_basicplayer_Player_renderFrame(JNIEnv *env, jobject thiz,
 	// LOGD("renderFrame BEGIN");
 
 	// 영상이 종료된 상태임 
-	if(decodeFrame() < 0) {
+	if(decodeFrame(gMovie) < 0) {
 		// LOGD("closeMovie");
 
 		// 영상이 종료되도 close하지 말자 
@@ -94,7 +97,7 @@ jint Java_com_duongame_basicplayer_Player_renderFrame(JNIEnv *env, jobject thiz,
 		if ((result = AndroidBitmap_lockPixels(env, bitmap, &pixels)) < 0)
 			return result;
 
-		copyPixels((uint8_t*)pixels);
+		copyPixels(gMovie, (uint8_t*)pixels);
 
 		// LOGD("renderFrame unlockPixels");
 		AndroidBitmap_unlockPixels(env, bitmap);
@@ -106,18 +109,19 @@ jint Java_com_duongame_basicplayer_Player_renderFrame(JNIEnv *env, jobject thiz,
 
 jint Java_com_duongame_basicplayer_Player_getMovieWidth(JNIEnv *env, jobject thiz)
 {
-	return getWidth();
+	return getWidth(gMovie);
 }
 
 jint Java_com_duongame_basicplayer_Player_getMovieHeight(JNIEnv *env, jobject thiz)
 {
-	return getHeight();
+	return getHeight(gMovie);
 }
 
 void Java_com_duongame_basicplayer_Player_closeMovie(JNIEnv *env, jobject thiz)
 {
 	LOGD("BEGIN closeMovie");
-	closeMovie();
+	closeMovie(gMovie);
+	free(gMovie);
 	LOGD("END closeMovie");
 }
 
@@ -138,14 +142,14 @@ void Java_com_duongame_basicplayer_Player_resumeMovie(JNIEnv *env, jobject thiz)
 int Java_com_duongame_basicplayer_Player_seekMovie(JNIEnv *env, jobject thiz, jlong positionUs)
 {
 //	LOGD("BEGIN seekMovie");
-	int ret = seekMovie(positionUs);
+	int ret = seekMovie(gMovie, positionUs);
 //	LOGD("END seekMovie");
 	return ret;
 }
 
 jdouble Java_com_duongame_basicplayer_Player_getFps(JNIEnv *env, jobject thiz)
 {
-	jdouble fps = getFps();
+	jdouble fps = getFps(gMovie);
 	LOGD("interface fps=%f", fps);
 	return fps;
 }
@@ -153,7 +157,7 @@ jdouble Java_com_duongame_basicplayer_Player_getFps(JNIEnv *env, jobject thiz)
 jlong Java_com_duongame_basicplayer_Player_getMovieDurationUs(JNIEnv *env, jobject thiz)
 {
 	LOGD("BEGIN getMovieDurationUs");
-	jlong ret =  getDuration();
+	jlong ret =  getDuration(gMovie);
 	LOGD("END getMovieDurationUs");
 	return ret;
 }
@@ -161,7 +165,7 @@ jlong Java_com_duongame_basicplayer_Player_getMovieDurationUs(JNIEnv *env, jobje
 jlong Java_com_duongame_basicplayer_Player_getCurrentPositionUs(JNIEnv *env, jobject thiz)
 {
 //	LOGD("BEGIN getCurrentPositionUs");
-	jlong ret = getPosition();
+	jlong ret = getPosition(gMovie);
 //	LOGD("END getCurrentPositionUs");
 	return ret;
 }
