@@ -150,6 +150,7 @@ void Java_com_duongame_basicplayer_Player_closeMovie(JNIEnv *env, jobject thiz, 
 		return;
 
 	LOGD("BEGIN closeMovie");
+	
 	closeMovie(gMovie);
 	free(gMovie);
 	MovieMap_remove(id);

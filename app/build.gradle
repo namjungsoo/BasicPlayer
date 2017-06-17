@@ -26,20 +26,25 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    flavorDimensions "edition"
+
     productFlavors {
         main {
             buildConfigField "boolean", "SHOW_AD", "true"
             resValue "string", "app_name", "JamongPlayer"
+            dimension "edition"
         }
         pro {
             buildConfigField "boolean", "SHOW_AD", "false"
             resValue "string", "app_name", "@string/app_name_pro"
             applicationIdSuffix '.pro'
+            dimension "edition"
         }
         free {
             buildConfigField "boolean", "SHOW_AD", "true"
             resValue "string", "app_name", "@string/app_name_free"
             applicationIdSuffix '.free'
+            dimension "edition"
         }
     }
 }
