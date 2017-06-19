@@ -67,7 +67,7 @@ jint Java_com_duongame_basicplayer_Player_openMovieWithAudio(JNIEnv *env, jobjec
 
 jint Java_com_duongame_basicplayer_Player_openMovie(JNIEnv *env, jobject thiz, int id, jstring filePath)
 {
-	LOGD("BEGIN openMovie id=%d filePath=%d", id, filePath);
+	LOGD("BEGIN openMovie id=%d filePath=%s", id, filePath);
 
 	Movie *gMovie = MovieMap_get(id);
 	LOGD("openMovie id=%d gMovie=%d", id, gMovie);

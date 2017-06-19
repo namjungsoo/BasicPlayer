@@ -140,9 +140,10 @@ int openAudioStream(Movie *movie)
 	LOGD("audioFormat=%s", audioFormat);
 }
 
-void* decodeAudioThread(Movie *movie, void *param) 
+void* decodeAudioThread(void *param) 
 {
 	LOGD("decodeAudioThread begin");
+	Movie *movie = (Movie*)param;
 	int frameFinished = 0;
 
 	int buffer_size = AVCODEC_MAX_AUDIO_FRAME_SIZE + FF_INPUT_BUFFER_PADDING_SIZE;
@@ -297,7 +298,7 @@ int openMovieWithAudio(Movie *movie, const char *filePath, int audio)
 		else {
 			prepareAudioTrack(movie->gAudioCodecCtx->sample_fmt, movie->gAudioCodecCtx->sample_rate, movie->gAudioCodecCtx->channels);
 			movie->gAudioThreadRunning = 1;
-			ret = pthread_create(&movie->gAudioThread, NULL, decodeAudioThread, NULL);
+			ret = pthread_create(&movie->gAudioThread, NULL, decodeAudioThread, movie);
 		}		
 	}
 
