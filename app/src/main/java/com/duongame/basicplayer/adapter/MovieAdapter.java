@@ -2,7 +2,6 @@ package com.duongame.basicplayer.adapter;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.os.AsyncTask;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -14,7 +13,6 @@ import com.duongame.basicplayer.MovieFile;
 import com.duongame.basicplayer.R;
 import com.duongame.basicplayer.manager.FileManager;
 import com.duongame.basicplayer.manager.ThumbnailManager;
-import com.duongame.basicplayer.task.LoadThumbnailTask;
 import com.duongame.basicplayer.view.ThumbnailImageView;
 
 import java.io.File;
@@ -72,8 +70,8 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder> 
             holder.iv.setImageBitmap(bitmap);
         } else {
             // 비트맵을 읽어들인 후에 설정하자
-            LoadThumbnailTask task = new LoadThumbnailTask(movieList.get(position), holder.iv);
-            task.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+//            LoadThumbnailTask task = new LoadThumbnailTask(movieList.get(position), holder.iv);
+//            task.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
         }
         holder.iv.setTimeText(movieList.get(position).timeText);
 
