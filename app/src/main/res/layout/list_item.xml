@@ -16,7 +16,7 @@
         android:layout_height="70dp"
         android:orientation="horizontal">
 
-        <com.duongame.basicplayer.lib.view.ThumbnailImageView
+        <com.duongame.basicplayer.view.ThumbnailImageView
             android:id="@+id/thumbnail"
             android:layout_width="88dp"
             android:layout_height="66dp"
