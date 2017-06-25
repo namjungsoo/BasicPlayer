@@ -411,10 +411,6 @@ void closeMovie(Movie *movie)
 	int status;
 
 	LOGD("closeMovie BEGIN");
-	movie->gAudioThreadRunning = 0;
-
-	pthread_join(movie->gAudioThread, (void**)&status);
-	movie->gAudioThread = 0;
 
 	if (movie->gVideoBuffer != NULL) {
 		free(movie->gVideoBuffer);
@@ -427,13 +423,8 @@ void closeMovie(Movie *movie)
 		movie->gVideoCodecCtx = NULL;
 	}
 	LOGD("closeMovie gVideoCodecCtx");
-	
-	//Audio 
-	if(movie->gAudioCodecCtx != NULL) {
-		avcodec_close(movie->gAudioCodecCtx);
-		movie->gAudioCodecCtx = NULL;
-	}
-	LOGD("closeMovie gAudioCodecCtx");
+
+	closeFrame(movie);
 
 	if (movie->gFormatCtx != NULL) {
         avformat_close_input(&movie->gFormatCtx);
@@ -441,14 +432,28 @@ void closeMovie(Movie *movie)
 	}
 	LOGD("closeMovie gFormatCtx");
 
-	closeFrame(movie);
-
 	movie->gVideoStreamIdx = -1;
-	movie->gAudioStreamIdx = -1;
+	
+	//BEGIN Audio 
+	// audio = 1일 경우에만 존재함 
+	if(movie->gAudioThreadRunning) {
+		movie->gAudioThreadRunning = 0;
 
-	AudioQ_lock();
-	AudioQ_clear();
-	AudioQ_unlock();
+		pthread_join(movie->gAudioThread, (void**)&status);
+		movie->gAudioThread = 0;		
+
+		if(movie->gAudioCodecCtx != NULL) {
+			avcodec_close(movie->gAudioCodecCtx);
+			movie->gAudioCodecCtx = NULL;
+		}
+		LOGD("closeMovie gAudioCodecCtx");
+		movie->gAudioStreamIdx = -1;
+		
+		AudioQ_lock();
+		AudioQ_clear();
+		AudioQ_unlock();
+	}
+	//END Audio 
 
 	LOGD("closeMovie END");
 }
