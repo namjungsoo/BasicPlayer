@@ -132,6 +132,8 @@ public class PlayerActivity extends BaseActivity {
     public void onStop() {
         Log.d(TAG, "onStop");
         super.onStop();
+
+        mPlayerView.close();
     }
 
     @Override

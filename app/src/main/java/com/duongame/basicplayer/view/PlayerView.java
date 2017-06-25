@@ -182,6 +182,10 @@ public class PlayerView extends View {
         return mPlayer.getMovieDurationUs();
     }
 
+    public void close() {
+        mPlayer.closeMovie();
+    }
+
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
