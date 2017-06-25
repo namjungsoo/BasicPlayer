@@ -13,7 +13,6 @@ import com.google.android.gms.ads.InterstitialAd;
 public class AdInterstitialManager {
     private final static String TAG = "AdInterstitialManager";
 
-    // 코믹z뷰어 전용 id
     private static final String INTERSTITIAL_ID = "ca-app-pub-5576037828251153/9737551820";
     private static InterstitialAd interstitialAD = null;
 
@@ -23,8 +22,14 @@ public class AdInterstitialManager {
 
     private static int mode = MODE_EXIT;
     private static boolean show = false;
+    private static boolean isShowing = false;
 
     private static Activity context;
+    private static OnFinishListener onFinishListener;
+
+    public interface OnFinishListener {
+        void onFinish();
+    }
 
     private static void requestNewInterstitial() {
         final AdRequest adRequest = new AdRequest.Builder()
@@ -35,13 +40,15 @@ public class AdInterstitialManager {
     }
 
     public static void init(final Activity context) {
+        if (AdInterstitialManager.context != null) {
+            return;
+        }
+
         Log.e(TAG, "init");
         AdInterstitialManager.context = context;
 
         interstitialAD = new InterstitialAd(context);            // 삽입 광고 생성관련 메소드들.
         interstitialAD.setAdUnitId(INTERSTITIAL_ID);
-        requestNewInterstitial();
-
 //        show = true;
 
         interstitialAD.setAdListener(new AdListener() {
@@ -56,6 +63,12 @@ public class AdInterstitialManager {
 //                    AlertManager.showAlertExit(context);
                 } else if (mode == MODE_REFRESH) {
 //                    AlertManager.showAlertRefresh(context);
+                }
+
+                isShowing = false;
+
+                if (onFinishListener != null) {
+                    onFinishListener.onFinish();
                 }
             }
 
@@ -89,7 +102,7 @@ public class AdInterstitialManager {
 
                     if (count % 4 == 3) {
                         Log.e(TAG, "showAd");
-                        showAd(context, MODE_START);
+                        showAd(context, MODE_START, onFinishListener);
                     }
                     PreferenceManager.setStartCount(context, count + 1);
 
@@ -98,19 +111,28 @@ public class AdInterstitialManager {
             }
         });                                // 광고의 리스너를 설정합니다.
 
+        requestNewInterstitial();
     }
 
-    public static void setShowAtLoaded(boolean show) {
+    public static void setShowAtLoaded(boolean show, OnFinishListener listener) {
+        onFinishListener = listener;
         AdInterstitialManager.show = show;
     }
 
-    public static boolean showAd(Activity context, int mode) {
+    public static boolean showAd(Activity context, int mode, OnFinishListener listener) {
+        if (isShowing)
+            return false;
+
         AdInterstitialManager.mode = mode;
         if (interstitialAD.isLoaded()) {
+            onFinishListener = listener;
+            isShowing = true;
+
             interstitialAD.show();
             Log.d(TAG, "show");
             return true;
         } else {
+            isShowing = false;
             Log.d(TAG, "finish");
             return false;
         }

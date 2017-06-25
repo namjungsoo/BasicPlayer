@@ -1,5 +1,6 @@
 package com.duongame.basicplayer.activity;
 
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
@@ -25,6 +26,7 @@ import android.widget.TextView;
 import com.duongame.basicplayer.BuildConfig;
 import com.duongame.basicplayer.R;
 import com.duongame.basicplayer.manager.AdBannerManager;
+import com.duongame.basicplayer.manager.AdInterstitialManager;
 import com.duongame.basicplayer.manager.FullscreenManager;
 import com.duongame.basicplayer.manager.PreferenceManager;
 import com.duongame.basicplayer.manager.ScreenManager;
@@ -32,8 +34,12 @@ import com.duongame.basicplayer.util.TimeConverter;
 import com.duongame.basicplayer.util.UnitConverter;
 import com.duongame.basicplayer.view.PlayerView;
 import com.google.android.gms.ads.AdView;
+import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
+import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings;
 
 import java.io.File;
+
+import static com.duongame.basicplayer.manager.AdInterstitialManager.MODE_EXIT;
 
 public class PlayerActivity extends BaseActivity {
     private final static String TAG = "PlayerActivity";
@@ -60,6 +66,8 @@ public class PlayerActivity extends BaseActivity {
 
     private int mActionBarHeight;
     private int mStatusBarHeight;
+    private FirebaseRemoteConfig mFirebaseRemoteConfig;
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -89,7 +97,7 @@ public class PlayerActivity extends BaseActivity {
 
         // 광고 처리
         //PRO
-        if(BuildConfig.SHOW_AD)
+        if (BuildConfig.SHOW_AD)
             initAd();
 
         initSeekBar();
@@ -102,13 +110,15 @@ public class PlayerActivity extends BaseActivity {
 
         initActionBar();
 
+//        initConfigs();
+
         applyNavigationBarHeight(true);
         FullscreenManager.setFullscreen(this, true);
 
 //        setToolBox(false);
 
         // 최초에 GONE으로 초기화 해야 초반에 튀는 화면이 보이지 않는다.
-        if(mAdView != null) {
+        if (mAdView != null) {
             mAdView.setVisibility(View.GONE);
         }
 
@@ -117,6 +127,32 @@ public class PlayerActivity extends BaseActivity {
         updateRotation();
 
         openFile();
+    }
+
+
+    private void initConfigs() {
+        // Get Remote Config instance.
+        // [START get_remote_config_instance]
+        mFirebaseRemoteConfig = FirebaseRemoteConfig.getInstance();
+        // [END get_remote_config_instance]
+
+        // Create a Remote Config Setting to enable developer mode, which you can use to increase
+        // the number of fetches available per hour during development. See Best Practices in the
+        // README for more information.
+        // [START enable_dev_mode]
+        FirebaseRemoteConfigSettings configSettings = new FirebaseRemoteConfigSettings.Builder()
+                .setDeveloperModeEnabled(BuildConfig.DEBUG)
+                .build();
+        mFirebaseRemoteConfig.setConfigSettings(configSettings);
+        // [END enable_dev_mode]
+
+        // Set default Remote Config parameter values. An app uses the in-app default values, and
+        // when you need to adjust those defaults, you set an updated value for only the values you
+        // want to change in the Firebase console. See Best Practices in the README for more
+        // information.
+        // [START set_default_values]
+        mFirebaseRemoteConfig.setDefaults(R.xml.remote_config_defaults);
+        // [END set_default_values]
     }
 
     @Override
@@ -129,11 +165,17 @@ public class PlayerActivity extends BaseActivity {
     }
 
     @Override
+    public void onResume() {
+        Log.d(TAG, "onResume");
+        super.onResume();
+        updateFullscreenAd();
+    }
+
+    @Override
     public void onStop() {
         Log.d(TAG, "onStop");
         super.onStop();
 
-        mPlayerView.close();
     }
 
     @Override
@@ -141,9 +183,33 @@ public class PlayerActivity extends BaseActivity {
         Log.d(TAG, "onDestroy");
         super.onDestroy();
 
-        if(mAdView != null) {
+        mPlayerView.close();
+        if (mAdView != null) {
             mPlayerFrame.removeView(mAdView);
         }
+    }
+
+    @Override
+    public void onBackPressed() {
+//        super.onBackPressed();
+
+        SharedPreferences pref = getSharedPreferences("player", MODE_PRIVATE);
+        int count = pref.getInt("exit_count", 0);
+
+        if (count % 2 == 0) {
+            AdInterstitialManager.showAd(this, MODE_EXIT, new AdInterstitialManager.OnFinishListener() {
+                @Override
+                public void onFinish() {
+                    finish();
+                }
+            });
+        } else {
+            //finish();
+        }
+
+        SharedPreferences.Editor edit = pref.edit();
+        edit.putInt("exit_count", count + 1);
+        edit.commit();
     }
 
     @Override
@@ -163,10 +229,10 @@ public class PlayerActivity extends BaseActivity {
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
 
-        if(mToolBox.getVisibility() == View.GONE)
+        if (mToolBox.getVisibility() == View.GONE)
             mToolBox.setAlpha(0.0f);
         else {
-            if(FullscreenManager.isFullscreen())
+            if (FullscreenManager.isFullscreen())
                 mToolBox.setAlpha(0.0f);
             else
                 mToolBox.setAlpha(1.0f);
@@ -198,9 +264,7 @@ public class PlayerActivity extends BaseActivity {
                 public void onProgressChanged(SeekBar seekBar, final int progress, boolean fromUser) {
                     // 유저가 움직였을 경우에만 탐색
                     if (fromUser) {
-//                        Log.d(TAG, "progress=" + progress);
                         final long positionUs = progress * TimeConverter.SEC_TO_US;
-//                        Log.d(TAG, "seekMovie " + positionUs);
                         mPlayerView.seekMovie(positionUs);
                         mSeekTime.setText(TimeConverter.convertUsToString(positionUs));
                         mPlayerView.invalidate();
@@ -225,11 +289,6 @@ public class PlayerActivity extends BaseActivity {
                 @Override
                 public void onStopTrackingTouch(SeekBar seekBar) {
                     if (mPlayerView != null) {
-//                        int progress = seekBar.getProgress();
-//                        long position = progress * SEC_TO_US;
-//                        Log.d(TAG, "seekMovie "+ position);
-//                        mPlayerView.seekMovie(position);
-
                         // 플레이 상태 복구
                         if (!startAtPaused) {
                             mPlayerView.resume();
@@ -244,6 +303,15 @@ public class PlayerActivity extends BaseActivity {
         }
     }
 
+    private void updateFullscreenAd() {
+        if (!FullscreenManager.isFullscreen()) {
+            // 광고를 보여줌
+            setAdView(true);
+        } else {
+            setAdView(false);
+        }
+    }
+
     private void initFullscreen() {
         if (mPlayerView != null) {
             // 풀스크린 처리
@@ -254,13 +322,16 @@ public class PlayerActivity extends BaseActivity {
                     // 풀스크린 모드를 반전한다.
                     FullscreenManager.setFullscreen(PlayerActivity.this, !FullscreenManager.isFullscreen());
 
+                    // 풀스크린에서 광고 체크
+                    updateFullscreenAd();
+
                     // 현재가 풀스크린이면 보여주고
                     // 현재가 풀스크린이 아니면 숨겨준다.
                     setToolBox(!FullscreenManager.isFullscreen());
 
                     // 포즈 상태이면
-                    if(!mPlayerView.getPlaying()) {
-                        if(mAdView != null && mAdView.getVisibility() == View.VISIBLE)
+                    if (!mPlayerView.getPlaying()) {
+                        if (mAdView != null && mAdView.getVisibility() == View.VISIBLE)
                             setAdView(!FullscreenManager.isFullscreen());
                     }
 
@@ -293,16 +364,9 @@ public class PlayerActivity extends BaseActivity {
                         Animation animation;
                         if (mPlayerView.getPlaying()) {
                             mPlayerView.pause(false);
-
-//                            animation = createAlphaAnimation(false);
-                            setAdView(true);
                         } else {
                             mPlayerView.resume();
-
-//                            animation = createAlphaAnimation(true);
-                            setAdView(false);
                         }
-//                        mAdView.startAnimation(animation);
                     }
                     updatePlayButton();
                 }
@@ -332,7 +396,7 @@ public class PlayerActivity extends BaseActivity {
         if (mPlayerView.openFile(filename)) {
             mPlayerView.setBitmapRotation(rotation);
             updateBitmapRotation();
-            
+
             mPlayerView.seekMovie(time);
 
             final long durationUs = mPlayerView.getMovieDurationUs();
@@ -351,8 +415,7 @@ public class PlayerActivity extends BaseActivity {
             PreferenceManager.saveRecentFile(this, filename, time, mPlayerView.getBitmapRotation());
 
             result = true;
-        }
-        else {
+        } else {
             result = false;
         }
 
@@ -362,7 +425,6 @@ public class PlayerActivity extends BaseActivity {
     private void sendEventOpenFile(String filename, boolean result) {
         final Bundle bundle = new Bundle();
         bundle.putString("filename", filename);
-
         bundle.putBoolean("result", result);
 //        mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);
     }
@@ -429,10 +491,9 @@ public class PlayerActivity extends BaseActivity {
     private Animation createAlphaAnimation(boolean showing) {
         AlphaAnimation animation;
 
-        if(showing) {
+        if (showing) {
             animation = new AlphaAnimation(0.0f, 1.0f);
-        }
-        else {
+        } else {
             animation = new AlphaAnimation(1.0f, 0.0f);
         }
         animation.setFillAfter(true);
@@ -443,9 +504,9 @@ public class PlayerActivity extends BaseActivity {
     }
 
     private void setAdView(boolean showing) {
-        Log.d(TAG, "setAdView "+showing);
+        Log.d(TAG, "setAdView " + showing);
 
-        if(mAdView != null) {
+        if (mAdView != null) {
             mAdView.setVisibility(View.VISIBLE);
             // 기본값으로 설정후에 애니메이션 한다
             mAdView.setAlpha(1.0f);
@@ -456,7 +517,7 @@ public class PlayerActivity extends BaseActivity {
     }
 
     private void setToolBox(boolean showing) {
-        Log.d(TAG, "setToolBox "+showing);
+        Log.d(TAG, "setToolBox " + showing);
 
         mToolBox.setVisibility(View.VISIBLE);
         // 기본값으로 설정후에 애니메이션 한다
