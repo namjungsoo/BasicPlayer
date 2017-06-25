@@ -1,13 +1,10 @@
 package com.duongame.basicplayer;
 
-import android.app.Activity;
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTrack;
 import android.util.Log;
-import android.widget.Toast;
 
 /**
  * Created by namjungsoo on 16. 6. 11..

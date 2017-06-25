@@ -27,18 +27,16 @@ public class LoadThumbnailTask extends AsyncTask<Void, Integer, Boolean> {
 
     @Override
     protected Boolean doInBackground(Void... params) {
-//        return loadThumbnail(movieFile);
-        return false;
+        return loadThumbnail(movieFile);
     }
 
     @Override
     protected void onPostExecute(Boolean result) {
-        if(result.booleanValue()) {
+        if (result.booleanValue()) {
             Bitmap bitmap = ThumbnailManager.getBitmap(movieFile.file.getPath());
-            if(bitmap != null)
+            if (bitmap != null)
                 imageView.setImageBitmap(bitmap);
-        }
-        else {
+        } else {
 
         }
     }
