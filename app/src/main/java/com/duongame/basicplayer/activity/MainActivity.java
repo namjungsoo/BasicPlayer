@@ -1,6 +1,5 @@
 package com.duongame.basicplayer.activity;
 
-import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -25,8 +24,6 @@ import com.duongame.basicplayer.task.FindFileTask;
 import com.google.android.gms.ads.AdView;
 
 import java.io.File;
-
-import static com.duongame.basicplayer.manager.AdInterstitialManager.MODE_EXIT;
 
 public class MainActivity extends BaseActivity {
     private final static String TAG = MainActivity.class.getSimpleName();
@@ -145,24 +142,24 @@ public class MainActivity extends BaseActivity {
 
     @Override
     public void onBackPressed() {
-//        super.onBackPressed();
+        super.onBackPressed();
 
-        SharedPreferences pref = getSharedPreferences("main", MODE_PRIVATE);
-        int count = pref.getInt("exit_count", 0);
-
-        if (count % 2 == 0) {
-            AdInterstitialManager.showAd(this, MODE_EXIT, new AdInterstitialManager.OnFinishListener() {
-                @Override
-                public void onFinish() {
-                    finish();
-                }
-            });
-        } else {
-            //finish();
-        }
-
-        SharedPreferences.Editor edit = pref.edit();
-        edit.putInt("exit_count", count + 1);
-        edit.commit();
+//        SharedPreferences pref = getSharedPreferences("main", MODE_PRIVATE);
+//        int count = pref.getInt("exit_count", 0);
+//
+//        if (count % 2 == 0) {
+//            AdInterstitialManager.showAd(this, MODE_EXIT, new AdInterstitialManager.OnFinishListener() {
+//                @Override
+//                public void onFinish() {
+//                    finish();
+//                }
+//            });
+//        } else {
+//            //finish();
+//        }
+//
+//        SharedPreferences.Editor edit = pref.edit();
+//        edit.putInt("exit_count", count + 1);
+//        edit.commit();
     }
 }

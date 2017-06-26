@@ -12,19 +12,23 @@ import android.util.Log;
 public class Player {
     private final static String TAG = "Player";
     private int id = -1;
+    private static boolean audioInitialized = false;
 
     public void init() {
-        Log.d(TAG, "init");
-
         id = initBasicPlayer();
-        Player.initAudioTrack();
+        if(!audioInitialized) {
+            Player.initAudioTrack();
+            audioInitialized = true;
+        }
+
+        Log.d(TAG, "init id=" + id);
     }
 
     //ndk에서 불러준다.
     private static AudioTrack prepareAudioTrack(int audioFormat, int sampleRateInHz,
-                                         int numberOfChannels) {
+                                                int numberOfChannels) {
 
-        while(true) {
+        while (true) {
             int channelConfig;
             if (numberOfChannels == 1) {
                 channelConfig = AudioFormat.CHANNEL_OUT_MONO;
@@ -116,22 +120,29 @@ public class Player {
 
     // 오디오 관련(static)
     public static native void initAudioTrack();
+
     public static native void pauseMovie();
+
     public static native void resumeMovie();
 
     private native int initBasicPlayer();
 
     private native int openMovie(int id, String filePath);
+
     private native int openMovieWithAudio(int id, String filePath, int audio);
+
     private native int renderFrame(int id, Bitmap bitmap);
 
     private native int getMovieWidth(int id);
+
     private native int getMovieHeight(int id);
+
     private native void closeMovie(int id);
 
     private native int seekMovie(int id, long positionUs);
 
     private native long getMovieDurationUs(int id);
+
     private native double getFps(int id);
 
     private native long getCurrentPositionUs(int id);

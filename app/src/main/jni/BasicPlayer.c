@@ -57,9 +57,9 @@ void initMovie(Movie *movie)
 	memset(movie, 0, sizeof(Movie));
 	
 	movie->gPixelFormat = AV_PIX_FMT_BGR32;
-	movie->gVideoStreamIdx = -1;
-	movie->gAudioStreamIdx = -1;
-	movie->gAudioThreadRunning = 1;
+	movie->gVideoStreamIdx = -1;// 인덱스 INVALID
+	movie->gAudioStreamIdx = -1;// 인덱스 INVALID
+	movie->gAudioThreadRunning = 0;// 쓰레드 중지 상태
 }
 
 // 현재 사용안함 
@@ -142,7 +142,7 @@ int openAudioStream(Movie *movie)
 
 void* decodeAudioThread(void *param) 
 {
-	LOGD("decodeAudioThread begin");
+	LOGD("decodeAudioThread BEGIN");
 	Movie *movie = (Movie*)param;
 	int frameFinished = 0;
 
@@ -243,6 +243,8 @@ void* decodeAudioThread(void *param)
 		usleep(1);
 	}
 
+	LOGW("decodeAudioThread END");
+
 	av_free(buffer);
 	av_free(samples);
 	return NULL;
@@ -250,7 +252,7 @@ void* decodeAudioThread(void *param)
 
 int openMovieWithAudio(Movie *movie, const char *filePath, int audio)
 {
-	LOGD("openMovieWithAudio filePath=%s audio=%d", filePath, audio);
+	LOGD("openMovieWithAudio filePath=%s audio=%d %d", filePath, audio, movie->gAudioThreadRunning);
 
 	int i;
 	unsigned char errbuf[128];
@@ -446,7 +448,7 @@ void closeMovie(Movie *movie)
 			avcodec_close(movie->gAudioCodecCtx);
 			movie->gAudioCodecCtx = NULL;
 		}
-		LOGD("closeMovie gAudioCodecCtx");
+		LOGW("closeMovie gAudioCodecCtx");
 		movie->gAudioStreamIdx = -1;
 		
 		AudioQ_lock();

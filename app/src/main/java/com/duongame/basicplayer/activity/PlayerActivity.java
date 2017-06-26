@@ -1,6 +1,5 @@
 package com.duongame.basicplayer.activity;
 
-import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
@@ -26,7 +25,6 @@ import android.widget.TextView;
 import com.duongame.basicplayer.BuildConfig;
 import com.duongame.basicplayer.R;
 import com.duongame.basicplayer.manager.AdBannerManager;
-import com.duongame.basicplayer.manager.AdInterstitialManager;
 import com.duongame.basicplayer.manager.FullscreenManager;
 import com.duongame.basicplayer.manager.PreferenceManager;
 import com.duongame.basicplayer.manager.ScreenManager;
@@ -35,11 +33,8 @@ import com.duongame.basicplayer.util.UnitConverter;
 import com.duongame.basicplayer.view.PlayerView;
 import com.google.android.gms.ads.AdView;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
-import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings;
 
 import java.io.File;
-
-import static com.duongame.basicplayer.manager.AdInterstitialManager.MODE_EXIT;
 
 public class PlayerActivity extends BaseActivity {
     private final static String TAG = "PlayerActivity";
@@ -130,30 +125,30 @@ public class PlayerActivity extends BaseActivity {
     }
 
 
-    private void initConfigs() {
-        // Get Remote Config instance.
-        // [START get_remote_config_instance]
-        mFirebaseRemoteConfig = FirebaseRemoteConfig.getInstance();
-        // [END get_remote_config_instance]
-
-        // Create a Remote Config Setting to enable developer mode, which you can use to increase
-        // the number of fetches available per hour during development. See Best Practices in the
-        // README for more information.
-        // [START enable_dev_mode]
-        FirebaseRemoteConfigSettings configSettings = new FirebaseRemoteConfigSettings.Builder()
-                .setDeveloperModeEnabled(BuildConfig.DEBUG)
-                .build();
-        mFirebaseRemoteConfig.setConfigSettings(configSettings);
-        // [END enable_dev_mode]
-
-        // Set default Remote Config parameter values. An app uses the in-app default values, and
-        // when you need to adjust those defaults, you set an updated value for only the values you
-        // want to change in the Firebase console. See Best Practices in the README for more
-        // information.
-        // [START set_default_values]
-        mFirebaseRemoteConfig.setDefaults(R.xml.remote_config_defaults);
-        // [END set_default_values]
-    }
+//    private void initConfigs() {
+//        // Get Remote Config instance.
+//        // [START get_remote_config_instance]
+//        mFirebaseRemoteConfig = FirebaseRemoteConfig.getInstance();
+//        // [END get_remote_config_instance]
+//
+//        // Create a Remote Config Setting to enable developer mode, which you can use to increase
+//        // the number of fetches available per hour during development. See Best Practices in the
+//        // README for more information.
+//        // [START enable_dev_mode]
+//        FirebaseRemoteConfigSettings configSettings = new FirebaseRemoteConfigSettings.Builder()
+//                .setDeveloperModeEnabled(BuildConfig.DEBUG)
+//                .build();
+//        mFirebaseRemoteConfig.setConfigSettings(configSettings);
+//        // [END enable_dev_mode]
+//
+//        // Set default Remote Config parameter values. An app uses the in-app default values, and
+//        // when you need to adjust those defaults, you set an updated value for only the values you
+//        // want to change in the Firebase console. See Best Practices in the README for more
+//        // information.
+//        // [START set_default_values]
+//        mFirebaseRemoteConfig.setDefaults(R.xml.remote_config_defaults);
+//        // [END set_default_values]
+//    }
 
     @Override
     public void onPause() {
@@ -191,25 +186,25 @@ public class PlayerActivity extends BaseActivity {
 
     @Override
     public void onBackPressed() {
-//        super.onBackPressed();
+        super.onBackPressed();
 
-        SharedPreferences pref = getSharedPreferences("player", MODE_PRIVATE);
-        int count = pref.getInt("exit_count", 0);
-
-        if (count % 2 == 0) {
-            AdInterstitialManager.showAd(this, MODE_EXIT, new AdInterstitialManager.OnFinishListener() {
-                @Override
-                public void onFinish() {
-                    finish();
-                }
-            });
-        } else {
-            //finish();
-        }
-
-        SharedPreferences.Editor edit = pref.edit();
-        edit.putInt("exit_count", count + 1);
-        edit.commit();
+//        SharedPreferences pref = getSharedPreferences("player", MODE_PRIVATE);
+//        int count = pref.getInt("exit_count", 0);
+//
+//        if (count % 2 == 0) {
+//            AdInterstitialManager.showAd(this, MODE_EXIT, new AdInterstitialManager.OnFinishListener() {
+//                @Override
+//                public void onFinish() {
+//                    finish();
+//                }
+//            });
+//        } else {
+//            //finish();
+//        }
+//
+//        SharedPreferences.Editor edit = pref.edit();
+//        edit.putInt("exit_count", count + 1);
+//        edit.commit();
     }
 
     @Override
