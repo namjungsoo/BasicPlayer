@@ -65,7 +65,5 @@ public class LoadThumbnailTask extends AsyncTask<Void, Integer, Boolean> {
         } else {
             return false;
         }
-
     }
-
 }

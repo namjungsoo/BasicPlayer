@@ -12,15 +12,9 @@ import android.util.Log;
 public class Player {
     private final static String TAG = "Player";
     private int id = -1;
-    private static boolean audioInitialized = false;
 
     public void init() {
         id = initBasicPlayer();
-        if(!audioInitialized) {
-            Player.initAudioTrack();
-            audioInitialized = true;
-        }
-
         Log.d(TAG, "init id=" + id);
     }
 
