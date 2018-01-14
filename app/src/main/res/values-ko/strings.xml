@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name_free">자몽플레이어</string>
-    <string name="app_name_pro">자몽플레이어Pro</string>
+    <string name="app_name_free">비디오 플레이어</string>
+    <string name="app_name_pro">비디오 플레이어Pro</string>
     <string name="ok">확인</string>
     <string name="cancel">취소</string>
     <string name="dialog_recentfile">최근에 보시던 파일을 플레이하시겠습니까?</string>
