@@ -6,3 +6,10 @@
 .DS_Store
 /build
 /captures
+*.o
+*.o.d
+*.so
+/.idea
+*.apk
+.settings/
+

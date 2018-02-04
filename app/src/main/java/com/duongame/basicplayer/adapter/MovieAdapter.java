@@ -73,7 +73,7 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder> 
         } else {
             // 비트맵을 읽어들인 후에 설정하자
             LoadThumbnailTask task = new LoadThumbnailTask(movieList.get(position), holder.iv);
-            task.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+            task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         }
         holder.iv.setTimeText(movieList.get(position).timeText);
 
