@@ -28,7 +28,7 @@ public class ShortcutManager {
         shortcutIntent.setClassName(context, context.getClass().getName());
         shortcutIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
 
-        final Parcelable iconResource = Intent.ShortcutIconResource.fromContext(context, R.mipmap.ic_launcher);
+        final Parcelable iconResource = Intent.ShortcutIconResource.fromContext(context, R.drawable.player);
 
         final Intent intent = new Intent();
         intent.putExtra(Intent.EXTRA_SHORTCUT_INTENT, shortcutIntent);

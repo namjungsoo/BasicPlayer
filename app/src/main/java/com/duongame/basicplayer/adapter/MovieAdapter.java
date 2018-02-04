@@ -10,7 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.duongame.basicplayer.MovieFile;
+import com.duongame.basicplayer.data.MovieFile;
 import com.duongame.basicplayer.R;
 import com.duongame.basicplayer.manager.FileManager;
 import com.duongame.basicplayer.manager.ThumbnailManager;

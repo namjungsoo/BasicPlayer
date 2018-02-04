@@ -21,7 +21,6 @@ import com.duongame.basicplayer.manager.AdBannerManager;
 import com.duongame.basicplayer.manager.AdInterstitialManager;
 import com.duongame.basicplayer.manager.FileManager;
 import com.duongame.basicplayer.manager.PermissionManager;
-import com.duongame.basicplayer.manager.ShortcutManager;
 import com.duongame.basicplayer.task.FindFileTask;
 import com.google.android.gms.ads.AdView;
 

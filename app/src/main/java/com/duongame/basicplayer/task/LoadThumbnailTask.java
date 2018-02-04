@@ -5,7 +5,7 @@ import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.ImageView;
 
-import com.duongame.basicplayer.MovieFile;
+import com.duongame.basicplayer.data.MovieFile;
 import com.duongame.basicplayer.Player;
 import com.duongame.basicplayer.manager.ThumbnailManager;
 import com.duongame.basicplayer.util.TimeConverter;

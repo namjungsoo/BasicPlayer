@@ -4,7 +4,7 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import com.duongame.basicplayer.MovieFile;
+import com.duongame.basicplayer.data.MovieFile;
 import com.duongame.basicplayer.adapter.MovieAdapter;
 
 import java.io.File;
