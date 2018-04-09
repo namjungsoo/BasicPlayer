@@ -55,11 +55,6 @@ public class MainActivity extends BaseActivity {
             initAdapter();
         }
 
-//        ShortcutManager.checkShortcut(this);
-
-        // 그림자를 없앤다.
-//        getSupportActionBar().setElevation(0);
-
         FileManager.checkRecentFile(this);
     }
 
