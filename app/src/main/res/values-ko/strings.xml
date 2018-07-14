@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="app_name">비디오 플레이어</string>
     <string name="app_name_free">비디오 플레이어</string>
     <string name="app_name_pro">비디오 플레이어Pro</string>
     <string name="ok">확인</string>

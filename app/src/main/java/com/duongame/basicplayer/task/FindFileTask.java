@@ -17,7 +17,6 @@ import java.util.ArrayList;
 public class FindFileTask extends AsyncTask<Void, Integer, Void> {
     private final static String TAG = FindFileTask.class.getSimpleName();
 
-    private Context context;
     private MovieAdapter movieAdapter;
     private String mExtRoot;
     private ArrayList<MovieFile> movieFileArrayList;
@@ -25,7 +24,6 @@ public class FindFileTask extends AsyncTask<Void, Integer, Void> {
     private String[] ext;
 
     public FindFileTask(Context context, MovieAdapter movieAdapter, File path, String[] ext) {
-        this.context = context;
         this.movieAdapter = movieAdapter;
 
         this.path = path;
