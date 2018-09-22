@@ -11,6 +11,10 @@ android {
         versionCode 4
         versionName "1.0.3"
     }
+    lintOptions {
+        abortOnError false
+        checkReleaseBuilds false
+    }
     sourceSets {
         main {
             // eclipse의 폴더명과 동일하게 사용함
