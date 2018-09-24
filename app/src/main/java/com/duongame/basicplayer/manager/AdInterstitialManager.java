@@ -13,7 +13,7 @@ import com.google.android.gms.ads.InterstitialAd;
 public class AdInterstitialManager {
     private final static String TAG = "AdInterstitialManager";
 
-    private static final String INTERSTITIAL_ID = "ca-app-pub-5576037828251153/9737551820";
+    private static final String INTERSTITIAL_ID = "ca-app-pub-8174809468024854/7217031038";
     private static InterstitialAd interstitialAD = null;
 
     public static final int MODE_START = 0;
