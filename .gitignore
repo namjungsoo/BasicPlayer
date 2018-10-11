@@ -9,3 +9,5 @@ output.json
 *.iml
 *.apk
 *.prefs
+gradle
+gradlew*.*
