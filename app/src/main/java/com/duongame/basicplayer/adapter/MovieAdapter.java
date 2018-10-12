@@ -50,7 +50,7 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder> 
 
     @Override
     public MovieAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        final LayoutInflater layoutInflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        final LayoutInflater layoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         final View v = layoutInflater.inflate(R.layout.list_item, parent, false);
         final ViewHolder holder = new ViewHolder(v);
 
@@ -88,7 +88,7 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder> 
             public void onClick(View view) {
 
                 // 무조건 열지 말고 기존에 읽었던 파일인지 테스트
-                if(!FileManager.checkRecentFile(context, file.getAbsolutePath())) {
+                if (!FileManager.checkRecentFile(context, file.getAbsolutePath())) {
                     FileManager.openFile(context, file.getAbsolutePath(), 0L, 0);
                 }
 

@@ -43,29 +43,29 @@ import static com.duongame.basicplayer.manager.AdInterstitialManager.MODE_EXIT;
 public class PlayerActivity extends BaseActivity {
     private final static String TAG = "PlayerActivity";
 
-    private PlayerView mPlayerView;
+    private PlayerView playerView;
 
-    private ViewGroup mToolBox;
-    private float mAlpha;
+    private ViewGroup toolBox;
+    //private float alpha;
 
-    private ImageButton mPlay;
-    private ImageButton mRotate;
+    private ImageButton play;
+    private ImageButton rotate;
 
-    private TextView mCurrentTime;
-    private TextView mDurationTime;
-    private TextView mDegree;
+    private TextView currentTime;
+    private TextView durationTime;
+    private TextView degree;
 
-    private SeekBar mSeekBar;
-    private TextView mSeekTime;
+    private SeekBar seekBar;
+    private TextView seekTime;
 
-    private TextView mDebugCurrent;
-    private FrameLayout mPlayerFrame;
+    private TextView debugCurrent;
+    private FrameLayout playerFrame;
 
-    private AdView mAdView;
+    private AdView adView;
 
-    private int mActionBarHeight;
-    private int mStatusBarHeight;
-    private FirebaseRemoteConfig mFirebaseRemoteConfig;
+    //private int actionBarHeight;
+    //private int statusBarHeight;
+    //private FirebaseRemoteConfig firebaseRemoteConfig;
 
 
     @Override
@@ -77,22 +77,22 @@ public class PlayerActivity extends BaseActivity {
 //        Toolbar toolbar = (Toolbar)findViewById(R.id.toolBar);
 //        setSupportActionBar(toolbar);
 
-        mPlayerFrame = (FrameLayout) findViewById(R.id.playerFrame);
+        playerFrame = (FrameLayout) findViewById(R.id.playerFrame);
 
-        mPlayerView = (PlayerView) findViewById(R.id.playerView);
-        mToolBox = (ViewGroup) findViewById(R.id.toolBox);
+        playerView = (PlayerView) findViewById(R.id.playerView);
+        toolBox = (ViewGroup) findViewById(R.id.toolBox);
 
-        mCurrentTime = (TextView) findViewById(R.id.currentTime);
-        mDurationTime = (TextView) findViewById(R.id.durationTime);
-        mDegree = (TextView) findViewById(R.id.degree);
-        mDebugCurrent = (TextView) findViewById(R.id.debugCurrent);
+        currentTime = (TextView) findViewById(R.id.currentTime);
+        durationTime = (TextView) findViewById(R.id.durationTime);
+        degree = (TextView) findViewById(R.id.degree);
+        debugCurrent = (TextView) findViewById(R.id.debugCurrent);
 
-        mPlay = (ImageButton) findViewById(R.id.play);
-        mRotate = (ImageButton) findViewById(R.id.rotate);
+        play = (ImageButton) findViewById(R.id.play);
+        rotate = (ImageButton) findViewById(R.id.rotate);
 
         // 전체화면에 그려지는 흰색 탐색 시간
-        mSeekTime = (TextView) findViewById(R.id.seekTime);
-        mSeekBar = (SeekBar) findViewById(R.id.seekBar);
+        seekTime = (TextView) findViewById(R.id.seekTime);
+        seekBar = (SeekBar) findViewById(R.id.seekBar);
 
         // 광고 처리
         //PRO
@@ -117,11 +117,11 @@ public class PlayerActivity extends BaseActivity {
 //        setToolBox(false);
 
         // 최초에 GONE으로 초기화 해야 초반에 튀는 화면이 보이지 않는다.
-        if (mAdView != null) {
-            mAdView.setVisibility(View.GONE);
+        if (adView != null) {
+            adView.setVisibility(View.GONE);
         }
 
-        mToolBox.setVisibility(View.GONE);
+        toolBox.setVisibility(View.GONE);
 
         updateRotation();
 
@@ -132,7 +132,7 @@ public class PlayerActivity extends BaseActivity {
 //    private void initConfigs() {
 //        // Get Remote Config instance.
 //        // [START get_remote_config_instance]
-//        mFirebaseRemoteConfig = FirebaseRemoteConfig.getInstance();
+//        firebaseRemoteConfig = FirebaseRemoteConfig.getInstance();
 //        // [END get_remote_config_instance]
 //
 //        // Create a Remote Config Setting to enable developer mode, which you can use to increase
@@ -142,7 +142,7 @@ public class PlayerActivity extends BaseActivity {
 //        FirebaseRemoteConfigSettings configSettings = new FirebaseRemoteConfigSettings.Builder()
 //                .setDeveloperModeEnabled(BuildConfig.DEBUG)
 //                .build();
-//        mFirebaseRemoteConfig.setConfigSettings(configSettings);
+//        firebaseRemoteConfig.setConfigSettings(configSettings);
 //        // [END enable_dev_mode]
 //
 //        // Set default Remote Config parameter values. An app uses the in-app default values, and
@@ -150,7 +150,7 @@ public class PlayerActivity extends BaseActivity {
 //        // want to change in the Firebase console. See Best Practices in the README for more
 //        // information.
 //        // [START set_default_values]
-//        mFirebaseRemoteConfig.setDefaults(R.xml.remote_config_defaults);
+//        firebaseRemoteConfig.setDefaults(R.xml.remote_config_defaults);
 //        // [END set_default_values]
 //    }
 
@@ -159,7 +159,7 @@ public class PlayerActivity extends BaseActivity {
         Log.d(TAG, "onPause");
         super.onPause();
 
-        mPlayerView.pause(false);
+        playerView.pause(false);
         updatePlayButton();
     }
 
@@ -182,9 +182,9 @@ public class PlayerActivity extends BaseActivity {
         Log.d(TAG, "onDestroy");
         super.onDestroy();
 
-        mPlayerView.close();
-        if (mAdView != null) {
-            mPlayerFrame.removeView(mAdView);
+        playerView.close();
+        if (adView != null) {
+            playerFrame.removeView(adView);
         }
     }
 
@@ -226,35 +226,35 @@ public class PlayerActivity extends BaseActivity {
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
 
-        if (mToolBox.getVisibility() == View.GONE)
-            mToolBox.setAlpha(0.0f);
+        if (toolBox.getVisibility() == View.GONE)
+            toolBox.setAlpha(0.0f);
         else {
             if (FullscreenManager.isFullscreen())
-                mToolBox.setAlpha(0.0f);
+                toolBox.setAlpha(0.0f);
             else
-                mToolBox.setAlpha(1.0f);
+                toolBox.setAlpha(1.0f);
         }
 
         updateRotation();
     }
 
     private void initAd() {
-        if (mPlayerFrame != null) {
-            mActionBarHeight = ScreenManager.getActionBarHeight(this);
-            mStatusBarHeight = ScreenManager.getStatusBarHeight(this);
+        if (playerFrame != null) {
+            int actionBarHeight = ScreenManager.getActionBarHeight(this);
+            int statusBarHeight = ScreenManager.getStatusBarHeight(this);
             final AdView adView = AdBannerManager.getAdTopBannerView();
             final FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
             params.gravity = Gravity.TOP;
             adView.setLayoutParams(params);
-            adView.setY(mActionBarHeight + mStatusBarHeight);
-            mPlayerFrame.addView(adView, 1);
-            mAdView = adView;
+            adView.setY(actionBarHeight + statusBarHeight);
+            playerFrame.addView(adView, 1);
+            this.adView = adView;
         }
     }
 
     private void initSeekBar() {
-        if (mSeekBar != null) {
-            mSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+        if (seekBar != null) {
+            seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
                 private boolean startAtPaused = false;
 
                 @Override
@@ -262,37 +262,37 @@ public class PlayerActivity extends BaseActivity {
                     // 유저가 움직였을 경우에만 탐색
                     if (fromUser) {
                         final long positionUs = progress * TimeConverter.SEC_TO_US;
-                        mPlayerView.seekMovie(positionUs);
-                        mSeekTime.setText(TimeConverter.convertUsToString(positionUs));
-                        mPlayerView.invalidate();
+                        playerView.seekMovie(positionUs);
+                        seekTime.setText(TimeConverter.convertUsToString(positionUs));
+                        playerView.invalidate();
                     }
                 }
 
                 @Override
                 public void onStartTrackingTouch(SeekBar seekBar) {
-                    if (mPlayerView != null) {
-                        mPlayerView.setSeeking(true);
-                        if (!mPlayerView.getPlaying())
+                    if (playerView != null) {
+                        playerView.setSeeking(true);
+                        if (!playerView.getPlaying())
                             startAtPaused = true;
                         else {
                             startAtPaused = false;
-                            mPlayerView.pause(false);
+                            playerView.pause(false);
                             updatePlayButton();
                         }
-                        mSeekTime.setVisibility(View.VISIBLE);
+                        seekTime.setVisibility(View.VISIBLE);
                     }
                 }
 
                 @Override
                 public void onStopTrackingTouch(SeekBar seekBar) {
-                    if (mPlayerView != null) {
+                    if (playerView != null) {
                         // 플레이 상태 복구
                         if (!startAtPaused) {
-                            mPlayerView.resume();
+                            playerView.resume();
                             updatePlayButton();
                         }
-                        mPlayerView.setSeeking(false);
-                        mSeekTime.setVisibility(View.INVISIBLE);
+                        playerView.setSeeking(false);
+                        seekTime.setVisibility(View.INVISIBLE);
 
                     }
                 }
@@ -310,9 +310,9 @@ public class PlayerActivity extends BaseActivity {
     }
 
     private void initFullscreen() {
-        if (mPlayerView != null) {
+        if (playerView != null) {
             // 풀스크린 처리
-            mPlayerView.setOnClickListener(new View.OnClickListener() {
+            playerView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
 
@@ -327,42 +327,42 @@ public class PlayerActivity extends BaseActivity {
                     setToolBox(!FullscreenManager.isFullscreen());
 
                     // 포즈 상태이면
-                    if (!mPlayerView.getPlaying()) {
-                        if (mAdView != null && mAdView.getVisibility() == View.VISIBLE)
+                    if (!playerView.getPlaying()) {
+                        if (adView != null && adView.getVisibility() == View.VISIBLE)
                             setAdView(!FullscreenManager.isFullscreen());
                     }
 
-                    mPlayerView.invalidate();
+                    playerView.invalidate();
                 }
             });
         }
     }
 
     private void initRotation() {
-        mRotate.setOnClickListener(new View.OnClickListener() {
+        rotate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (mPlayerView != null) {
-                    final int newRotation = (mPlayerView.getBitmapRotation() + 1) % (Surface.ROTATION_270 + 1);
-                    mPlayerView.setBitmapRotation(newRotation);
+                if (playerView != null) {
+                    final int newRotation = (playerView.getBitmapRotation() + 1) % (Surface.ROTATION_270 + 1);
+                    playerView.setBitmapRotation(newRotation);
                     updateBitmapRotation();
-                    mPlayerView.invalidate();
+                    playerView.invalidate();
                 }
             }
         });
     }
 
     private void initPause() {
-        if (mPlay != null) {// 일시정지를 시키자
-            mPlay.setOnClickListener(new View.OnClickListener() {
+        if (play != null) {// 일시정지를 시키자
+            play.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if (mPlayerView != null) {
+                    if (playerView != null) {
                         Animation animation;
-                        if (mPlayerView.getPlaying()) {
-                            mPlayerView.pause(false);
+                        if (playerView.getPlaying()) {
+                            playerView.pause(false);
                         } else {
-                            mPlayerView.resume();
+                            playerView.resume();
                         }
                     }
                     updatePlayButton();
@@ -390,26 +390,26 @@ public class PlayerActivity extends BaseActivity {
         boolean result;
 
         // 파일 읽기 성공일때
-        if (mPlayerView.openFile(filename)) {
-            mPlayerView.setBitmapRotation(rotation);
+        if (playerView.openFile(filename)) {
+            playerView.setBitmapRotation(rotation);
             updateBitmapRotation();
 
-            mPlayerView.seekMovie(time);
+            playerView.seekMovie(time);
 
-            final long durationUs = mPlayerView.getMovieDurationUs();
+            final long durationUs = playerView.getMovieDurationUs();
             long durationSec = durationUs / TimeConverter.SEC_TO_US;
             final String duration = TimeConverter.convertUsToString(durationUs);
 
-            if (mDurationTime != null)
-                mDurationTime.setText(duration);
+            if (durationTime != null)
+                durationTime.setText(duration);
 
-            if (mSeekBar != null)
-                mSeekBar.setMax((int) durationSec);
+            if (seekBar != null)
+                seekBar.setMax((int) durationSec);
             updatePlayButton();
 
             setTitle(new File(filename).getName());
 
-            PreferenceManager.saveRecentFile(this, filename, time, mPlayerView.getBitmapRotation());
+            PreferenceManager.saveRecentFile(this, filename, time, playerView.getBitmapRotation());
 
             result = true;
         } else {
@@ -423,28 +423,28 @@ public class PlayerActivity extends BaseActivity {
         final Bundle bundle = new Bundle();
         bundle.putString("filename", filename);
         bundle.putBoolean("result", result);
-//        mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);
+//        firebaseAnalytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);
     }
 
     private void updateBitmapRotation() {
-        final int rotation = mPlayerView.getBitmapRotation();
+        final int rotation = playerView.getBitmapRotation();
         if (rotation == Surface.ROTATION_0) {
-            mDegree.setVisibility(View.INVISIBLE);
-            mRotate.setColorFilter(Color.WHITE);
+            degree.setVisibility(View.INVISIBLE);
+            rotate.setColorFilter(Color.WHITE);
         } else {
             switch (rotation) {
                 case Surface.ROTATION_90:
-                    mDegree.setText("90°");
+                    degree.setText("90°");
                     break;
                 case Surface.ROTATION_180:
-                    mDegree.setText("180°");
+                    degree.setText("180°");
                     break;
                 case Surface.ROTATION_270:
-                    mDegree.setText("270°");
+                    degree.setText("270°");
                     break;
             }
-            mDegree.setVisibility(View.VISIBLE);
-            mRotate.setColorFilter(ContextCompat.getColor(this, R.color.colorPrimary));
+            degree.setVisibility(View.VISIBLE);
+            rotate.setColorFilter(ContextCompat.getColor(this, R.color.colorPrimary));
         }
     }
 
@@ -474,14 +474,14 @@ public class PlayerActivity extends BaseActivity {
         if (!FullscreenManager.isFullscreen()) {
             // 시간 텍스트 업데이트
             final String position = TimeConverter.convertUsToString(positionUs);
-            mCurrentTime.setText(position);
+            currentTime.setText(position);
 
             long positionSec = positionUs / TimeConverter.SEC_TO_US;
 
             // SeekBar 포지션 업데이트
-            mSeekBar.setProgress((int) positionSec);
+            seekBar.setProgress((int) positionSec);
 
-            mDebugCurrent.setText("" + positionSec * 1000);
+            debugCurrent.setText("" + positionSec * 1000);
         }
     }
 
@@ -503,38 +503,38 @@ public class PlayerActivity extends BaseActivity {
     private void setAdView(boolean showing) {
         Log.d(TAG, "setAdView " + showing);
 
-        if (mAdView != null) {
-            mAdView.setVisibility(View.VISIBLE);
+        if (adView != null) {
+            adView.setVisibility(View.VISIBLE);
             // 기본값으로 설정후에 애니메이션 한다
-            mAdView.setAlpha(1.0f);
+            adView.setAlpha(1.0f);
             final Animation animation = createAlphaAnimation(showing);
 
-            mAdView.startAnimation(animation);
+            adView.startAnimation(animation);
         }
     }
 
     private void setToolBox(boolean showing) {
         Log.d(TAG, "setToolBox " + showing);
 
-        mToolBox.setVisibility(View.VISIBLE);
+        toolBox.setVisibility(View.VISIBLE);
         // 기본값으로 설정후에 애니메이션 한다
-        mToolBox.setAlpha(1.0f);
+        toolBox.setAlpha(1.0f);
 
         final Animation animation = createAlphaAnimation(showing);
 
-        mToolBox.startAnimation(animation);
+        toolBox.startAnimation(animation);
     }
 
     private void applyNavigationBarHeight(boolean portrait) {
         // 플레이어에게 회전정보를 입력
-        if (mPlayerView != null) {
-            mPlayerView.setPortrait(portrait);
+        if (playerView != null) {
+            playerView.setPortrait(portrait);
         }
 
         if (portrait) {
-            mSeekTime.setTextSize(UnitConverter.dpToPx(24));
+            seekTime.setTextSize(UnitConverter.dpToPx(24));
         } else {
-            mSeekTime.setTextSize(UnitConverter.dpToPx(32));
+            seekTime.setTextSize(UnitConverter.dpToPx(32));
         }
 
         // 소프트키가 없을 경우에 패스
@@ -559,10 +559,10 @@ public class PlayerActivity extends BaseActivity {
     }
 
     public void updatePlayButton() {
-        if (mPlayerView.getPlaying()) {
-            mPlay.setImageDrawable(ResourcesCompat.getDrawable(getResources(), R.drawable.pause, getApplicationContext().getTheme()));
+        if (playerView.getPlaying()) {
+            play.setImageDrawable(ResourcesCompat.getDrawable(getResources(), R.drawable.pause, getApplicationContext().getTheme()));
         } else {
-            mPlay.setImageDrawable(ResourcesCompat.getDrawable(getResources(), R.drawable.play, getApplicationContext().getTheme()));
+            play.setImageDrawable(ResourcesCompat.getDrawable(getResources(), R.drawable.play, getApplicationContext().getTheme()));
         }
     }
 }

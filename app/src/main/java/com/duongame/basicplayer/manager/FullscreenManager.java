@@ -11,10 +11,10 @@ import android.view.View;
 public class FullscreenManager {
     private static final String TAG = "FullscreenManager";
 
-    private static boolean mIsFullscreen = false;
+    private static boolean isFullscreen = false;
 
     public static boolean isFullscreen() {
-        return mIsFullscreen;
+        return isFullscreen;
     }
     /**
      * Detects and toggles immersive mode (also known as "hidey bar" mode).
@@ -68,6 +68,6 @@ public class FullscreenManager {
         //END_INCLUDE (set_ui_flags)
 
         // 후처리를 해주어야 한다
-        mIsFullscreen = newFullscreenMode;
+        isFullscreen = newFullscreenMode;
     }
 }

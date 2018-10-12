@@ -31,15 +31,15 @@ import static com.duongame.basicplayer.manager.AdInterstitialManager.MODE_EXIT;
 public class MainActivity extends BaseActivity {
     private final static String TAG = MainActivity.class.getSimpleName();
     private final static int ADVIEW_ID = 1;
-    private final static String[] mMovieExt = {".avi", ".mp4", ".mov", ".mkv", ".wmv", ".asf", ".flv"};
+    private final static String[] movieExt = {".avi", ".mp4", ".mov", ".mkv", ".wmv", ".asf", ".flv"};
 
-    private SwipeRefreshLayout mSwipeLayout;
-    private String mExtRoot;
+    private SwipeRefreshLayout swipeLayout;
+    //private String extRoot;
 
-    private RecyclerView mRecyclerView;
-    private RecyclerView.LayoutManager mLayoutManager;
+    private RecyclerView recyclerView;
+    //private RecyclerView.LayoutManager layoutManager;
 
-    private MovieAdapter mMovieAdapter;
+    //private MovieAdapter movieAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,20 +64,20 @@ public class MainActivity extends BaseActivity {
     }
 
     private void initAdapter() {
-        mMovieAdapter = new MovieAdapter(this);
-        mRecyclerView.setAdapter(mMovieAdapter);
-        mExtRoot = Environment.getExternalStorageDirectory().getAbsolutePath();
+        MovieAdapter movieAdapter = new MovieAdapter(this);
+        recyclerView.setAdapter(movieAdapter);
+        String extRoot = Environment.getExternalStorageDirectory().getAbsolutePath();
 
-        FindFileTask task = new FindFileTask(this, mMovieAdapter, new File(mExtRoot), mMovieExt);
+        FindFileTask task = new FindFileTask(this, movieAdapter, new File(extRoot), movieExt);
         task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     private void initListView(RelativeLayout relativeLayout) {
-        mRecyclerView = (RecyclerView) relativeLayout.findViewById(R.id.listMovie);
-        mRecyclerView.setHasFixedSize(true);
+        recyclerView = (RecyclerView) relativeLayout.findViewById(R.id.listMovie);
+        recyclerView.setHasFixedSize(true);
 
-        mLayoutManager = new LinearLayoutManager(this);
-        mRecyclerView.setLayoutManager(mLayoutManager);
+        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
+        recyclerView.setLayoutManager(layoutManager);
     }
 
     private void initAd(RelativeLayout relativeLayout) {
@@ -91,7 +91,7 @@ public class MainActivity extends BaseActivity {
 
         params = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         params.addRule(RelativeLayout.ABOVE, adView.getId());
-        mRecyclerView.setLayoutParams(params);
+        recyclerView.setLayoutParams(params);
     }
 
     private void initView() {
@@ -101,13 +101,13 @@ public class MainActivity extends BaseActivity {
 
         // 루트 레이아웃을 얻어서
         View root = getLayoutInflater().inflate(R.layout.activity_main, null);
-        mSwipeLayout = (SwipeRefreshLayout) root.findViewById(R.id.swipe);
+        swipeLayout = (SwipeRefreshLayout) root.findViewById(R.id.swipe);
 
-        final RelativeLayout relativeLayout = (RelativeLayout) mSwipeLayout.findViewById(R.id.relative);
-        mSwipeLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+        final RelativeLayout relativeLayout = (RelativeLayout) swipeLayout.findViewById(R.id.relative);
+        swipeLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                mSwipeLayout.setRefreshing(false);
+                swipeLayout.setRefreshing(false);
             }
         });
 
@@ -145,7 +145,7 @@ public class MainActivity extends BaseActivity {
         int count = pref.getInt("exit_count", 0);
         SharedPreferences.Editor edit = pref.edit();
         edit.putInt("exit_count", count + 1);
-        edit.commit();
+        edit.apply();
 
         if (count % 2 == 0) {
             AdInterstitialManager.showAd(this, MODE_EXIT, new AdInterstitialManager.OnFinishListener() {

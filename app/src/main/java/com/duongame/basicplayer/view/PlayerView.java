@@ -39,17 +39,17 @@ import static com.duongame.basicplayer.view.PlayerView.Axis.AXIS_Y;
 public class PlayerView extends View {
     private final static String TAG = "PlayerView";
 
-    private Bitmap mBitmap;
-    private Timer mTimer;
-    private Context mContext;
-    private long mInterval;
-    private boolean mPlaying;
-    private boolean mSeeking;
-    private int mRotation = Surface.ROTATION_0;
-    private boolean mPortrait = true;
-    private ArrayList<SmiParser.Subtitle> mSubtitleList;
-    private String mFilename;
-    private Player mPlayer = new Player();
+    private Bitmap bitmap;
+    private Timer timer;
+    private Context context;
+    private long interval;
+    private boolean isPlaying;
+    private boolean isSeeking;
+    private int rotation = Surface.ROTATION_0;
+    private boolean isPortrait = true;
+    private ArrayList<SmiParser.Subtitle> subtitleList;
+    private String filename;
+    private Player player = new Player();
 
     //region
     // Touch
@@ -154,9 +154,9 @@ public class PlayerView extends View {
 
     public PlayerView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        mContext = context;
+        this.context = context;
 
-        mPlayer.init();
+        player.init();
     }
 
     public PlayerView(Context context) {
@@ -164,13 +164,13 @@ public class PlayerView extends View {
     }
 
     private void initRenderTimer() {
-        double fps = mPlayer.getFps();
+        double fps = player.getFps();
         Log.d(TAG, "fps=" + fps);
 
-        mInterval = (long) (1000. / fps);
-        if (mInterval == 0)
-            mInterval = 1;
-        Log.d(TAG, "mInterval=" + mInterval);
+        interval = (long) (1000. / fps);
+        if (interval == 0)
+            interval = 1;
+        Log.d(TAG, "interval=" + interval);
     }
 
     public boolean openFile(final String filename) {
@@ -178,19 +178,19 @@ public class PlayerView extends View {
         final File file = new File(filename);
         Log.d(TAG, String.valueOf(file.exists()));
 
-        int openResult = mPlayer.openMovie(filename);
+        int openResult = player.openMovie(filename);
         if (openResult < 0) {
-            Toast.makeText(mContext, "Open Movie Error: " + openResult, Toast.LENGTH_LONG).show();
-            ((Activity) mContext).finish();
+            Toast.makeText(context, "Open Movie Error: " + openResult, Toast.LENGTH_LONG).show();
+            ((Activity) context).finish();
             return false;
         } else {
-            final int movieWidth = mPlayer.getMovieWidth();
-            final int movieHeight = mPlayer.getMovieHeight();
+            final int movieWidth = player.getMovieWidth();
+            final int movieHeight = player.getMovieHeight();
 
-            mBitmap = Bitmap.createBitmap(movieWidth, movieHeight, Bitmap.Config.ARGB_8888);
+            bitmap = Bitmap.createBitmap(movieWidth, movieHeight, Bitmap.Config.ARGB_8888);
             Log.d(TAG, "init createBitmap");
 
-            mSubtitleList = null;
+            subtitleList = null;
 
             new Thread(new Runnable() {
                 @Override
@@ -202,10 +202,10 @@ public class PlayerView extends View {
                     final SmiParser parser = new SmiParser();
                     try {
                         parser.load(smiFile);
-                        mSubtitleList = parser.getSubtitleList();
+                        subtitleList = parser.getSubtitleList();
                     } catch (IOException e) {
                         e.printStackTrace();
-                        mSubtitleList = null;
+                        subtitleList = null;
                     }
                 }
             }).start();
@@ -213,47 +213,47 @@ public class PlayerView extends View {
             initRenderTimer();
             resume();
 
-            mFilename = filename;
+            this.filename = filename;
             return true;
         }
     }
 
     public boolean getPlaying() {
-        return mPlaying;
+        return isPlaying;
     }
 
     public void setSeeking(boolean b) {
-        mSeeking = b;
+        isSeeking = b;
     }
 
     public void setBitmapRotation(int rotation) {
-        mRotation = rotation;
+        this.rotation = rotation;
     }
 
     public int getBitmapRotation() {
-        return mRotation;
+        return rotation;
     }
 
     public void setPortrait(boolean portrait) {
-        mPortrait = portrait;
+        isPortrait = portrait;
     }
 
     public void pause(boolean end) {
-        mPlaying = false;
+        isPlaying = false;
         pauseTimer();
         Player.pauseMovie();
 
-        PreferenceManager.saveRecentFile(mContext, mFilename, mPlayer.getCurrentPositionUs(), getBitmapRotation());
+        PreferenceManager.saveRecentFile(context, filename, player.getCurrentPositionUs(), getBitmapRotation());
     }
 
     public void resume() {
-        mPlaying = true;
+        isPlaying = true;
         resumeTimer();
         Player.resumeMovie();
     }
 
     private void pauseTimer() {
-        mTimer.cancel();
+        timer.cancel();
     }
 
     private void resumeTimer() {
@@ -272,20 +272,20 @@ public class PlayerView extends View {
             }
         };
 
-        mTimer = new Timer();
-        mTimer.schedule(task, 0, mInterval);
+        timer = new Timer();
+        timer.schedule(task, 0, interval);
     }
 
     public int seekMovie(long positionUs) {
-        return mPlayer.seekMovie(positionUs);
+        return player.seekMovie(positionUs);
     }
 
     public long getMovieDurationUs() {
-        return mPlayer.getMovieDurationUs();
+        return player.getMovieDurationUs();
     }
 
     public void close() {
-        mPlayer.closeMovie();
+        player.closeMovie();
     }
 
     @Override
@@ -296,19 +296,19 @@ public class PlayerView extends View {
         canvas.drawColor(Color.BLACK);
 
         long currentPositionUs = -1;
-        if (mBitmap != null) {
-            currentPositionUs = mPlayer.getCurrentPositionUs();
-            if (mPlaying || mSeeking) {
-                int ret = mPlayer.renderFrame(mBitmap);
+        if (bitmap != null) {
+            currentPositionUs = player.getCurrentPositionUs();
+            if (isPlaying || isSeeking) {
+                int ret = player.renderFrame(bitmap);
                 // 렌더링 종료
                 if (ret > 0) {
                     pause(true);
-                    final PlayerActivity activity = (PlayerActivity) mContext;
+                    final PlayerActivity activity = (PlayerActivity) context;
                     if (activity != null) {
                         activity.updatePlayButton();
                     }
                 } else {
-                    final PlayerActivity activity = (PlayerActivity) mContext;
+                    final PlayerActivity activity = (PlayerActivity) context;
                     if (activity != null) {
                         activity.updatePosition(currentPositionUs);
                     }
@@ -320,14 +320,14 @@ public class PlayerView extends View {
             final int height = getHeight();
 
             // 항상 풀스크린으로 채우는 것은 안된다
-            final int bmWidth = mBitmap.getWidth();
-            final int bmHeight = mBitmap.getHeight();
+            final int bmWidth = bitmap.getWidth();
+            final int bmHeight = bitmap.getHeight();
 
-            if (mRotation != Surface.ROTATION_0) {
+            if (rotation != Surface.ROTATION_0) {
                 canvas.save();
                 float rotation = 0.0f;
 
-                switch (mRotation) {
+                switch (this.rotation) {
                     case Surface.ROTATION_90:
                         degree90 = true;
                         rotation = 90.0f;
@@ -366,7 +366,7 @@ public class PlayerView extends View {
 
                 boolean landscapeImage = bmRatioInverse < ratioInverse;
 
-                final int rotation = ((PlayerActivity) mContext).getWindowManager().getDefaultDisplay().getRotation();
+                final int rotation = ((PlayerActivity) context).getWindowManager().getDefaultDisplay().getRotation();
                 switch (rotation) {
                     case Surface.ROTATION_90:
                     case Surface.ROTATION_270:
@@ -401,9 +401,9 @@ public class PlayerView extends View {
                 }
             }
 
-            canvas.drawBitmap(mBitmap, new Rect(0, 0, bmWidth, bmHeight), target, null);
+            canvas.drawBitmap(bitmap, new Rect(0, 0, bmWidth, bmHeight), target, null);
 
-            if (mRotation != Surface.ROTATION_0) {
+            if (rotation != Surface.ROTATION_0) {
                 canvas.restore();
             }
 
@@ -416,7 +416,7 @@ public class PlayerView extends View {
 //        Log.d(TAG, "drawSubtitle currentPositionUs="+currentPositionUs);
 
         // 자막이 있으면 렌더링 하자
-        if (mSubtitleList != null && currentPositionUs > -1) {
+        if (subtitleList != null && currentPositionUs > -1) {
             final int width = getWidth();
             final int height = getHeight();
 
@@ -433,7 +433,7 @@ public class PlayerView extends View {
 
             float textSize;
             float strokeWidth;
-            if (mPortrait) {
+            if (isPortrait) {
                 textSize = UnitConverter.dpToPx(13);
                 strokeWidth = UnitConverter.dpToPx(2);
             } else {
@@ -452,8 +452,8 @@ public class PlayerView extends View {
             } else {
                 subtitleY = height - UnitConverter.dpToPx(120);
 
-                if (mPortrait) {
-                    int actionBarHeight = ScreenManager.getNavigationBarHeight(mContext);
+                if (isPortrait) {
+                    int actionBarHeight = ScreenManager.getNavigationBarHeight(context);
                     if (actionBarHeight == 0) {
                         actionBarHeight = UnitConverter.dpToPx(48);
                     }
@@ -462,9 +462,9 @@ public class PlayerView extends View {
                 }
             }
 
-            for (int i = mSubtitleList.size() - 1; i >= 0; i--) {
+            for (int i = subtitleList.size() - 1; i >= 0; i--) {
                 // 역순으로 자막을 가져와서
-                SmiParser.Subtitle subtitle = mSubtitleList.get(i);
+                SmiParser.Subtitle subtitle = subtitleList.get(i);
 
                 // 현재 시간이 현재 자막보다 크고
                 if (currentPositionUs > subtitle.start * 1000) {

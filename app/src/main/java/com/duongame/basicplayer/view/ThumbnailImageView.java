@@ -16,8 +16,8 @@ public class ThumbnailImageView extends RoundedImageView {
     private final int FONT_SIZE_DP = 13;
     private final int FONT_MINUS_DP = 2;
 
-    private String mTimeText;
-    private boolean mNew;
+    private String timeText;
+    private boolean isNew;
 
     public ThumbnailImageView(Context context) {
         super(context);
@@ -32,19 +32,19 @@ public class ThumbnailImageView extends RoundedImageView {
     }
 
     public void setTimeText(String timeText) {
-        mTimeText = timeText;
+        this.timeText = timeText;
     }
 
     public String getTimeText() {
-        return mTimeText;
+        return timeText;
     }
 
     public void setNew(boolean bNew) {
-        mNew = bNew;
+        isNew = bNew;
     }
 
     public boolean getNew() {
-        return mNew;
+        return isNew;
     }
 
     private void drawTimeText(Canvas canvas) {
@@ -55,7 +55,7 @@ public class ThumbnailImageView extends RoundedImageView {
         paint.setTextSize(fontSizeDp);
         paint.setAntiAlias(true);
 
-        int length = (int) paint.measureText(mTimeText);
+        int length = (int) paint.measureText(timeText);
 
         // 백판 검정
         final int fontMinusDp = UnitConverter.dpToPx(FONT_MINUS_DP);
@@ -64,9 +64,9 @@ public class ThumbnailImageView extends RoundedImageView {
         // 시간 텍스트 렌더링
         paint.setTextAlign(Paint.Align.RIGHT);
         paint.setColor(Color.WHITE);
-        canvas.drawText(mTimeText, getWidth(), getHeight(), paint);
+        canvas.drawText(timeText, getWidth(), getHeight(), paint);
 
-        if(mNew) {
+        if(isNew) {
             paint.setTextSkewX(-0.25f);
             paint.setColor(Color.RED);
 
