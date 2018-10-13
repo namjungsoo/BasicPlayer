@@ -30,16 +30,10 @@ import static com.duongame.basicplayer.manager.AdInterstitialManager.MODE_EXIT;
 
 public class MainActivity extends BaseActivity {
     private final static String TAG = MainActivity.class.getSimpleName();
-    private final static int ADVIEW_ID = 1;
     private final static String[] movieExt = {".avi", ".mp4", ".mov", ".mkv", ".wmv", ".asf", ".flv"};
 
     private SwipeRefreshLayout swipeLayout;
-    //private String extRoot;
-
     private RecyclerView recyclerView;
-    //private RecyclerView.LayoutManager layoutManager;
-
-    //private MovieAdapter movieAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,8 +60,11 @@ public class MainActivity extends BaseActivity {
     private void initAdapter() {
         MovieAdapter movieAdapter = new MovieAdapter(this);
         recyclerView.setAdapter(movieAdapter);
-        String extRoot = Environment.getExternalStorageDirectory().getAbsolutePath();
 
+        // 이미 캐쉬된 DB의 파일 리스트를 로딩하자
+
+        // 파일리스트를 로딩하자
+        String extRoot = Environment.getExternalStorageDirectory().getAbsolutePath();
         FindFileTask task = new FindFileTask(this, movieAdapter, new File(extRoot), movieExt);
         task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
