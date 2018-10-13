@@ -10,4 +10,5 @@ output.json
 *.apk
 *.prefs
 gradle
-gradlew*.*
+gradlew
+gradlew.bat
