@@ -64,6 +64,7 @@ public class MainActivity extends BaseActivity {
         // 이미 캐쉬된 DB의 파일 리스트를 로딩하자
 
         // 파일리스트를 로딩하자
+        // extRoot = /storage/emulated/0
         String extRoot = Environment.getExternalStorageDirectory().getAbsolutePath();
         FindFileTask task = new FindFileTask(this, movieAdapter, new File(extRoot), movieExt);
         task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);

@@ -18,7 +18,6 @@ public class FindFileTask extends AsyncTask<Void, Integer, Void> {
     private final static String TAG = FindFileTask.class.getSimpleName();
 
     private MovieAdapter movieAdapter;
-    private String mExtRoot;
     private ArrayList<MovieFile> movieFileArrayList;
     private File path;
     private String[] ext;
@@ -45,6 +44,17 @@ public class FindFileTask extends AsyncTask<Void, Integer, Void> {
         }
     }
 
+    @Override
+    protected void onProgressUpdate(Integer... params) {
+        super.onProgressUpdate(params);
+
+        if(movieAdapter != null) {
+            ArrayList<MovieFile> arrayList = (ArrayList<MovieFile> )movieFileArrayList.clone();
+            movieAdapter.setMovieList(arrayList);
+            movieAdapter.notifyDataSetChanged();
+        }
+    }
+
     private void findFiles(File path, String[] ext, ArrayList<MovieFile> result) {
         final File[] files = path.listFiles();
         if (files == null)
@@ -59,23 +69,33 @@ public class FindFileTask extends AsyncTask<Void, Integer, Void> {
                 continue;
             }
 
+            // 숨김 폴더일 경우 패스
+            if(name.startsWith(".")) {
+                continue;
+            }
+
+            //Log.e(TAG, "Each="+each.getAbsolutePath());
+
             // 시스템 폴더일 경우 패스
-            if (each.getAbsolutePath().startsWith(mExtRoot + "/Android/data/")) {
+            // SDCARD일 경우 생각해야 함
+            if (each.getAbsolutePath().startsWith("/Android/data/")) {
                 Log.d(TAG, "System Folder " + each.getAbsolutePath());
                 continue;
             }
 
             if (each.isDirectory()) {
                 findFiles(each, ext, result);
-            }
+            } else {
+                for (int j = 0; j < ext.length; j++) {
+                    // 확장자가 맞으면
+                    if (each.getName().endsWith(ext[j])) {
+                        MovieFile movieFile = new MovieFile(each, "");
 
-            for (int j = 0; j < ext.length; j++) {
-                // 확장자가 맞으면
-                if (each.getName().endsWith(ext[j])) {
-                    MovieFile movieFile = new MovieFile(each, "");
-
-                    result.add(movieFile);
-                    break;
+                        Log.e(TAG, "FOUND MOVIE FILE "+each);
+                        result.add(movieFile);
+                        publishProgress(null);
+                        break;
+                    }
                 }
             }
         }
