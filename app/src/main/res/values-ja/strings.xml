@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">ビデオプレーヤー</string>
+    <string name="app_name_free">ビデオプレーヤー</string>
+    <string name="app_name_pro">ビデオプレーヤーPro</string>
+    <string name="ok">OK</string>
+    <string name="cancel">キャンセル</string>
+    <string name="dialog_recentfile">最近のファイルを再生しますか？</string>
+    <string name="toast_new_version">新規のバージョンです。</string>
+</resources>

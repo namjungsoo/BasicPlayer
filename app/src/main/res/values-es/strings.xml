@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Reproductor de video</string>
+    <string name="app_name_free">Reproductor de video</string>
+    <string name="app_name_pro">Reproductor de video Pro</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancelar</string>
+    <string name="dialog_recentfile">¿Quieres reproducir un archivo reciente?</string>
+    <string name="toast_new_version">Hay una nueva versión.</string>
+</resources>

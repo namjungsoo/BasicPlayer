@@ -4,8 +4,8 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@drawable/player"
-        android:label="@string/app_name_free"
+        android:icon="@mipmap/player"
+        android:label="${APP_NAME}"
         android:theme="@style/AppTheme"
         android:name=".PlayerApplication">
         <activity

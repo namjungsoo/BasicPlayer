@@ -105,12 +105,9 @@ public class PreferenceManager {
         editor.apply();
     }
 
-
-
     public static void saveRecentFile(Context context, String filename, long time, int rotation) {
         PreferenceManager.setRecentFilename(context, filename);
         PreferenceManager.setRecentTime(context, time);
         PreferenceManager.setRecentRotation(context, rotation);
     }
-
 }

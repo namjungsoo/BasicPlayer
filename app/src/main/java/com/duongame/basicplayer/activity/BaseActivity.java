@@ -1,10 +1,16 @@
 package com.duongame.basicplayer.activity;
 
+import android.content.ActivityNotFoundException;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
+import android.widget.Toast;
 
 import com.crashlytics.android.Crashlytics;
+import com.duongame.basicplayer.BuildConfig;
+import com.duongame.basicplayer.R;
 import com.duongame.basicplayer.manager.AdInterstitialManager;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -19,6 +25,18 @@ import io.fabric.sdk.android.Fabric;
 public class BaseActivity extends AppCompatActivity {
     protected FirebaseAnalytics firebaseAnalytics;
     protected FirebaseRemoteConfig mFirebaseRemoteConfig;
+
+    void gotoAppStorePage(String packageName) {
+        try {
+            final Intent marketLaunch = new Intent(Intent.ACTION_VIEW);
+            marketLaunch.setData(Uri.parse("market://details?id=" + packageName));
+            this.startActivity(marketLaunch);
+        } catch (ActivityNotFoundException e) {// FIX: ActivityNotFoundException
+            final Intent marketLaunch = new Intent(Intent.ACTION_VIEW);
+            marketLaunch.setData(Uri.parse("https://play.google.com/store/apps/details?id=" + packageName));
+            this.startActivity(marketLaunch);
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,10 +53,24 @@ public class BaseActivity extends AppCompatActivity {
             public void onComplete(@NonNull Task<Void> task) {
                 if (task.isSuccessful()) {
                     mFirebaseRemoteConfig.activateFetched();
+
+                    // 최신버전 업데이트 관련
                     long version = mFirebaseRemoteConfig.getLong("latest_version");
-//                    if (BuildConfig.VERSION_CODE < version) {
-//                        ToastHelper.info(BaseMainActivity.this, R.string.toast_new_version);
-//                    }
+                    boolean force = mFirebaseRemoteConfig.getBoolean("force_update");
+                    if (BuildConfig.VERSION_CODE < version) {
+                        Toast.makeText(BaseActivity.this, R.string.toast_new_version, Toast.LENGTH_SHORT).show();
+                        if (force) {
+                            // 강제로 플레이 스토어로 이동함
+                            gotoAppStorePage(getApplicationContext().getPackageName());
+                        }
+                    }
+
+                    // 앱 마이그레이션 관련
+                    String from = mFirebaseRemoteConfig.getString("migration_from");
+                    String to = mFirebaseRemoteConfig.getString("migration_to");
+                    if(from.equals(getApplicationContext().getPackageName())) {
+                        gotoAppStorePage(to);
+                    }
                 }
             }
         });

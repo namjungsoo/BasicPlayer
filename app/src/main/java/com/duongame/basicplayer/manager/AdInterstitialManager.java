@@ -3,6 +3,7 @@ package com.duongame.basicplayer.manager;
 import android.app.Activity;
 import android.util.Log;
 
+import com.duongame.basicplayer.BuildConfig;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.InterstitialAd;
@@ -120,6 +121,9 @@ public class AdInterstitialManager {
     }
 
     public static boolean showAd(Activity context, int mode, OnFinishListener listener) {
+        if (!BuildConfig.SHOW_AD)
+            return false;
+
         if (isShowing)
             return false;
 

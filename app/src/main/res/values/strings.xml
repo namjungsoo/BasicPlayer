@@ -6,4 +6,5 @@
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
     <string name="dialog_recentfile">Do you want to play recent file?</string>
+    <string name="toast_new_version">There is a new version.</string>
 </resources>
