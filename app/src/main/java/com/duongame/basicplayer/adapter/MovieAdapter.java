@@ -10,15 +10,15 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.duongame.basicplayer.data.MovieFile;
 import com.duongame.basicplayer.R;
+import com.duongame.basicplayer.data.MovieFile;
 import com.duongame.basicplayer.manager.FileManager;
 import com.duongame.basicplayer.manager.ThumbnailManager;
+import com.duongame.basicplayer.manager.TimeTextManager;
 import com.duongame.basicplayer.task.LoadThumbnailTask;
 import com.duongame.basicplayer.view.ThumbnailImageView;
 
-import java.io.File;
-import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by js296 on 2017-06-06.
@@ -27,7 +27,7 @@ import java.util.ArrayList;
 public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder> {
     private final static String TAG = MovieAdapter.class.getSimpleName();
 
-    private ArrayList<MovieFile> movieList = new ArrayList<>();
+    private List<MovieFile> movieList;
     private Context context;
 
     public MovieAdapter(Context context) {
@@ -44,7 +44,7 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder> 
         }
     }
 
-    public void setMovieList(ArrayList<MovieFile> movieList) {
+    public void setMovieList(List<MovieFile> movieList) {
         this.movieList = movieList;
     }
 
@@ -63,10 +63,11 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder> 
 
     @Override
     public void onBindViewHolder(MovieAdapter.ViewHolder holder, int position) {
-        final File file = movieList.get(position).file;
+        Log.e(TAG, "onBindViewHolder "+position);
+        final MovieFile file = movieList.get(position);
 
-        Log.v(TAG, file.getPath());
-        Bitmap bitmap = ThumbnailManager.getBitmap(file.getPath());
+        Log.v(TAG, file.path);
+        Bitmap bitmap = ThumbnailManager.getBitmap(file.path);
 
         if (bitmap != null) {
             holder.iv.setImageBitmap(bitmap);
@@ -75,21 +76,25 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder> 
             LoadThumbnailTask task = new LoadThumbnailTask(movieList.get(position), holder.iv);
             task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         }
-        holder.iv.setTimeText(movieList.get(position).timeText);
+        String timeText = TimeTextManager.getTimeText(file.path);
+        if(timeText != null)
+            holder.iv.setTimeText(timeText);
+        else
+            holder.iv.setTimeText("");
 
-        String name = file.getName();
+        String name = file.name;
         name = name.substring(0, name.lastIndexOf("."));
 
         holder.tvName.setText(name);
-        holder.tvPath.setText(file.getParent());
+        holder.tvPath.setText(file.parent);
 
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
                 // 무조건 열지 말고 기존에 읽었던 파일인지 테스트
-                if (!FileManager.checkRecentFile(context, file.getAbsolutePath())) {
-                    FileManager.openFile(context, file.getAbsolutePath(), 0L, 0);
+                if (!FileManager.checkRecentFile(context, file.absolutePath)) {
+                    FileManager.openFile(context, file.absolutePath, 0L, 0);
                 }
 
             }

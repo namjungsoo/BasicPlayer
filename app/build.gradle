@@ -1,4 +1,5 @@
 apply plugin: 'com.android.application'
+apply plugin: 'realm-android'
 
 android {
     compileSdkVersion 28
@@ -93,6 +94,7 @@ dependencies {
         transitive = true
     }
 }
+
 // Add to the bottom of the file
 //PRO
 apply plugin: 'io.fabric'

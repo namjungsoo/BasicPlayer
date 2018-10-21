@@ -17,6 +17,7 @@ import com.duongame.basicplayer.BuildConfig;
 import com.duongame.basicplayer.Player;
 import com.duongame.basicplayer.R;
 import com.duongame.basicplayer.adapter.MovieAdapter;
+import com.duongame.basicplayer.data.MovieFile;
 import com.duongame.basicplayer.manager.AdBannerManager;
 import com.duongame.basicplayer.manager.AdInterstitialManager;
 import com.duongame.basicplayer.manager.FileManager;
@@ -25,6 +26,10 @@ import com.duongame.basicplayer.task.FindFileTask;
 import com.google.android.gms.ads.AdView;
 
 import java.io.File;
+import java.util.List;
+
+import io.realm.Realm;
+import io.realm.RealmResults;
 
 import static com.duongame.basicplayer.manager.AdInterstitialManager.MODE_EXIT;
 
@@ -35,11 +40,14 @@ public class MainActivity extends BaseActivity {
     private SwipeRefreshLayout swipeLayout;
     private RecyclerView recyclerView;
 
+    private Realm realm;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
         Log.d(TAG, "onCreate");
 
-        super.onCreate(savedInstanceState);
+        realm = Realm.getDefaultInstance();
 
         Player.initAudioTrack();
         initView();
@@ -55,19 +63,39 @@ public class MainActivity extends BaseActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+
+        realm.close();
+    }
+
+    private void loadDBFileList(final MovieAdapter movieAdapter) {
+        RealmResults<MovieFile> results = realm.where(MovieFile.class).findAll();
+
+        List<MovieFile> movieFiles = realm.copyFromRealm(results);
+
+        movieAdapter.setMovieList(movieFiles);
+        movieAdapter.notifyDataSetChanged();
+
+        Log.e(TAG, "loadDBFileList notifyDataSetChanged " + movieFiles.size());
+//        results.addChangeListener(new RealmChangeListener<RealmResults<MovieFile>>() {
+//            @Override
+//            public void onChange(RealmResults<MovieFile> movieFiles) {
+//                movieAdapter.setMovieList(movieFiles);
+//            }
+//        });
     }
 
     private void initAdapter() {
         MovieAdapter movieAdapter = new MovieAdapter(this);
         recyclerView.setAdapter(movieAdapter);
 
-        // 이미 캐쉬된 DB의 파일 리스트를 로딩하자
-
         // 파일리스트를 로딩하자
         // extRoot = /storage/emulated/0
         String extRoot = Environment.getExternalStorageDirectory().getAbsolutePath();
-        FindFileTask task = new FindFileTask(this, movieAdapter, new File(extRoot), movieExt);
+        FindFileTask task = new FindFileTask(realm, movieAdapter, new File(extRoot), movieExt);
         task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+
+        // 이미 캐쉬된 DB의 파일 리스트를 로딩하자
+        loadDBFileList(movieAdapter);
     }
 
     private void initListView(RelativeLayout relativeLayout) {

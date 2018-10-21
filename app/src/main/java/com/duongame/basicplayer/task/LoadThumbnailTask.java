@@ -8,6 +8,7 @@ import android.widget.ImageView;
 import com.duongame.basicplayer.data.MovieFile;
 import com.duongame.basicplayer.Player;
 import com.duongame.basicplayer.manager.ThumbnailManager;
+import com.duongame.basicplayer.manager.TimeTextManager;
 import com.duongame.basicplayer.util.TimeConverter;
 
 /**
@@ -33,7 +34,7 @@ public class LoadThumbnailTask extends AsyncTask<Void, Integer, Boolean> {
     @Override
     protected void onPostExecute(Boolean result) {
         if (result.booleanValue()) {
-            Bitmap bitmap = ThumbnailManager.getBitmap(movieFile.file.getPath());
+            Bitmap bitmap = ThumbnailManager.getBitmap(movieFile.path);
             if (bitmap != null)
                 imageView.setImageBitmap(bitmap);
         } else {
@@ -46,10 +47,10 @@ public class LoadThumbnailTask extends AsyncTask<Void, Integer, Boolean> {
         final Player player = new Player();
         player.init();
 
-        int ret = player.openMovieWithAudio(movieFile.file.getAbsolutePath(), 0);
+        int ret = player.openMovieWithAudio(movieFile.absolutePath, 0);
         //int ret = Player.openMovie(each.getAbsolutePath());
 
-        Log.d(TAG, "openMovieWithAudio filename=" + movieFile.file.getAbsolutePath() + " ret=" + ret);
+        Log.d(TAG, "openMovieWithAudio filename=" + movieFile.absolutePath + " ret=" + ret);
         if (ret >= 0) {
             final int width = player.getMovieWidth();
             final int height = player.getMovieHeight();
@@ -57,9 +58,11 @@ public class LoadThumbnailTask extends AsyncTask<Void, Integer, Boolean> {
             final Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
             player.renderFrame(bitmap);
 
-            ThumbnailManager.addBitmap(movieFile.file.getPath(), bitmap);
+            ThumbnailManager.addBitmap(movieFile.path, bitmap);
 
-            movieFile.timeText = TimeConverter.convertUsToString(player.getMovieDurationUs());
+            String timeText = TimeConverter.convertUsToString(player.getMovieDurationUs());
+            TimeTextManager.addTimeText(movieFile.path, timeText);
+
             player.closeMovie();
             return true;
         } else {
