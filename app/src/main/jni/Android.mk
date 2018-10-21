@@ -50,9 +50,9 @@ LOCAL_C_INCLUDES := $(LOCAL_PATH)/../include/ \
                     $(LOCAL_PATH)/../include/libavformat \
                     $(LOCAL_PATH)/../include/libswscale \
                     $(LOCAL_PATH)/../include/libavutil
-LOCAL_CFLAGS := -D__STDC_CONSTANT_MACROS -fpermissive -w -std=c++11
+LOCAL_CFLAGS := -D__STDC_CONSTANT_MACROS -fpermissive -w
 LOCAL_SHARED_LIBRARIES := libavformat libavcodec libswscale libavutil libswresample
-LOCAL_LDLIBS := -lz -ljnigraphics -llog
+LOCAL_LDLIBS := -lz -ljnigraphics -llog -latomic
 LOCAL_ARM_MODE := arm
 
 include $(BUILD_SHARED_LIBRARY)

@@ -45,7 +45,7 @@ Player *player = NULL;
 
 void initAudioTrack(JNIEnv *env, jobject thiz)
 {
-    player = malloc(sizeof(Player));
+    player = (Player*)malloc(sizeof(Player));
     memset(player, 0, sizeof(*player));
 
     LOGD("initAudioTrack");
@@ -55,7 +55,7 @@ void initAudioTrack(JNIEnv *env, jobject thiz)
     player->thiz = env->NewGlobalRef(thiz);
 
 	jclass player_class = env->FindClass(player_class_path_name);
-    player->player_class = env->NewGlobalRef(player_class);
+    player->player_class = (jclass)env->NewGlobalRef(player_class);
 //	LOGD("initAudioTrack player_class=%d", player_class);
 
 	player->player_prepare_audio_track_method = java_get_static_method(env, player->player_class, player_prepare_audio_track);
@@ -107,7 +107,7 @@ void prepareAudioTrack(int audioFormat, int sampleRate, int channels)
 
 	// class AudioTrack 
 	jclass audio_track_class = env->FindClass(android_track_class_path_name);
-	player->audio_track_class = env->NewGlobalRef(audio_track_class);
+	player->audio_track_class = (jclass)env->NewGlobalRef(audio_track_class);
 
     player->audio_track_write_method = java_get_method(env, player->audio_track_class, audio_track_write);
     player->audio_track_pause_method = java_get_method(env, player->audio_track_class, audio_track_pause);

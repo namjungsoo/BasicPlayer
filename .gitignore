@@ -4,7 +4,6 @@
 build
 captures
 local.properties
-obj
 output.json
 *.iml
 *.apk
@@ -12,3 +11,5 @@ output.json
 gradle
 gradlew
 gradlew.bat
+*.o
+*.o.d

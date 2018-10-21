@@ -16,5 +16,4 @@ public class TimeTextManager {
     public static String getTimeText(String path) {
         return cacheTimeTextMap.get(path);
     }
-
 }
