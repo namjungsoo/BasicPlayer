@@ -18,13 +18,17 @@ import io.realm.Realm;
 
 public class FindFileTask extends AsyncTask<Void, Integer, Void> {
     private final static String TAG = FindFileTask.class.getSimpleName();
+    private final static String cameraPath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/DCIM/Camera";
     private final static String downloadPath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Download";
+    private final static String videoPath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/video";
 
     private MovieAdapter movieAdapter;
-    private ArrayList<MovieFile> movieFileArrayList;
+    private ArrayList<MovieFile> movieFileList;
     private File path;
     private String[] ext;
     private Realm realm;
+
+    private ArrayList<String> preloadFolderList;
 
     public FindFileTask(Realm realm, MovieAdapter movieAdapter, File path, String[] ext) {
         this.realm = realm;
@@ -32,20 +36,27 @@ public class FindFileTask extends AsyncTask<Void, Integer, Void> {
 
         this.path = path;
         this.ext = ext;
-        this.movieFileArrayList = new ArrayList<>();
+
+        movieFileList = new ArrayList<>();
+        preloadFolderList = new ArrayList<>();
+        preloadFolderList.add(cameraPath);
+        preloadFolderList.add(downloadPath);
+        preloadFolderList.add(videoPath);
     }
 
     @Override
     protected Void doInBackground(Void... params) {
-        findFiles(new File(downloadPath), ext, movieFileArrayList, true);
-        findFiles(path, ext, movieFileArrayList, false);
+        for(String folder : preloadFolderList) {
+            findFiles(new File(folder), ext, movieFileList, true);
+        }
+        findFiles(path, ext, movieFileList, false);
         return null;
     }
 
     @Override
     protected void onPostExecute(Void result) {
         if (movieAdapter != null) {
-            movieAdapter.setMovieList(movieFileArrayList);
+            movieAdapter.setMovieList(movieFileList);
             movieAdapter.notifyDataSetChanged();
             Log.e(TAG, "onPostExecute notifyDataSetChanged");
             // 모든 MovieFile을 지운 다음에
@@ -55,7 +66,7 @@ public class FindFileTask extends AsyncTask<Void, Integer, Void> {
                 public void execute(Realm realm) {
                     realm.delete(MovieFile.class);
 
-                    for (MovieFile movie : movieFileArrayList) {
+                    for (MovieFile movie : movieFileList) {
                         realm.copyToRealmOrUpdate(movie);
                     }
                 }
@@ -68,14 +79,14 @@ public class FindFileTask extends AsyncTask<Void, Integer, Void> {
         super.onProgressUpdate(params);
 
         if (movieAdapter != null) {
-            ArrayList<MovieFile> arrayList = (ArrayList<MovieFile>) movieFileArrayList.clone();
+            ArrayList<MovieFile> arrayList = (ArrayList<MovieFile>) movieFileList.clone();
             movieAdapter.setMovieList(arrayList);
             movieAdapter.notifyDataSetChanged();
             Log.e(TAG, "onProgressUpdate notifyDataSetChanged");
         }
     }
 
-    private void findFiles(File path, String[] ext, ArrayList<MovieFile> result, boolean isDownload) {
+    private void findFiles(File path, String[] ext, ArrayList<MovieFile> result, boolean isPreload) {
         final File[] files = path.listFiles();
         if (files == null)
             return;
@@ -95,7 +106,7 @@ public class FindFileTask extends AsyncTask<Void, Integer, Void> {
             }
 
             // 다운로드 모드가 아닐경우 download 패스는 패스한다.
-            if (!isDownload && each.getAbsolutePath().equals(downloadPath)) {
+            if (!isPreload && preloadFolderList.contains(each.getAbsolutePath())) {
                 continue;
             }
 
@@ -107,7 +118,7 @@ public class FindFileTask extends AsyncTask<Void, Integer, Void> {
             }
 
             if (each.isDirectory()) {
-                findFiles(each, ext, result, isDownload);
+                findFiles(each, ext, result, isPreload);
             } else {
                 for (int j = 0; j < ext.length; j++) {
                     // 확장자가 맞으면

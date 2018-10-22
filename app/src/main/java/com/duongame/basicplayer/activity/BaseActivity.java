@@ -10,8 +10,11 @@ import android.widget.Toast;
 
 import com.crashlytics.android.Crashlytics;
 import com.duongame.basicplayer.BuildConfig;
+import com.duongame.basicplayer.PlayerApplication;
 import com.duongame.basicplayer.R;
 import com.duongame.basicplayer.manager.AdInterstitialManager;
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.analytics.FirebaseAnalytics;
@@ -25,6 +28,8 @@ import io.fabric.sdk.android.Fabric;
 public class BaseActivity extends AppCompatActivity {
     protected FirebaseAnalytics firebaseAnalytics;
     protected FirebaseRemoteConfig mFirebaseRemoteConfig;
+    protected PlayerApplication application;
+    protected Tracker mTracker;
 
     void gotoAppStorePage(String packageName) {
         try {
@@ -41,6 +46,9 @@ public class BaseActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        application = (PlayerApplication) getApplication();
+        mTracker = application.getDefaultTracker();
 
         // Obtain the FirebaseAnalytics instance.
         firebaseAnalytics = FirebaseAnalytics.getInstance(this);
@@ -74,6 +82,15 @@ public class BaseActivity extends AppCompatActivity {
                 }
             }
         });
+    }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        if(mTracker != null) {
+            mTracker.setScreenName(this.getClass().getSimpleName());
+            mTracker.send(new HitBuilders.ScreenViewBuilder().build());
+        }
     }
 }
