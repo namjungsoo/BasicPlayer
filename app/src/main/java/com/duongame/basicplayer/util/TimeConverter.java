@@ -13,7 +13,7 @@ public class TimeConverter {
         long min = (timeSec - (hour * 3600)) / 60;
         long sec = timeSec - (hour * 3600) - min * 60;
 
-        if(hour > 0)
+        if (hour > 0)
             return String.format("%01d:%02d:%02d", hour, min, sec);
         else
             return String.format("%02d:%02d", min, sec);

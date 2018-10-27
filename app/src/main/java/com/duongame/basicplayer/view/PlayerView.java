@@ -131,8 +131,7 @@ public class PlayerView extends View {
                 // 내가 캡쳐 했으면 true
                 if (handleActionUp()) {
                     return true;
-                }
-                else {
+                } else {
                     v.performClick();
                 }
                 break;

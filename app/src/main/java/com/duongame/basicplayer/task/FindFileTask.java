@@ -64,6 +64,9 @@ public class FindFileTask extends AsyncTask<Void, Integer, Void> {
             realm.executeTransaction(new Realm.Transaction() {
                 @Override
                 public void execute(Realm realm) {
+                    //TODO: 전부 지우기 전에 같은 파일이면 스크린캡쳐 파일을 이관해야함
+                    // 같은 파일인지 확인 여부
+                    // 파일명, 파일크기, 날짜
                     realm.delete(MovieFile.class);
 
                     for (MovieFile movie : movieFileList) {

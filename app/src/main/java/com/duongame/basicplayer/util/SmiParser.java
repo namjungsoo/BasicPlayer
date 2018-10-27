@@ -13,7 +13,7 @@ import eu.j0ntech.charsetDetector.CharsetDetector;
  * Created by namjungsoo on 2016-06-19.
  */
 public class SmiParser {
-    private static final String TAG="SmiParser";
+    private static final String TAG = "SmiParser";
 
     public class Subtitle {
         public long start;
@@ -38,7 +38,7 @@ public class SmiParser {
         final ArrayList<String> lineList = new ArrayList<String>();
 
         String line = reader.readLine();
-        while(line != null) {
+        while (line != null) {
 //            Log.d(TAG, line);
             lineList.add(line);
             line = reader.readLine();
@@ -69,13 +69,13 @@ public class SmiParser {
                 // nbsp 다음에 content가 올 경우가 있다.
                 // 그래서 무조건 종료하면 안된다.
                 if (pclass.startsWith(NBSP)) {
-                    if(subtitle != null)
+                    if (subtitle != null)
                         subtitle.end = time;
 //                    subtitleList.add(subtitle);
                 } else {
                     // 최초 자막이 아니고, 마지막에 시간이 없을때는 현재시간을 마지막 시간으로 하자
                     if (subtitle != null) {
-                        if(subtitle.end == -1) {
+                        if (subtitle.end == -1) {
                             // 이전 자막 끝나는 시간을 현재 시간으로 하자
                             subtitle.end = time - 1;// 1을 뺀다.
                         }
@@ -115,7 +115,7 @@ public class SmiParser {
             subtitleList.add(subtitle);
 
 
-        for(int i=0; i<subtitleList.size(); i++) {
+        for (int i = 0; i < subtitleList.size(); i++) {
             subtitle = subtitleList.get(i);
             // B태그 제거
             subtitle.content = subtitle.content.replace("<B>", "");
@@ -139,9 +139,9 @@ public class SmiParser {
 //            subtitle.content = subtitle.content.replace("<FONT COLOR=", "");
 
             int indexFont = subtitle.content.indexOf("<FONT COLOR=");
-            while(indexFont != -1) {
+            while (indexFont != -1) {
                 final int indexClose = subtitle.content.indexOf(">");
-                final String font = subtitle.content.substring(indexFont, indexClose+1);
+                final String font = subtitle.content.substring(indexFont, indexClose + 1);
 
                 subtitle.content = subtitle.content.replace(font, "");
 

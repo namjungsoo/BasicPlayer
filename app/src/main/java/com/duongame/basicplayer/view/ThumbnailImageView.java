@@ -66,7 +66,7 @@ public class ThumbnailImageView extends RoundedImageView {
         paint.setColor(Color.WHITE);
         canvas.drawText(timeText, getWidth(), getHeight(), paint);
 
-        if(isNew) {
+        if (isNew) {
             paint.setTextSkewX(-0.25f);
             paint.setColor(Color.RED);
 
