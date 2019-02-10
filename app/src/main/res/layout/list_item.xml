@@ -1,9 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="8dp">
+    android:layout_margin="8dp"
+    card_view:cardCornerRadius="4dp"
+    card_view:cardElevation="4dp"
+    card_view:contentPadding="4dp"
+    >
     <!--android:layout_marginLeft="12dp"-->
     <!--android:layout_marginRight="12dp"-->
     <!--android:layout_marginTop="6dp"-->
@@ -13,7 +17,8 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="70dp"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        >
 
         <com.duongame.basicplayer.view.ThumbnailImageView
             android:id="@+id/thumbnail"
@@ -38,9 +43,8 @@
                 android:layout_height="match_parent"
                 android:gravity="center_vertical"
                 android:maxLines="3"
-                android:text="filename"
                 android:textColor="#222222"
-                android:textSize="16sp"></TextView>
+                android:textSize="16sp"/>
 
             <TextView
                 android:id="@+id/textPath"
@@ -48,10 +52,9 @@
                 android:layout_height="wrap_content"
                 android:ellipsize="middle"
                 android:gravity="center_vertical"
-                android:maxLines="1"
-                android:text="filepath"
+                android:singleLine="true"
                 android:textSize="12sp"
-                android:visibility="invisible"></TextView>
+                android:visibility="invisible"/>
 
             <ProgressBar
                 android:id="@+id/progressbar"
@@ -62,7 +65,7 @@
                 android:layout_marginBottom="-4dp"
                 android:max="100"
                 android:progress="100"
-                android:visibility="invisible"></ProgressBar>
+                android:visibility="invisible"/>
         </RelativeLayout>
     </LinearLayout>
 </LinearLayout>
