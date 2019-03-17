@@ -58,6 +58,7 @@ public class LoadThumbnailTask extends AsyncTask<Void, Integer, Boolean> {
         final Player player = new Player();
         player.init();
 
+        // FFmpeg NDK 라이브러리에서 로딩이 실패하면 안드로이드 내장 라이브러리를 호출하여 로딩한다.
         int ret = player.openMovieWithAudio(movieFile.absolutePath, 0);
         //int ret = Player.openMovie(each.getAbsolutePath());
 

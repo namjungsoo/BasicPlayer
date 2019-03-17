@@ -83,6 +83,11 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder> 
         Log.e(TAG, "onBindViewHolder " + position);
         final MovieFile file = movieList.get(position);
 
+        // 1. 메모리 캐시에 있으면
+        // 2. 파일로 저장된 썸네일이 있으면 그것을 로딩
+        // 3. 파일에 없으면 안드로이드 시스템에서 로딩
+        // 4. 백그라운드로 NDK 라이브러리로 고화질 이미지를 로딩하여 캐쉬 및 파일로 저장
+
         //mini only
         int kind;
         Bitmap bitmap = ThumbnailManager.getBitmap(MINI_KIND, file.path);
