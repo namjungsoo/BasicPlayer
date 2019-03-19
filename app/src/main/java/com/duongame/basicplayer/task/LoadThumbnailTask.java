@@ -34,7 +34,7 @@ public class LoadThumbnailTask extends AsyncTask<Void, Integer, Boolean> {
 
     @Override
     protected Boolean doInBackground(Void... params) {
-        return loadThumbnail(movieFile);
+        return loadThumbnail(movieFile, kind);
     }
 
     @Override
@@ -58,11 +58,13 @@ public class LoadThumbnailTask extends AsyncTask<Void, Integer, Boolean> {
         final Player player = new Player();
         player.init();
 
-        // FFmpeg NDK 라이브러리에서 로딩이 실패하면 안드로이드 내장 라이브러리를 호출하여 로딩한다.
+        // FFmpeg NDK 라이브러리에서 로딩한다.
         int ret = player.openMovieWithAudio(movieFile.absolutePath, 0);
         //int ret = Player.openMovie(each.getAbsolutePath());
 
         Log.d(TAG, "openMovieWithAudio filename=" + movieFile.absolutePath + " ret=" + ret);
+
+        // 파일 열기가 성공했으면 렌더링 한다.
         if (ret >= 0) {
             final int width = player.getMovieWidth();
             final int height = player.getMovieHeight();
@@ -82,7 +84,7 @@ public class LoadThumbnailTask extends AsyncTask<Void, Integer, Boolean> {
         }
     }
 
-    private boolean loadThumbnail(MovieFile movieFile) {
+    public static boolean loadThumbnail(MovieFile movieFile, int kind) {
         Bitmap thumb = ThumbnailUtils.createVideoThumbnail(movieFile.path, kind);
         ThumbnailManager.addBitmap(kind, movieFile.path, thumb);
         return true;

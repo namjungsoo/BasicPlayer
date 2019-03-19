@@ -33,6 +33,7 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder> 
 
     private List<MovieFile> movieList;
     private Context context;
+    private int kind = MICRO_KIND;
 
     public MovieAdapter(Context context) {
         this.context = context;
@@ -89,14 +90,17 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder> 
         // 4. 백그라운드로 NDK 라이브러리로 고화질 이미지를 로딩하여 캐쉬 및 파일로 저장
 
         //mini only
-        int kind;
-        Bitmap bitmap = ThumbnailManager.getBitmap(MINI_KIND, file.path);
+        Bitmap bitmap = ThumbnailManager.getBitmap(kind, file.path);
         if (bitmap != null) {
             holder.iv.setImageBitmap(bitmap);
         } else {
-            kind = MINI_KIND;
             // 비트맵을 읽어들인 후에 설정하자
             holder.iv.setTag(movieList.get(position).path);
+
+            // 동기식으로 읽어보자
+//            LoadThumbnailTask.loadThumbnail(movieList.get(position), kind);
+//            bitmap = ThumbnailManager.getBitmap(kind, file.path);
+//            holder.iv.setImageBitmap(bitmap);
 
             LoadThumbnailTask task = new LoadThumbnailTask(kind, movieList.get(position), holder.iv);
             task.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
