@@ -1,5 +1,7 @@
 package com.duongame.basicplayer.task;
 
+import android.content.Context;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.media.ThumbnailUtils;
 import android.os.AsyncTask;
@@ -24,24 +26,26 @@ public class LoadThumbnailTask extends AsyncTask<Void, Integer, Boolean> {
 
     private MovieFile movieFile;
     private WeakReference<ImageView> imageViewRef;
+    private WeakReference<Context> contextWeakReference;
     private int kind;
 
-    public LoadThumbnailTask(int kind, MovieFile movieFile, ImageView imageView) {
+    public LoadThumbnailTask(Context context, int kind, MovieFile movieFile, ImageView imageView) {
         this.kind = kind;
         this.movieFile = movieFile;
         this.imageViewRef = new WeakReference<>(imageView);
+        contextWeakReference = new WeakReference<>(context);
     }
 
     @Override
     protected Boolean doInBackground(Void... params) {
-        return loadThumbnail(movieFile, kind);
+        return loadThumbnail(contextWeakReference.get(), movieFile, kind);
     }
 
     @Override
     protected void onPostExecute(Boolean result) {
         if (result) {
             try {
-                if(imageViewRef.get().getTag().equals(movieFile.path)) {
+                if (imageViewRef.get().getTag().equals(movieFile.path)) {
                     Bitmap bitmap = ThumbnailManager.getBitmap(kind, movieFile.path);
                     if (bitmap != null) {
                         imageViewRef.get().setImageBitmap(bitmap);
@@ -53,41 +57,72 @@ public class LoadThumbnailTask extends AsyncTask<Void, Integer, Boolean> {
         }
     }
 
-    private boolean loadThumbnailByPlayer(MovieFile movieFile) {
-        // 썸네일에 등록하자
-        final Player player = new Player();
-        player.init();
+    // 현재 사용안함
+//    private boolean loadThumbnailByPlayer(MovieFile movieFile) {
+//        // 썸네일에 등록하자
+//        final Player player = new Player();
+//        player.init();
+//
+//        // FFmpeg NDK 라이브러리에서 로딩한다.
+//        int ret = player.openMovieWithAudio(movieFile.absolutePath, 0);
+//        //int ret = Player.openMovie(each.getAbsolutePath());
+//
+//        Log.d(TAG, "openMovieWithAudio filename=" + movieFile.absolutePath + " ret=" + ret);
+//
+//        // 파일 열기가 성공했으면 렌더링 한다.
+//        if (ret >= 0) {
+//            final int width = player.getMovieWidth();
+//            final int height = player.getMovieHeight();
+//
+//            final Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+//            player.renderFrame(bitmap);
+//
+//            ThumbnailManager.addBitmap(MediaStore.Video.Thumbnails.MINI_KIND, movieFile.path, bitmap);
+//
+//            String timeText = TimeConverter.convertUsToString(player.getMovieDurationUs());
+//            TimeTextManager.addTimeText(movieFile.path, timeText);
+//
+//            player.closeMovie();
+//            return true;
+//        } else {
+//            return false;
+//        }
+//    }
 
-        // FFmpeg NDK 라이브러리에서 로딩한다.
-        int ret = player.openMovieWithAudio(movieFile.absolutePath, 0);
-        //int ret = Player.openMovie(each.getAbsolutePath());
+    public static boolean loadThumbnail(Context context, MovieFile movieFile, int kind) {
+        // 새로운 방식
+        // 시스템에 있는 것을 가져온다.
+        // 없으면 새로 생성해야 한다.
+        String[] proj = {
+            MediaStore.Video.Media._ID,
+            MediaStore.Video.Media.DISPLAY_NAME,
+            MediaStore.Video.Media.DATA
+        };
 
-        Log.d(TAG, "openMovieWithAudio filename=" + movieFile.absolutePath + " ret=" + ret);
+        String fileName = movieFile.path;
+        Cursor cursor = context.getContentResolver().query(
+                MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
+                proj,
+                MediaStore.Video.Media.DISPLAY_NAME + "=?",
+                new String[]{fileName},
+                null);
 
-        // 파일 열기가 성공했으면 렌더링 한다.
-        if (ret >= 0) {
-            final int width = player.getMovieWidth();
-            final int height = player.getMovieHeight();
-
-            final Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-            player.renderFrame(bitmap);
-
-            ThumbnailManager.addBitmap(MediaStore.Video.Thumbnails.MINI_KIND, movieFile.path, bitmap);
-
-            String timeText = TimeConverter.convertUsToString(player.getMovieDurationUs());
-            TimeTextManager.addTimeText(movieFile.path, timeText);
-
-            player.closeMovie();
-            return true;
-        } else {
+        cursor.moveToFirst();
+        if (cursor.getCount() == 0) {
+            cursor.close();
             return false;
         }
-    }
 
-    public static boolean loadThumbnail(MovieFile movieFile, int kind) {
-        Bitmap thumb = ThumbnailUtils.createVideoThumbnail(movieFile.path, kind);
-        ThumbnailManager.addBitmap(kind, movieFile.path, thumb);
+        long long_fileID = cursor.getLong(cursor.getColumnIndex(MediaStore.Video.Media._ID));
+        Bitmap bitmap = MediaStore.Video.Thumbnails.getThumbnail(context.getContentResolver(), long_fileID, MediaStore.Video.Thumbnails.MICRO_KIND, null);
+        ThumbnailManager.addBitmap(kind, movieFile.path, bitmap);
+        cursor.close();
         return true;
-        //return loadThumbnailByPlayer(movieFile);
+
+        // 이전에 사용하던 매번 Utils로 생성하던 방식
+//        Bitmap thumb = ThumbnailUtils.createVideoThumbnail(movieFile.path, kind);
+//        ThumbnailManager.addBitmap(kind, movieFile.path, thumb);
+//        return true;
+//        //return loadThumbnailByPlayer(movieFile);
     }
 }
