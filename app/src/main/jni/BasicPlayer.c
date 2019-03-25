@@ -494,7 +494,7 @@ int seekMovie(Movie *movie, int64_t positionUs)
 
 int64_t getDuration(Movie *movie) 
 {
-	// 이건 믿음녀 안됨 
+	// 이건 믿으면 안됨
 	// LOGD("gFormatCtx->duration=%lu", gFormatCtx->duration);
 	LOGD("gFormatCtx->nb_streams=%d", movie->gFormatCtx->nb_streams);
 

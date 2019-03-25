@@ -22,7 +22,6 @@ import com.duongame.basicplayer.view.ThumbnailImageView;
 import java.util.List;
 
 import static android.provider.MediaStore.Video.Thumbnails.MICRO_KIND;
-import static android.provider.MediaStore.Video.Thumbnails.MINI_KIND;
 
 /**
  * Created by js296 on 2017-06-06.
@@ -102,7 +101,7 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder> 
 //            bitmap = ThumbnailManager.getBitmap(kind, file.path);
 //            holder.iv.setImageBitmap(bitmap);
 
-            LoadThumbnailTask task = new LoadThumbnailTask(kind, movieList.get(position), holder.iv);
+            LoadThumbnailTask task = new LoadThumbnailTask(context, kind, movieList.get(position), holder.iv);
             task.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
         }
 
