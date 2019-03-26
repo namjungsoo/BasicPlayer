@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.util.AttributeSet;
+import android.util.Log;
 
 import com.duongame.basicplayer.util.UnitConverter;
 
@@ -13,6 +14,7 @@ import com.duongame.basicplayer.util.UnitConverter;
  * Created by namjungsoo on 2016-06-21.
  */
 public class ThumbnailImageView extends RoundedImageView {
+    private static final String TAG = ThumbnailImageView.class.getSimpleName();
     private final int FONT_SIZE_DP = 13;
     private final int FONT_MINUS_DP = 2;
 
@@ -54,6 +56,11 @@ public class ThumbnailImageView extends RoundedImageView {
         final int fontSizeDp = UnitConverter.dpToPx(FONT_SIZE_DP);
         paint.setTextSize(fontSizeDp);
         paint.setAntiAlias(true);
+
+        if (timeText == null) {
+            Log.e(TAG, "timeText is null " + getTag());
+            return;
+        }
 
         int length = (int) paint.measureText(timeText);
 

@@ -2,9 +2,9 @@ package com.duongame.basicplayer.adapter;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.media.MediaMetadataRetriever;
 import android.os.AsyncTask;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,11 +15,14 @@ import com.duongame.basicplayer.R;
 import com.duongame.basicplayer.data.MovieFile;
 import com.duongame.basicplayer.manager.FileManager;
 import com.duongame.basicplayer.manager.ThumbnailManager;
+import com.duongame.basicplayer.manager.TimeTextManager;
 import com.duongame.basicplayer.task.LoadThumbnailTask;
-import com.duongame.basicplayer.util.TimeConverter;
+import com.duongame.basicplayer.task.LoadTimeTextTask;
 import com.duongame.basicplayer.view.ThumbnailImageView;
 
 import java.util.List;
+
+import io.realm.Realm;
 
 import static android.provider.MediaStore.Video.Thumbnails.MICRO_KIND;
 
@@ -32,18 +35,20 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder> 
 
     private List<MovieFile> movieList;
     private Context context;
-    private int kind = MICRO_KIND;
+    private final int kind = MICRO_KIND;
+    private Realm realm;
 
-    public MovieAdapter(Context context) {
+    public MovieAdapter(Context context, Realm realm) {
         this.context = context;
+        this.realm = realm;
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
         public ThumbnailImageView iv;
-        public TextView tvName;
-        public TextView tvPath;
+        TextView tvName;
+        TextView tvPath;
 
-        public ViewHolder(View itemView) {
+        ViewHolder(View itemView) {
             super(itemView);
         }
     }
@@ -58,24 +63,11 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder> 
         final View v = layoutInflater.inflate(R.layout.list_item, parent, false);
         final ViewHolder holder = new ViewHolder(v);
 
-        holder.iv = (ThumbnailImageView) v.findViewById(R.id.thumbnail);
-        holder.tvName = (TextView) v.findViewById(R.id.textName);
-        holder.tvPath = (TextView) v.findViewById(R.id.textPath);
+        holder.iv = v.findViewById(R.id.thumbnail);
+        holder.tvName = v.findViewById(R.id.textName);
+        holder.tvPath = v.findViewById(R.id.textPath);
 
         return holder;
-    }
-
-    private String getPlayTimeText(String path) {
-        MediaMetadataRetriever retriever = new MediaMetadataRetriever();
-        try {
-            retriever.setDataSource(path);
-            String time = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
-            long timeMs = Long.parseLong(time);
-            return TimeConverter.convertMsToString(timeMs);
-        } catch (RuntimeException e) {
-            Log.e(TAG, "getPlayTimeText " + path + " error");
-            return "";
-        }
     }
 
     @Override
@@ -93,57 +85,31 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder> 
         if (bitmap != null) {
             holder.iv.setImageBitmap(bitmap);
         } else {
-            // 비트맵을 읽어들인 후에 설정하자
-            holder.iv.setTag(movieList.get(position).path);
 
-            // 동기식으로 읽어보자
-//            LoadThumbnailTask.loadThumbnail(movieList.get(position), kind);
-//            bitmap = ThumbnailManager.getBitmap(kind, file.path);
-//            holder.iv.setImageBitmap(bitmap);
+            // getBitmap으로 확인시는 아직 로딩이 안되었지만 여러번 연속으로 호출될수가 있다.
+            // 그러니 기다리자.
+            if (!file.isLoadingThumbnail) {
+                Log.d(TAG, "isLoadingThumbnail true " + file.path);
+                // 비트맵을 읽어들인 후에 설정하자
+                holder.iv.setTag(file.path);
 
-            LoadThumbnailTask task = new LoadThumbnailTask(context, kind, movieList.get(position), holder.iv);
-            task.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
+                LoadThumbnailTask task = new LoadThumbnailTask(context, kind, file, holder.iv);
+                task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                file.isLoadingThumbnail = true;
+            }
+            if(!file.isLoadingTimeText) {
+                Log.d(TAG, "isLoadingTimeText true " + file.path);
+                LoadTimeTextTask task = new LoadTimeTextTask(realm, file, holder.iv);
+                task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                file.isLoadingTimeText = true;
+            }
         }
 
-        //micro only
-//        int kind;
-//        Bitmap bitmap = ThumbnailManager.getBitmap(MICRO_KIND, file.path);
-//        if (bitmap != null) {
-//            holder.iv.setImageBitmap(bitmap);
-//        } else {
-//            kind = MICRO_KIND;
-//            // 비트맵을 읽어들인 후에 설정하자
-//            holder.iv.setTag(movieList.get(position).path);
-//
-//            LoadThumbnailTask task = new LoadThumbnailTask(kind, movieList.get(position), holder.iv);
-//            task.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
-//        }
-
-
-        // mini가 있으면 종료
-//        Bitmap bitmap = ThumbnailManager.getBitmap(MINI_KIND, file.path);
-//        if (bitmap != null) {
-//            holder.iv.setImageBitmap(bitmap);
-//        } else {
-//            // micro가 있으면 micro를 셋팅하고 mini를 로딩
-//            int kind;
-//            bitmap = ThumbnailManager.getBitmap(MICRO_KIND, file.path);
-//            if (bitmap != null) {
-//                holder.iv.setImageBitmap(bitmap);
-//                kind = MINI_KIND;
-//            } else {
-//                kind = MICRO_KIND;
-//            }
-//
-//            // 비트맵을 읽어들인 후에 설정하자
-//            holder.iv.setTag(movieList.get(position).path);
-//
-//            LoadThumbnailTask task = new LoadThumbnailTask(kind, movieList.get(position), holder.iv);
-//            task.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
-//        }
-
-
-        holder.iv.setTimeText(getPlayTimeText(file.path));
+        // 파일 시간을 셋팅하자
+        String timeText = TimeTextManager.getTimeText(file.path);
+        if(!TextUtils.isEmpty(timeText)) {
+            holder.iv.setTimeText(timeText);
+        }
 
         String name = file.name;
         name = name.substring(0, name.lastIndexOf("."));

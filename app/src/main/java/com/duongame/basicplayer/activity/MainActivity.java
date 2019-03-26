@@ -40,6 +40,7 @@ public class MainActivity extends BaseActivity {
     private SwipeRefreshLayout swipeLayout;
     private RecyclerView recyclerView;
 
+    //REALM
     private Realm realm;
 
     @Override
@@ -57,7 +58,8 @@ public class MainActivity extends BaseActivity {
             initAdapter();
         }
 
-        FileManager.checkRecentFile(this);
+        //TEST
+//        FileManager.checkRecentFile(this);
     }
 
     @Override
@@ -85,7 +87,7 @@ public class MainActivity extends BaseActivity {
     }
 
     private void initAdapter() {
-        MovieAdapter movieAdapter = new MovieAdapter(this);
+        MovieAdapter movieAdapter = new MovieAdapter(this, realm);
         recyclerView.setAdapter(movieAdapter);
 
         // 파일리스트를 로딩하자
@@ -153,7 +155,6 @@ public class MainActivity extends BaseActivity {
     public void onConfigurationChanged(Configuration newConfig) {
         Log.d(TAG, "onConfigurationChanged");
         super.onConfigurationChanged(newConfig);
-
     }
 
     @Override

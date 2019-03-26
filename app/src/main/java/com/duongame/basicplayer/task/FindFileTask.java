@@ -59,6 +59,8 @@ public class FindFileTask extends AsyncTask<Void, Integer, Void> {
             movieAdapter.setMovieList(movieFileList);
             movieAdapter.notifyDataSetChanged();
             Log.e(TAG, "onPostExecute notifyDataSetChanged");
+
+            //REALM
             // 모든 MovieFile을 지운 다음에
             // add를 하자
             realm.executeTransaction(new Realm.Transaction() {

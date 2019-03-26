@@ -203,7 +203,7 @@ jlong Java_com_duongame_basicplayer_Player_getMovieDurationUs(JNIEnv *env, jobje
 	if(gMovie == NULL)
 		return 0;
 
-	jlong ret =  getDuration(gMovie);
+	jlong ret = getDuration(gMovie);
 	LOGD("END getMovieDurationUs");
 	return ret;
 }

@@ -7,15 +7,15 @@ import android.media.ThumbnailUtils;
 import android.os.AsyncTask;
 import android.provider.MediaStore;
 import android.util.Log;
-import android.widget.ImageView;
 
-import com.duongame.basicplayer.data.MovieFile;
 import com.duongame.basicplayer.Player;
+import com.duongame.basicplayer.data.MovieFile;
 import com.duongame.basicplayer.manager.ThumbnailManager;
-import com.duongame.basicplayer.manager.TimeTextManager;
-import com.duongame.basicplayer.util.TimeConverter;
+import com.duongame.basicplayer.view.ThumbnailImageView;
 
 import java.lang.ref.WeakReference;
+
+import io.realm.Realm;
 
 /**
  * Created by js296 on 2017-06-06.
@@ -25,11 +25,11 @@ public class LoadThumbnailTask extends AsyncTask<Void, Integer, Boolean> {
     private final static String TAG = LoadThumbnailTask.class.getSimpleName();
 
     private MovieFile movieFile;
-    private WeakReference<ImageView> imageViewRef;
+    private WeakReference<ThumbnailImageView> imageViewRef;
     private WeakReference<Context> contextWeakReference;
     private int kind;
 
-    public LoadThumbnailTask(Context context, int kind, MovieFile movieFile, ImageView imageView) {
+    public LoadThumbnailTask(Context context, int kind, MovieFile movieFile, ThumbnailImageView imageView) {
         this.kind = kind;
         this.movieFile = movieFile;
         this.imageViewRef = new WeakReference<>(imageView);
@@ -58,12 +58,13 @@ public class LoadThumbnailTask extends AsyncTask<Void, Integer, Boolean> {
     }
 
     // 현재 사용안함
-    private static boolean loadThumbnailByPlayer(MovieFile movieFile) {
+    private boolean loadThumbnailByPlayer(MovieFile movieFile) {
         // 썸네일에 등록하자
         final Player player = new Player();
         player.init();
 
         // FFmpeg NDK 라이브러리에서 로딩한다.
+        // audio 사용여부는 false이다.
         int ret = player.openMovieWithAudio(movieFile.absolutePath, 0);
         //int ret = Player.openMovie(each.getAbsolutePath());
 
@@ -76,11 +77,7 @@ public class LoadThumbnailTask extends AsyncTask<Void, Integer, Boolean> {
 
             final Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
             player.renderFrame(bitmap);
-
             ThumbnailManager.addBitmap(MediaStore.Video.Thumbnails.MICRO_KIND, movieFile.path, bitmap);
-
-            String timeText = TimeConverter.convertUsToString(player.getMovieDurationUs());
-            TimeTextManager.addTimeText(movieFile.path, timeText);
 
             player.closeMovie();
             return true;
@@ -89,7 +86,7 @@ public class LoadThumbnailTask extends AsyncTask<Void, Integer, Boolean> {
         }
     }
 
-    public static boolean loadThumbnail(Context context, MovieFile movieFile, int kind) {
+    private boolean loadThumbnail(Context context, MovieFile movieFile, int kind) {
         // 새로운 방식
         // 시스템에 있는 것을 가져온다.
         // 없으면 새로 생성해야 한다.
@@ -105,7 +102,7 @@ public class LoadThumbnailTask extends AsyncTask<Void, Integer, Boolean> {
         Cursor cursor = context.getContentResolver().query(
                 MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
                 proj,
-                MediaStore.Video.VideoColumns.DATA  + "=?",
+                MediaStore.Video.VideoColumns.DATA + "=?",
                 new String[]{fileName},
                 null);
 
@@ -115,7 +112,7 @@ public class LoadThumbnailTask extends AsyncTask<Void, Integer, Boolean> {
             Log.d(TAG, "loadThumbnail false path=" + movieFile.path);
 
             Bitmap thumb = ThumbnailUtils.createVideoThumbnail(movieFile.path, kind);
-            if(thumb != null) {
+            if (thumb != null) {
                 ThumbnailManager.addBitmap(kind, movieFile.path, thumb);
                 return true;
             } else {
@@ -128,12 +125,7 @@ public class LoadThumbnailTask extends AsyncTask<Void, Integer, Boolean> {
         ThumbnailManager.addBitmap(kind, movieFile.path, bitmap);
         Log.d(TAG, "loadThumbnail true path=" + movieFile.path);
         cursor.close();
-        return true;
 
-        // 이전에 사용하던 매번 Utils로 생성하던 방식
-//        Bitmap thumb = ThumbnailUtils.createVideoThumbnail(movieFile.path, kind);
-//        ThumbnailManager.addBitmap(kind, movieFile.path, thumb);
-//        return true;
-//        //return loadThumbnailByPlayer(movieFile);
+        return true;
     }
 }
