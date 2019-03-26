@@ -14,3 +14,4 @@ gradlew.bat
 *.o
 *.o.d
 **/obj
+.vscode

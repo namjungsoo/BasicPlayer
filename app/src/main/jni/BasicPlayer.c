@@ -105,7 +105,8 @@ int openVideoStream(Movie *movie)
 	// 비디오 버퍼를 할당한다. 
 	movie->gVideoBuffer = (uint8_t*)(malloc(sizeof(uint8_t) * movie->gPictureSize));
 
-	// 비디오 버퍼 메모리를 설정함
+	//TODO: 입력받은 width, height로 동작하게 설정
+	// 비디오 버퍼 메모리(gFrameRGB)를 설정함
 	av_image_fill_arrays(movie->gFrameRGB->data, movie->gFrameRGB->linesize, movie->gVideoBuffer, movie->gPixelFormat, movie->gVideoCodecCtx->width, movie->gVideoCodecCtx->height, 1);
 
 	movie->gFps = av_q2d(movie->gFormatCtx->streams[movie->gVideoStreamIdx]->r_frame_rate);
@@ -314,6 +315,12 @@ int openMovie(Movie *movie, const char filePath[])
 	return openMovieWithAudio(movie, filePath, 1);
 }
 
+long getMicrotime(){
+	struct timeval currentTime;
+	gettimeofday(&currentTime, NULL);
+	return currentTime.tv_sec * (int)1e6 + currentTime.tv_usec;
+}
+
 // 40ms만에 한번씩 호출된다. 
 int decodeFrame(Movie *movie)
 {
@@ -340,11 +347,24 @@ int decodeFrame(Movie *movie)
 //			LOGD("pts=%f pts_clock=%f pts_long=%lu", pts, pts_clock, pts_long);
 
 			if (frameFinished) {
+				//TODO: 이부분이 성능이 느리다.
+				// 이미지 컨버트 컨텍스트를 받는다. 없으면 새로 생성
+
+				long us;
+				us = getMicrotime();
+				//LOGD("sws_getCachedContext BEGIN %ld", us);
 				movie->gImgConvertCtx = sws_getCachedContext(movie->gImgConvertCtx,
 					movie->gVideoCodecCtx->width, movie->gVideoCodecCtx->height, movie->gVideoCodecCtx->pix_fmt,
 					movie->gVideoCodecCtx->width, movie->gVideoCodecCtx->height, movie->gPixelFormat, SWS_BICUBIC, NULL, NULL, NULL);
-				
+				us = getMicrotime() - us;
+				LOGD("sws_getCachedContext END %ld", us);
+
+				// 실제로 scale을 하면서 픽셀포맷도 변경한다.
+				us = getMicrotime();
+				//LOGD("sws_scale BEGIN %ld", us);
 				sws_scale(movie->gImgConvertCtx, (const uint8_t * const*)movie->gFrame->data, movie->gFrame->linesize, 0, movie->gVideoCodecCtx->height, movie->gFrameRGB->data, movie->gFrameRGB->linesize);
+				us = getMicrotime() - us;
+				LOGD("sws_scale END %ld", us);
 				
 				av_packet_unref(&packet);
 				return 0;
@@ -374,6 +394,9 @@ int decodeFrame(Movie *movie)
 
 void copyPixels(Movie *movie, uint8_t *pixels)
 {
+	// 테스트로 gFrameRGB로 memcpy 해봄
+	// 여기서는 크래시 발생 
+//	memcpy(pixels, movie->gFrame->data[0], movie->gPictureSize);
 	memcpy(pixels, movie->gFrameRGB->data[0], movie->gPictureSize);
 }
 

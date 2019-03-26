@@ -111,6 +111,7 @@ jint Java_com_duongame_basicplayer_Player_renderFrame(JNIEnv *env, jobject thiz,
 		return 1;// 종료 상태 
 	}
 	else {
+		//TODO: 렌더링 타겟을 Bitmap이 아닌 다른것으로 설정 
 		// LOGD("renderFrame lockPixels");
 		if ((result = AndroidBitmap_lockPixels(env, bitmap, &pixels)) < 0)
 			return result;
