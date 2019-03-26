@@ -297,8 +297,13 @@ public class PlayerView extends View {
         long currentPositionUs = -1;
         if (bitmap != null) {
             currentPositionUs = player.getCurrentPositionUs();
+
+            // 항상 풀스크린으로 채우는 것은 안된다
+            final int bmWidth = bitmap.getWidth();
+            final int bmHeight = bitmap.getHeight();
+
             if (isPlaying || isSeeking) {
-                int ret = player.renderFrame(bitmap);
+                int ret = player.renderFrame(bitmap, bmWidth, bmHeight);
                 // 렌더링 종료
                 if (ret > 0) {
                     pause(true);
@@ -317,10 +322,6 @@ public class PlayerView extends View {
             boolean degree90 = false;
             final int width = getWidth();
             final int height = getHeight();
-
-            // 항상 풀스크린으로 채우는 것은 안된다
-            final int bmWidth = bitmap.getWidth();
-            final int bmHeight = bitmap.getHeight();
 
             if (rotation != Surface.ROTATION_0) {
                 canvas.save();

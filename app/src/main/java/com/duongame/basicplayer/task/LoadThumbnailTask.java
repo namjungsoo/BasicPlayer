@@ -26,6 +26,8 @@ public class LoadThumbnailTask extends AsyncTask<Void, Integer, Boolean> {
     private WeakReference<ThumbnailImageView> imageViewRef;
     private WeakReference<Context> contextWeakReference;
     private int kind;
+    private static int MINI_KIND_WIDTH = 512;
+    private static int MINI_KIND_HEIGHT = 384;
 
     public LoadThumbnailTask(Context context, int kind, MovieFile movieFile, ThumbnailImageView imageView) {
         this.kind = kind;
@@ -74,7 +76,7 @@ public class LoadThumbnailTask extends AsyncTask<Void, Integer, Boolean> {
             final int height = player.getMovieHeight();
 
             final Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-            player.renderFrame(bitmap);
+            player.renderFrame(bitmap, width, height);
             ThumbnailManager.addBitmap(kind, movieFile.path, bitmap);
 
             player.closeMovie();
@@ -92,8 +94,6 @@ public class LoadThumbnailTask extends AsyncTask<Void, Integer, Boolean> {
 
         String[] proj = {
                 MediaStore.Video.VideoColumns._ID,
-                MediaStore.Video.VideoColumns.TITLE,
-                MediaStore.Video.VideoColumns.ARTIST
         };
 
         String fileName = movieFile.path;

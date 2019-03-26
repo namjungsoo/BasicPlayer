@@ -29,9 +29,9 @@ int openAudioStream(Movie *movie);
 
 // return: == 0 - success
 //         != 0 then end of movie or fail
-int decodeFrame(Movie *movie);
+int decodeFrame(Movie *movie, int width, int height);
 
-void copyPixels(Movie *movie, uint8_t *pixels);
+void copyPixels(Movie *movie, uint8_t *pixels, int width, int height);
 
 int getWidth(Movie *movie);
 int getHeight(Movie *movie);

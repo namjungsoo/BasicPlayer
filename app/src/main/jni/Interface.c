@@ -87,7 +87,7 @@ jint Java_com_duongame_basicplayer_Player_openMovie(JNIEnv *env, jobject thiz, i
 	return result;
 }
 
-jint Java_com_duongame_basicplayer_Player_renderFrame(JNIEnv *env, jobject thiz, int id, jobject bitmap)
+jint Java_com_duongame_basicplayer_Player_renderFrame(JNIEnv *env, jobject thiz, int id, jobject bitmap, int width, int height)
 {
 //	LOGD("BEGIN renderFrame");
     
@@ -101,7 +101,7 @@ jint Java_com_duongame_basicplayer_Player_renderFrame(JNIEnv *env, jobject thiz,
 	// LOGD("renderFrame BEGIN");
 
 	// 영상이 종료된 상태임 
-	if(decodeFrame(gMovie) < 0) {
+	if(decodeFrame(gMovie, width, height) < 0) {
 		// LOGD("closeMovie");
 
 		// 영상이 종료되도 close하지 말자 
@@ -116,7 +116,7 @@ jint Java_com_duongame_basicplayer_Player_renderFrame(JNIEnv *env, jobject thiz,
 		if ((result = AndroidBitmap_lockPixels(env, bitmap, &pixels)) < 0)
 			return result;
 
-		copyPixels(gMovie, (uint8_t*)pixels);
+		copyPixels(gMovie, (uint8_t*)pixels, width, height);
 
 		// LOGD("renderFrame unlockPixels");
 		AndroidBitmap_unlockPixels(env, bitmap);

@@ -322,7 +322,7 @@ long getMicrotime(){
 }
 
 // 40ms만에 한번씩 호출된다. 
-int decodeFrame(Movie *movie)
+int decodeFrame(Movie *movie, int width, int height)
 {
 	int frameFinished = 0;
 	AVPacket packet;
@@ -355,7 +355,8 @@ int decodeFrame(Movie *movie)
 				//LOGD("sws_getCachedContext BEGIN %ld", us);
 				movie->gImgConvertCtx = sws_getCachedContext(movie->gImgConvertCtx,
 					movie->gVideoCodecCtx->width, movie->gVideoCodecCtx->height, movie->gVideoCodecCtx->pix_fmt,
-					movie->gVideoCodecCtx->width, movie->gVideoCodecCtx->height, movie->gPixelFormat, SWS_BICUBIC, NULL, NULL, NULL);
+					//movie->gVideoCodecCtx->width, movie->gVideoCodecCtx->height, movie->gPixelFormat, SWS_BICUBIC, NULL, NULL, NULL);
+					width, height, movie->gPixelFormat, SWS_BICUBIC, NULL, NULL, NULL);
 				us = getMicrotime() - us;
 				LOGD("sws_getCachedContext END %ld", us);
 
@@ -392,12 +393,18 @@ int decodeFrame(Movie *movie)
 	return -1;
 }
 
-void copyPixels(Movie *movie, uint8_t *pixels)
+void copyPixels(Movie *movie, uint8_t *pixels, int width, int height)
 {
 	// 테스트로 gFrameRGB로 memcpy 해봄
 	// 여기서는 크래시 발생 
 //	memcpy(pixels, movie->gFrame->data[0], movie->gPictureSize);
-	memcpy(pixels, movie->gFrameRGB->data[0], movie->gPictureSize);
+
+	//ORG
+//	memcpy(pixels, movie->gFrameRGB->data[0], movie->gPictureSize);
+
+	//NEW
+	int pictureSize = av_image_get_buffer_size(movie->gPixelFormat, width, height, 1);
+	memcpy(pixels, movie->gFrameRGB->data[0], pictureSize);
 }
 
 int getWidth(Movie *movie)

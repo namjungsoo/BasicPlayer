@@ -80,8 +80,8 @@ public class Player {
         return openMovieWithAudio(id, path, audio);
     }
 
-    public int renderFrame(Bitmap bitmap) {
-        return renderFrame(id, bitmap);
+    public int renderFrame(Bitmap bitmap, int width, int height) {
+        return renderFrame(id, bitmap, width, height);
     }
 
     public int getMovieWidth() {
@@ -125,7 +125,7 @@ public class Player {
 
     private native int openMovieWithAudio(int id, String filePath, int audio);
 
-    private native int renderFrame(int id, Bitmap bitmap);
+    private native int renderFrame(int id, Bitmap bitmap, int width, int height);
 
     private native int getMovieWidth(int id);
 
