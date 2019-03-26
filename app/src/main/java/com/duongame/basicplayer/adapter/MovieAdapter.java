@@ -23,7 +23,7 @@ import java.util.List;
 
 import io.realm.Realm;
 
-import static android.provider.MediaStore.Video.Thumbnails.MICRO_KIND;
+import static android.provider.MediaStore.Video.Thumbnails.MINI_KIND;
 
 /**
  * Created by js296 on 2017-06-06.
@@ -34,7 +34,7 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder> 
 
     private List<MovieFile> movieList;
     private Context context;
-    private final int kind = MICRO_KIND;
+    private final int kind = MINI_KIND;
     private Realm realm;
 
     public MovieAdapter(Context context, Realm realm) {

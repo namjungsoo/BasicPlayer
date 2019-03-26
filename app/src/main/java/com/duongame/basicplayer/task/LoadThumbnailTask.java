@@ -75,7 +75,7 @@ public class LoadThumbnailTask extends AsyncTask<Void, Integer, Boolean> {
 
             final Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
             player.renderFrame(bitmap);
-            ThumbnailManager.addBitmap(MediaStore.Video.Thumbnails.MICRO_KIND, movieFile.path, bitmap);
+            ThumbnailManager.addBitmap(kind, movieFile.path, bitmap);
 
             player.closeMovie();
             return true;
@@ -119,7 +119,7 @@ public class LoadThumbnailTask extends AsyncTask<Void, Integer, Boolean> {
         }
 
         long long_fileID = cursor.getLong(cursor.getColumnIndex(MediaStore.Video.Media._ID));
-        Bitmap bitmap = MediaStore.Video.Thumbnails.getThumbnail(context.getContentResolver(), long_fileID, MediaStore.Video.Thumbnails.MICRO_KIND, null);
+        Bitmap bitmap = MediaStore.Video.Thumbnails.getThumbnail(context.getContentResolver(), long_fileID, kind, null);
         ThumbnailManager.addBitmap(kind, movieFile.path, bitmap);
         Log.d(TAG, "loadThumbnail true path=" + movieFile.path);
         cursor.close();
