@@ -15,8 +15,6 @@ import com.duongame.basicplayer.view.ThumbnailImageView;
 
 import java.lang.ref.WeakReference;
 
-import io.realm.Realm;
-
 /**
  * Created by js296 on 2017-06-06.
  */

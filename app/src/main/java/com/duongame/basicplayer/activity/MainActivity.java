@@ -20,7 +20,6 @@ import com.duongame.basicplayer.adapter.MovieAdapter;
 import com.duongame.basicplayer.data.MovieFile;
 import com.duongame.basicplayer.manager.AdBannerManager;
 import com.duongame.basicplayer.manager.AdInterstitialManager;
-import com.duongame.basicplayer.manager.FileManager;
 import com.duongame.basicplayer.manager.PermissionManager;
 import com.duongame.basicplayer.task.FindFileTask;
 import com.google.android.gms.ads.AdView;
@@ -73,6 +72,10 @@ public class MainActivity extends BaseActivity {
         RealmResults<MovieFile> results = realm.where(MovieFile.class).findAll();
 
         List<MovieFile> movieFiles = realm.copyFromRealm(results);
+
+        for (int i = 0; i < movieFiles.size(); i++) {
+            Log.w(TAG, "loadDBFileList " + i + " " + movieFiles.get(i).toString());
+        }
 
         movieAdapter.setMovieList(movieFiles);
         movieAdapter.notifyDataSetChanged();

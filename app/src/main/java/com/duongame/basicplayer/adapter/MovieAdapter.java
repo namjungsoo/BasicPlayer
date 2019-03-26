@@ -15,7 +15,6 @@ import com.duongame.basicplayer.R;
 import com.duongame.basicplayer.data.MovieFile;
 import com.duongame.basicplayer.manager.FileManager;
 import com.duongame.basicplayer.manager.ThumbnailManager;
-import com.duongame.basicplayer.manager.TimeTextManager;
 import com.duongame.basicplayer.task.LoadThumbnailTask;
 import com.duongame.basicplayer.task.LoadTimeTextTask;
 import com.duongame.basicplayer.view.ThumbnailImageView;
@@ -53,6 +52,10 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder> 
         }
     }
 
+    public List<MovieFile> getMovieList() {
+        return movieList;
+    }
+
     public void setMovieList(List<MovieFile> movieList) {
         this.movieList = movieList;
     }
@@ -85,7 +88,6 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder> 
         if (bitmap != null) {
             holder.iv.setImageBitmap(bitmap);
         } else {
-
             // getBitmap으로 확인시는 아직 로딩이 안되었지만 여러번 연속으로 호출될수가 있다.
             // 그러니 기다리자.
             if (!file.isLoadingThumbnail) {
@@ -97,18 +99,20 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder> 
                 task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                 file.isLoadingThumbnail = true;
             }
+        }
+
+        // 파일 시간을 셋팅하자
+        //String timeText = TimeTextManager.getTimeText(file.path);
+        if(!TextUtils.isEmpty(file.timeText)) {
+            holder.iv.setTimeText(file.timeText);
+            Log.d(TAG, "isLoadingTimeText already have " + file.path);
+        } else {
             if(!file.isLoadingTimeText) {
                 Log.d(TAG, "isLoadingTimeText true " + file.path);
                 LoadTimeTextTask task = new LoadTimeTextTask(realm, file, holder.iv);
                 task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                 file.isLoadingTimeText = true;
             }
-        }
-
-        // 파일 시간을 셋팅하자
-        String timeText = TimeTextManager.getTimeText(file.path);
-        if(!TextUtils.isEmpty(timeText)) {
-            holder.iv.setTimeText(timeText);
         }
 
         String name = file.name;
@@ -124,7 +128,6 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder> 
                 if (!FileManager.checkRecentFile(context, file.absolutePath)) {
                     FileManager.openFile(context, file.absolutePath, 0L, 0);
                 }
-
             }
         });
     }

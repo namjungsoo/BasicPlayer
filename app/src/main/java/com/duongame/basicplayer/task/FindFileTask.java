@@ -2,6 +2,7 @@ package com.duongame.basicplayer.task;
 
 import android.os.AsyncTask;
 import android.os.Environment;
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.duongame.basicplayer.adapter.MovieAdapter;
@@ -9,6 +10,7 @@ import com.duongame.basicplayer.data.MovieFile;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 
 import io.realm.Realm;
 
@@ -46,16 +48,35 @@ public class FindFileTask extends AsyncTask<Void, Integer, Void> {
 
     @Override
     protected Void doInBackground(Void... params) {
-        for(String folder : preloadFolderList) {
+        for (String folder : preloadFolderList) {
             findFiles(new File(folder), ext, movieFileList, true);
         }
         findFiles(path, ext, movieFileList, false);
         return null;
     }
 
+    MovieFile findMovieFile(List<MovieFile> oldList, String path) {
+        for (int i = 0; i < oldList.size(); i++) {
+            if (oldList.get(i).path.equals(path))
+                return oldList.get(i);
+        }
+        return null;
+    }
+
     @Override
     protected void onPostExecute(Void result) {
         if (movieAdapter != null) {
+            for (int i = 0; i < movieFileList.size(); i++) {
+                MovieFile oldFile = realm.where(MovieFile.class).equalTo("absolutePath", movieFileList.get(i).absolutePath).findFirst();
+                if(oldFile != null) {
+                    // 복사해야 할 데이터는 여기서....
+                    if(!TextUtils.isEmpty(oldFile.timeText)) {
+                        movieFileList.get(i).timeText = oldFile.timeText;
+                        Log.d(TAG, "FindFileTask found timeText "+ movieFileList.get(i).path + " " + movieFileList.get(i).timeText);
+                    }
+                }
+            }
+
             movieAdapter.setMovieList(movieFileList);
             movieAdapter.notifyDataSetChanged();
             Log.e(TAG, "onPostExecute notifyDataSetChanged");
@@ -69,6 +90,9 @@ public class FindFileTask extends AsyncTask<Void, Integer, Void> {
                     //TODO: 전부 지우기 전에 같은 파일이면 스크린캡쳐 파일을 이관해야함
                     // 같은 파일인지 확인 여부
                     // 파일명, 파일크기, 날짜
+
+                    // MovieFile model을 전부 삭제하는거다.
+                    // 이렇게 하는 이유는 삭제된 파일에 대한 것을 처리 하느라 그렇다.
                     realm.delete(MovieFile.class);
 
                     for (MovieFile movie : movieFileList) {
