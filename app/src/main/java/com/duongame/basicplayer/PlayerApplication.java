@@ -2,6 +2,7 @@ package com.duongame.basicplayer;
 
 import android.app.Application;
 
+import com.duongame.basicplayer.data.MovieFileMigration;
 import com.google.android.gms.analytics.GoogleAnalytics;
 import com.google.android.gms.analytics.Tracker;
 import com.google.firebase.analytics.FirebaseAnalytics;
@@ -17,7 +18,11 @@ public class PlayerApplication extends Application {
         super.onCreate();
 
         Realm.init(this);
-        RealmConfiguration realmConfiguration = new RealmConfiguration.Builder().build();
+        RealmConfiguration realmConfiguration = new RealmConfiguration.Builder()
+
+                .schemaVersion(1)
+                .migration(new MovieFileMigration())
+                .build();
         Realm.setDefaultConfiguration(realmConfiguration);
     }
 

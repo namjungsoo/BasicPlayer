@@ -26,7 +26,7 @@ class LoadTimeTextTask(realm: Realm, movieFile: MovieFile, imageView: ThumbnailI
             val timeMs = java.lang.Long.parseLong(time)
             val timeText = TimeConverter.convertMsToString(timeMs)
             val end = System.nanoTime()
-            Log.d(TAG, "getPlayTimeText $path $timeText retriever=" + (end - begin))
+            Log.e(TAG, "getPlayTimeText $path $timeText retriever=" + (end - begin))
             return timeText
         } catch (e: RuntimeException) {
             Log.e(TAG, "getPlayTimeText $path error")
@@ -44,7 +44,7 @@ class LoadTimeTextTask(realm: Realm, movieFile: MovieFile, imageView: ThumbnailI
             player.closeMovie()
 
             val end = System.nanoTime()
-            Log.d(TAG, "getPlayTimeText $path $timeText player=" + (end - begin))
+            Log.e(TAG, "getPlayTimeText $path $timeText player=" + (end - begin))
             return timeText
         }
     }
@@ -62,10 +62,10 @@ class LoadTimeTextTask(realm: Realm, movieFile: MovieFile, imageView: ThumbnailI
 
         // timeText가 변하였으면...
         if (result) {
-            if (imageViewRef.get()!!.tag == movieFile.path) {
-                imageViewRef.get()!!.timeText = movieFile.timeText
-                imageViewRef.get()!!.invalidate()
-                Log.d(TAG, "setTimeText ${movieFile.path} ${movieFile.timeText}")
+            if (imageViewRef.get()?.tag == movieFile.path) {
+                imageViewRef.get()?.timeText = movieFile.timeText
+                imageViewRef.get()?.invalidate()
+                Log.e(TAG, "setTimeText ${movieFile.path} ${movieFile.timeText}")
             } else {
                 Log.e(TAG, "setTimeText ${movieFile.path} ${movieFile.timeText} FAIL")
             }

@@ -2,7 +2,6 @@ package com.duongame.basicplayer.task;
 
 import android.os.AsyncTask;
 import android.os.Environment;
-import android.text.TextUtils;
 import android.util.Log;
 
 import com.duongame.basicplayer.adapter.MovieAdapter;
@@ -63,19 +62,27 @@ public class FindFileTask extends AsyncTask<Void, Integer, Void> {
         return null;
     }
 
+    void syncMovieFiles(List<MovieFile> movieFiles) {
+        for (int i = 0; i < movieFiles.size(); i++) {
+            MovieFile newFile = movieFiles.get(i);
+            MovieFile oldFile = realm.where(MovieFile.class).equalTo("absolutePath", newFile.absolutePath).findFirst();
+
+            // 복사할지 말지 조건분석을 먼저 하자
+            if (oldFile.size != newFile.size)// 사이즈가 변경되면 다른 파일
+                continue;
+            if (oldFile.lastModified != newFile.lastModified)// 수정이 되었으면 다른 파일
+                continue;
+
+            newFile.thumbnail = oldFile.thumbnail;
+            newFile.timeText = oldFile.timeText;
+        }
+
+    }
+
     @Override
     protected void onPostExecute(Void result) {
         if (movieAdapter != null) {
-            for (int i = 0; i < movieFileList.size(); i++) {
-                MovieFile oldFile = realm.where(MovieFile.class).equalTo("absolutePath", movieFileList.get(i).absolutePath).findFirst();
-                if(oldFile != null) {
-                    // 복사해야 할 데이터는 여기서....
-                    if(!TextUtils.isEmpty(oldFile.timeText)) {
-                        movieFileList.get(i).timeText = oldFile.timeText;
-                        Log.d(TAG, "FindFileTask found timeText "+ movieFileList.get(i).path + " " + movieFileList.get(i).timeText);
-                    }
-                }
-            }
+            syncMovieFiles(movieFileList);
 
             movieAdapter.setMovieList(movieFileList);
             movieAdapter.notifyDataSetChanged();
@@ -96,6 +103,7 @@ public class FindFileTask extends AsyncTask<Void, Integer, Void> {
                     realm.delete(MovieFile.class);
 
                     for (MovieFile movie : movieFileList) {
+                        Log.e(TAG, "copyToRealmOrUpdate movie=" + movie.toString());
                         realm.copyToRealmOrUpdate(movie);
                     }
                 }
@@ -109,6 +117,8 @@ public class FindFileTask extends AsyncTask<Void, Integer, Void> {
 
         if (movieAdapter != null) {
             ArrayList<MovieFile> arrayList = (ArrayList<MovieFile>) movieFileList.clone();
+            syncMovieFiles(arrayList);
+
             movieAdapter.setMovieList(arrayList);
             movieAdapter.notifyDataSetChanged();
             Log.e(TAG, "onProgressUpdate notifyDataSetChanged");

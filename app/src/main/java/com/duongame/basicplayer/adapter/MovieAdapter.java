@@ -75,8 +75,8 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder> 
 
     @Override
     public void onBindViewHolder(MovieAdapter.ViewHolder holder, int position) {
-        Log.e(TAG, "onBindViewHolder " + position);
         final MovieFile file = movieList.get(position);
+        Log.e(TAG, "onBindViewHolder " + position + " " + file.toString());
 
         // 1. 메모리 캐시에 있으면
         // 2. 파일로 저장된 썸네일이 있으면 그것을 로딩
@@ -91,11 +91,11 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder> 
             // getBitmap으로 확인시는 아직 로딩이 안되었지만 여러번 연속으로 호출될수가 있다.
             // 그러니 기다리자.
             if (!file.isLoadingThumbnail) {
-                Log.d(TAG, "isLoadingThumbnail true " + file.path);
+                Log.e(TAG, "isLoadingThumbnail true " + file.path);
                 // 비트맵을 읽어들인 후에 설정하자
                 holder.iv.setTag(file.path);
 
-                LoadThumbnailTask task = new LoadThumbnailTask(context, kind, file, holder.iv);
+                LoadThumbnailTask task = new LoadThumbnailTask(context, kind, file, holder.iv, realm);
                 task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                 file.isLoadingThumbnail = true;
             }
@@ -105,10 +105,10 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder> 
         //String timeText = TimeTextManager.getTimeText(file.path);
         if(!TextUtils.isEmpty(file.timeText)) {
             holder.iv.setTimeText(file.timeText);
-            Log.d(TAG, "isLoadingTimeText already have " + file.path);
+            Log.e(TAG, "isLoadingTimeText already have " + file.path);
         } else {
             if(!file.isLoadingTimeText) {
-                Log.d(TAG, "isLoadingTimeText true " + file.path);
+                Log.e(TAG, "isLoadingTimeText true " + file.path);
                 LoadTimeTextTask task = new LoadTimeTextTask(realm, file, holder.iv);
                 task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                 file.isLoadingTimeText = true;

@@ -22,12 +22,15 @@ public class MovieFile extends RealmObject {
     @Required
     public String name;
     @Required
-    public String timeText;
+    public String timeText;// duration time text. 만약에 size나 date가 변경되면 파일이 변경된 것이므로 다시 계산해야 한다.
 
     // 썸네일을 저장할 UUID.png
     // 저장된 파일을 읽으면 새로 추출할 필요가 없다.
     // 마이그레이션을 해야 한다.
-//    public String thumbnail;
+    // version = 1
+    public String thumbnail;
+    public long size;
+    public long lastModified;
 
     @Ignore
     public boolean isLoadingThumbnail;
@@ -43,9 +46,13 @@ public class MovieFile extends RealmObject {
         parent = f.getParent();
         name = f.getName();
         timeText = t;
+
+        size = f.length();
+        lastModified = f.lastModified();
     }
 
     public String toString() {
-        return String.format("absolutePath=%s path=%s parent=%s name=%s timeText=%s", absolutePath, path, parent, name, timeText);
+        //return String.format("absolutePath=%s path=%s parent=%s name=%s timeText=%s thumbnail=%s size=%d lastModified=%s", absolutePath, path, parent, name, timeText, thumbnail, size, lastModified);
+        return String.format("name=%s thumbnail=%s timeText=%s size=%d lastModified=%s", name, thumbnail, timeText, size, lastModified);
     }
 }

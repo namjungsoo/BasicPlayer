@@ -3,9 +3,11 @@ package com.duongame.basicplayer.task;
 import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.media.ThumbnailUtils;
 import android.os.AsyncTask;
 import android.provider.MediaStore;
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.duongame.basicplayer.Player;
@@ -15,6 +17,8 @@ import com.duongame.basicplayer.view.ThumbnailImageView;
 
 import java.lang.ref.WeakReference;
 
+import io.realm.Realm;
+
 /**
  * Created by js296 on 2017-06-06.
  */
@@ -23,17 +27,19 @@ public class LoadThumbnailTask extends AsyncTask<Void, Integer, Boolean> {
     private final static String TAG = LoadThumbnailTask.class.getSimpleName();
 
     private MovieFile movieFile;
-    private WeakReference<ThumbnailImageView> imageViewRef;
+    private WeakReference<ThumbnailImageView> imageViewReference;
     private WeakReference<Context> contextWeakReference;
     private int kind;
     private static int MINI_KIND_WIDTH = 512;
     private static int MINI_KIND_HEIGHT = 384;
+    private Realm realm;
 
-    public LoadThumbnailTask(Context context, int kind, MovieFile movieFile, ThumbnailImageView imageView) {
+    public LoadThumbnailTask(Context context, int kind, MovieFile movieFile, ThumbnailImageView imageView, Realm realm) {
         this.kind = kind;
         this.movieFile = movieFile;
-        this.imageViewRef = new WeakReference<>(imageView);
-        contextWeakReference = new WeakReference<>(context);
+        this.imageViewReference = new WeakReference<>(imageView);
+        this.realm = realm;
+        this.contextWeakReference = new WeakReference<>(context);
     }
 
     @Override
@@ -45,10 +51,10 @@ public class LoadThumbnailTask extends AsyncTask<Void, Integer, Boolean> {
     protected void onPostExecute(Boolean result) {
         if (result) {
             try {
-                if (imageViewRef.get().getTag().equals(movieFile.path)) {
+                if (imageViewReference.get().getTag().equals(movieFile.path)) {
                     Bitmap bitmap = ThumbnailManager.getBitmap(kind, movieFile.path);
                     if (bitmap != null) {
-                        imageViewRef.get().setImageBitmap(bitmap);
+                        imageViewReference.get().setImageBitmap(bitmap);
                     }
                 }
             } catch (Exception e) {
@@ -68,7 +74,7 @@ public class LoadThumbnailTask extends AsyncTask<Void, Integer, Boolean> {
         int ret = player.openMovieWithAudio(movieFile.absolutePath, 0);
         //int ret = Player.openMovie(each.getAbsolutePath());
 
-        Log.d(TAG, "openMovieWithAudio filename=" + movieFile.absolutePath + " ret=" + ret);
+        Log.d(TAG, "loadThumbnailByPlayer openMovieWithAudio filename=" + movieFile.absolutePath + " ret=" + ret);
 
         // 파일 열기가 성공했으면 렌더링 한다.
         if (ret >= 0) {
@@ -78,8 +84,11 @@ public class LoadThumbnailTask extends AsyncTask<Void, Integer, Boolean> {
             final Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
             player.renderFrame(bitmap, width, height);
             ThumbnailManager.addBitmap(kind, movieFile.path, bitmap);
-
             player.closeMovie();
+
+            SaveThumbnailTask task = new SaveThumbnailTask(contextWeakReference.get(), realm, movieFile, bitmap);
+            task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            Log.d(TAG, "loadThumbnailByPlayer SaveThumbnailTask");
             return true;
         } else {
             return false;
@@ -90,7 +99,17 @@ public class LoadThumbnailTask extends AsyncTask<Void, Integer, Boolean> {
         // 새로운 방식
         // 시스템에 있는 것을 가져온다.
         // 없으면 새로 생성해야 한다.
-        Log.d(TAG, "loadThumbnail path=" + movieFile.path);
+        Log.e(TAG, "loadThumbnail name=" + movieFile.name + " thumbnail=" + movieFile.thumbnail);
+
+        if (!TextUtils.isEmpty(movieFile.thumbnail)) {
+            Log.e(TAG, "loadThumbnail thumbnail=" + movieFile.thumbnail);
+            Bitmap bitmap = BitmapFactory.decodeFile(movieFile.thumbnail);
+            if (bitmap != null) {
+                Log.e(TAG, "loadThumbnail thumbnail load ok");
+                ThumbnailManager.addBitmap(kind, movieFile.path, bitmap);
+                return true;
+            }
+        }
 
         String[] proj = {
                 MediaStore.Video.VideoColumns._ID,
@@ -107,11 +126,14 @@ public class LoadThumbnailTask extends AsyncTask<Void, Integer, Boolean> {
         cursor.moveToFirst();
         if (cursor.getCount() == 0) {
             cursor.close();
-            Log.d(TAG, "loadThumbnail false path=" + movieFile.path);
+            Log.e(TAG, "loadThumbnail false path=" + movieFile.path);
 
             Bitmap thumb = ThumbnailUtils.createVideoThumbnail(movieFile.path, kind);
             if (thumb != null) {
                 ThumbnailManager.addBitmap(kind, movieFile.path, thumb);
+
+                SaveThumbnailTask task = new SaveThumbnailTask(contextWeakReference.get(), realm, movieFile, thumb);
+                task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                 return true;
             } else {
                 return loadThumbnailByPlayer(movieFile);
@@ -121,7 +143,7 @@ public class LoadThumbnailTask extends AsyncTask<Void, Integer, Boolean> {
         long long_fileID = cursor.getLong(cursor.getColumnIndex(MediaStore.Video.Media._ID));
         Bitmap bitmap = MediaStore.Video.Thumbnails.getThumbnail(context.getContentResolver(), long_fileID, kind, null);
         ThumbnailManager.addBitmap(kind, movieFile.path, bitmap);
-        Log.d(TAG, "loadThumbnail true path=" + movieFile.path);
+        Log.e(TAG, "loadThumbnail true path=" + movieFile.path);
         cursor.close();
 
         return true;

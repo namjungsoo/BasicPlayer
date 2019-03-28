@@ -70,11 +70,10 @@ public class MainActivity extends BaseActivity {
 
     private void loadDBFileList(final MovieAdapter movieAdapter) {
         RealmResults<MovieFile> results = realm.where(MovieFile.class).findAll();
-
         List<MovieFile> movieFiles = realm.copyFromRealm(results);
 
         for (int i = 0; i < movieFiles.size(); i++) {
-            Log.w(TAG, "loadDBFileList " + i + " " + movieFiles.get(i).toString());
+            Log.e(TAG, "loadDBFileList " + i + " " + movieFiles.get(i).toString());
         }
 
         movieAdapter.setMovieList(movieFiles);
@@ -96,11 +95,12 @@ public class MainActivity extends BaseActivity {
         // 파일리스트를 로딩하자
         // extRoot = /storage/emulated/0
         String extRoot = Environment.getExternalStorageDirectory().getAbsolutePath();
-        FindFileTask task = new FindFileTask(realm, movieAdapter, new File(extRoot), movieExt);
-        task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
         // 이미 캐쉬된 DB의 파일 리스트를 로딩하자
         loadDBFileList(movieAdapter);
+
+        FindFileTask task = new FindFileTask(realm, movieAdapter, new File(extRoot), movieExt);
+        task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     private void initListView(RelativeLayout relativeLayout) {
