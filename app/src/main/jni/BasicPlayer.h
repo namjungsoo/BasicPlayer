@@ -21,17 +21,17 @@ void initMovie(Movie *movie);
 
 // return: == 0 - success
 //          < 0 - error code
-int openMovie(Movie *movie, const char filePath[]);
-int openMovieWithAudio(Movie *movie, const char *filePath, int audio);
+int openMovie(Movie *movie, const char filePath[], int width, int height);
+int openMovieWithAudio(Movie *movie, const char *filePath, int audio, int width, int height);
 
-int openVideoStream(Movie *movie);
+int openVideoStream(Movie *movie, int width, int height);
 int openAudioStream(Movie *movie);
 
 // return: == 0 - success
 //         != 0 then end of movie or fail
-int decodeFrame(Movie *movie, int width, int height);
+int decodeFrame(Movie *movie);
 
-void copyPixels(Movie *movie, uint8_t *pixels, int width, int height);
+void copyPixels(Movie *movie, uint8_t *pixels);
 
 int getWidth(Movie *movie);
 int getHeight(Movie *movie);

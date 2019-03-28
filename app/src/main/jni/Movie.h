@@ -48,6 +48,8 @@ typedef struct {
     pthread_t gAudioThread;
     int gAudioThreadRunning;
 
+    int gTargetWidth;
+    int gTargetHeight;
     enum AVSampleFormat sfmt;
 } Movie;
 

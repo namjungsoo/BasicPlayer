@@ -71,18 +71,20 @@ public class LoadThumbnailTask extends AsyncTask<Void, Integer, Boolean> {
 
         // FFmpeg NDK 라이브러리에서 로딩한다.
         // audio 사용여부는 false이다.
-        int ret = player.openMovieWithAudio(movieFile.absolutePath, 0);
+        int ret = player.openMovieWithAudio(movieFile.absolutePath, 0, 512, 384);
         //int ret = Player.openMovie(each.getAbsolutePath());
 
         Log.d(TAG, "loadThumbnailByPlayer openMovieWithAudio filename=" + movieFile.absolutePath + " ret=" + ret);
 
         // 파일 열기가 성공했으면 렌더링 한다.
         if (ret >= 0) {
-            final int width = player.getMovieWidth();
-            final int height = player.getMovieHeight();
+//            final int width = player.getMovieWidth();
+//            final int height = player.getMovieHeight();
+            final int width = 512;
+            final int height = 384;
 
             final Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-            player.renderFrame(bitmap, width, height);
+            player.renderFrame(bitmap);
             ThumbnailManager.addBitmap(kind, movieFile.path, bitmap);
             player.closeMovie();
 

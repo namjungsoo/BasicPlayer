@@ -37,7 +37,7 @@ class LoadTimeTextTask(realm: Realm, movieFile: MovieFile, imageView: ThumbnailI
 
             // FFmpeg NDK 라이브러리에서 로딩한다.
             // audio 사용여부는 false이다.
-            val ret = player.openMovieWithAudio(path, 0)
+            val ret = player.openMovieWithAudio(path, 0, 0, 0)
             if(ret != 0)
                 return null
             val timeText = TimeConverter.convertUsToString(player.movieDurationUs)

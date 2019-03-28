@@ -46,7 +46,7 @@ jint Java_com_duongame_basicplayer_Player_initBasicPlayer(JNIEnv *env, jobject t
 	return id;
 }
 
-jint Java_com_duongame_basicplayer_Player_openMovieWithAudio(JNIEnv *env, jobject thiz, int id, jstring filePath, int audio)
+jint Java_com_duongame_basicplayer_Player_openMovieWithAudio(JNIEnv *env, jobject thiz, int id, jstring filePath, int audio, int width, int height)
 {
 	LOGD("BEGIN openMovieWithAudio");
 	const jbyte *str;
@@ -58,14 +58,14 @@ jint Java_com_duongame_basicplayer_Player_openMovieWithAudio(JNIEnv *env, jobjec
 
 	// 문자열 사용하고 나서 삭제 
 	str = (*env)->GetStringUTFChars(env, filePath, NULL);
-	result = openMovieWithAudio(gMovie, str, audio);
+	result = openMovieWithAudio(gMovie, str, audio, width, height);
 	(*env)->ReleaseStringUTFChars(env, filePath, str);
 
 	LOGD("END openMovieWithAudio");
 	return result;
 }
 
-jint Java_com_duongame_basicplayer_Player_openMovie(JNIEnv *env, jobject thiz, int id, jstring filePath)
+jint Java_com_duongame_basicplayer_Player_openMovie(JNIEnv *env, jobject thiz, int id, jstring filePath, int width, int height)
 {
 	LOGD("BEGIN openMovie id=%d filePath=%s", id, filePath);
 
@@ -80,14 +80,14 @@ jint Java_com_duongame_basicplayer_Player_openMovie(JNIEnv *env, jobject thiz, i
 	// 문자열 사용하고 나서 삭제 
 	str = (*env)->GetStringUTFChars(env, filePath, NULL);
 	LOGD("openMovie str=%s", str);
-	result = openMovie(gMovie, str);
+	result = openMovie(gMovie, str, width, height);
 	(*env)->ReleaseStringUTFChars(env, filePath, str);
 
 	LOGD("END openMovie");
 	return result;
 }
 
-jint Java_com_duongame_basicplayer_Player_renderFrame(JNIEnv *env, jobject thiz, int id, jobject bitmap, int width, int height)
+jint Java_com_duongame_basicplayer_Player_renderFrame(JNIEnv *env, jobject thiz, int id, jobject bitmap)
 {
 //	LOGD("BEGIN renderFrame");
     
@@ -101,7 +101,7 @@ jint Java_com_duongame_basicplayer_Player_renderFrame(JNIEnv *env, jobject thiz,
 	// LOGD("renderFrame BEGIN");
 
 	// 영상이 종료된 상태임 
-	if(decodeFrame(gMovie, width, height) < 0) {
+	if(decodeFrame(gMovie) < 0) {
 		// LOGD("closeMovie");
 
 		// 영상이 종료되도 close하지 말자 
@@ -116,7 +116,7 @@ jint Java_com_duongame_basicplayer_Player_renderFrame(JNIEnv *env, jobject thiz,
 		if ((result = AndroidBitmap_lockPixels(env, bitmap, &pixels)) < 0)
 			return result;
 
-		copyPixels(gMovie, (uint8_t*)pixels, width, height);
+		copyPixels(gMovie, (uint8_t*)pixels);
 
 		// LOGD("renderFrame unlockPixels");
 		AndroidBitmap_unlockPixels(env, bitmap);

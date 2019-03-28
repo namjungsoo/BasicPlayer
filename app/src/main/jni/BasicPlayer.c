@@ -69,7 +69,7 @@ double getFps(Movie *movie)
 	return movie->gFps;
 }
 
-int openVideoStream(Movie *movie) 
+int openVideoStream(Movie *movie, int width, int height) 
 {
 	LOGD("openVideoStream");
 
@@ -99,15 +99,25 @@ int openVideoStream(Movie *movie)
 	if (movie->gFrameAudio == NULL)
 		return -9;
 	
+	if (width == 0)
+		movie->gTargetWidth = movie->gVideoCodecCtx->width;
+	else 
+		movie->gTargetWidth = width;
+
+	if (height == 0)
+		movie->gTargetHeight = movie->gVideoCodecCtx->height;
+	else 
+		movie->gTargetHeight = height;
+
 	// 픽처 사이즈를 계산한다. 
-	movie->gPictureSize = av_image_get_buffer_size(movie->gPixelFormat, movie->gVideoCodecCtx->width, movie->gVideoCodecCtx->height, 1);
+	movie->gPictureSize = av_image_get_buffer_size(movie->gPixelFormat, movie->gTargetWidth, movie->gTargetHeight, 1);
 
 	// 비디오 버퍼를 할당한다. 
 	movie->gVideoBuffer = (uint8_t*)(malloc(sizeof(uint8_t) * movie->gPictureSize));
 
 	//TODO: 입력받은 width, height로 동작하게 설정
 	// 비디오 버퍼 메모리(gFrameRGB)를 설정함
-	av_image_fill_arrays(movie->gFrameRGB->data, movie->gFrameRGB->linesize, movie->gVideoBuffer, movie->gPixelFormat, movie->gVideoCodecCtx->width, movie->gVideoCodecCtx->height, 1);
+	av_image_fill_arrays(movie->gFrameRGB->data, movie->gFrameRGB->linesize, movie->gVideoBuffer, movie->gPixelFormat, movie->gTargetWidth, movie->gTargetHeight, 1);
 
 	movie->gFps = av_q2d(movie->gFormatCtx->streams[movie->gVideoStreamIdx]->r_frame_rate);
 	LOGD("fps=%f", movie->gFps);
@@ -251,9 +261,9 @@ void* decodeAudioThread(void *param)
 	return NULL;
 }
 
-int openMovieWithAudio(Movie *movie, const char *filePath, int audio)
+int openMovieWithAudio(Movie *movie, const char *filePath, int audio, int width, int height)
 {
-	LOGD("openMovieWithAudio filePath=%s audio=%d %d", filePath, audio, movie->gAudioThreadRunning);
+	LOGD("openMovieWithAudio filePath=%s audio=%d thread=%d width=%d height=%d", filePath, audio, movie->gAudioThreadRunning, width, height);
 
 	int i;
 	unsigned char errbuf[128];
@@ -287,7 +297,7 @@ int openMovieWithAudio(Movie *movie, const char *filePath, int audio)
 	}
 
 	int ret;
-	ret = openVideoStream(movie);
+	ret = openVideoStream(movie, width, height);
 	if(ret < 0)
 		return ret;  
 
@@ -308,11 +318,11 @@ int openMovieWithAudio(Movie *movie, const char *filePath, int audio)
 	return ret;
 }
 
-int openMovie(Movie *movie, const char filePath[])
+int openMovie(Movie *movie, const char filePath[], int width, int height)
 {
-	LOGD("openMovie filePath=%s", filePath);
+	LOGD("openMovie filePath=%s width=%d height=%d", filePath, width, height);
 
-	return openMovieWithAudio(movie, filePath, 1);
+	return openMovieWithAudio(movie, filePath, 1, width, height);
 }
 
 long getMicrotime(){
@@ -322,7 +332,7 @@ long getMicrotime(){
 }
 
 // 40ms만에 한번씩 호출된다. 
-int decodeFrame(Movie *movie, int width, int height)
+int decodeFrame(Movie *movie)
 {
 	int frameFinished = 0;
 	AVPacket packet;
@@ -356,7 +366,7 @@ int decodeFrame(Movie *movie, int width, int height)
 				movie->gImgConvertCtx = sws_getCachedContext(movie->gImgConvertCtx,
 					movie->gVideoCodecCtx->width, movie->gVideoCodecCtx->height, movie->gVideoCodecCtx->pix_fmt,
 					//movie->gVideoCodecCtx->width, movie->gVideoCodecCtx->height, movie->gPixelFormat, SWS_BICUBIC, NULL, NULL, NULL);
-					width, height, movie->gPixelFormat, SWS_BICUBIC, NULL, NULL, NULL);
+					movie->gTargetWidth, movie->gTargetHeight, movie->gPixelFormat, SWS_FAST_BILINEAR, NULL, NULL, NULL);
 				us = getMicrotime() - us;
 				LOGD("sws_getCachedContext END %ld", us);
 
@@ -393,18 +403,18 @@ int decodeFrame(Movie *movie, int width, int height)
 	return -1;
 }
 
-void copyPixels(Movie *movie, uint8_t *pixels, int width, int height)
+void copyPixels(Movie *movie, uint8_t *pixels)
 {
 	// 테스트로 gFrameRGB로 memcpy 해봄
 	// 여기서는 크래시 발생 
 //	memcpy(pixels, movie->gFrame->data[0], movie->gPictureSize);
 
 	//ORG
-//	memcpy(pixels, movie->gFrameRGB->data[0], movie->gPictureSize);
+	memcpy(pixels, movie->gFrameRGB->data[0], movie->gPictureSize);
 
 	//NEW
-	int pictureSize = av_image_get_buffer_size(movie->gPixelFormat, width, height, 1);
-	memcpy(pixels, movie->gFrameRGB->data[0], pictureSize);
+	// int pictureSize = av_image_get_buffer_size(movie->gPixelFormat, width, height, 1);
+	// memcpy(pixels, movie->gFrameRGB->data[0], pictureSize);
 }
 
 int getWidth(Movie *movie)

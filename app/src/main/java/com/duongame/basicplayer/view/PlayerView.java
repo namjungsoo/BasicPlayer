@@ -177,7 +177,7 @@ public class PlayerView extends View {
         final File file = new File(filename);
         Log.d(TAG, String.valueOf(file.exists()));
 
-        int openResult = player.openMovie(filename);
+        int openResult = player.openMovie(filename, 0, 0);
         if (openResult < 0) {
             Toast.makeText(context, "Open Movie Error: " + openResult, Toast.LENGTH_LONG).show();
             ((Activity) context).finish();
@@ -303,7 +303,7 @@ public class PlayerView extends View {
             final int bmHeight = bitmap.getHeight();
 
             if (isPlaying || isSeeking) {
-                int ret = player.renderFrame(bitmap, bmWidth, bmHeight);
+                int ret = player.renderFrame(bitmap);
                 // 렌더링 종료
                 if (ret > 0) {
                     pause(true);
