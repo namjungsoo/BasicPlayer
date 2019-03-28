@@ -119,8 +119,11 @@ int openVideoStream(Movie *movie, int width, int height)
 	// 비디오 버퍼 메모리(gFrameRGB)를 설정함
 	av_image_fill_arrays(movie->gFrameRGB->data, movie->gFrameRGB->linesize, movie->gVideoBuffer, movie->gPixelFormat, movie->gTargetWidth, movie->gTargetHeight, 1);
 
+	LOGD("gFrame->linesize=%d gFrameRGB->linesize=%d", movie->gFrame->linesize, movie->gFrameRGB->linesize);
 	movie->gFps = av_q2d(movie->gFormatCtx->streams[movie->gVideoStreamIdx]->r_frame_rate);
 	LOGD("fps=%f", movie->gFps);
+
+	LOGD("pix_fmt=%d(%s)", movie->gVideoCodecCtx->pix_fmt, av_get_pix_fmt_name(movie->gVideoCodecCtx->pix_fmt));
 	return 0;
 }
 
@@ -374,6 +377,10 @@ int decodeFrame(Movie *movie)
 				us = getMicrotime();
 				//LOGD("sws_scale BEGIN %ld", us);
 				sws_scale(movie->gImgConvertCtx, (const uint8_t * const*)movie->gFrame->data, movie->gFrame->linesize, 0, movie->gVideoCodecCtx->height, movie->gFrameRGB->data, movie->gFrameRGB->linesize);
+
+				// for(int i=0; i<AV_NUM_DATA_POINTERS; i++) {
+				// 	LOGD("movie->gFrame->linesize[%d]=%d movie->gFrameRGB->linesize[%d]=%d", i, movie->gFrame->linesize[i], i, movie->gFrameRGB->linesize[i]);
+				// }
 				us = getMicrotime() - us;
 				LOGD("sws_scale END %ld", us);
 				
