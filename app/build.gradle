@@ -12,8 +12,8 @@ android {
         buildConfigField "boolean", "SHOW_AD", "true"
         minSdkVersion 14
         targetSdkVersion 28
-        versionCode 9
-        versionName "1.0.8"
+        versionCode 10
+        versionName "1.0.9"
 
         buildConfigField "String", "GA_TRACKING_ID", "\"UA-61499807-16\""
     }
