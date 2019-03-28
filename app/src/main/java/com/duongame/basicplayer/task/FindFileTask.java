@@ -67,6 +67,9 @@ public class FindFileTask extends AsyncTask<Void, Integer, Void> {
             MovieFile newFile = movieFiles.get(i);
             MovieFile oldFile = realm.where(MovieFile.class).equalTo("absolutePath", newFile.absolutePath).findFirst();
 
+            if (oldFile == null)
+                continue;
+
             // 복사할지 말지 조건분석을 먼저 하자
             if (oldFile.size != newFile.size)// 사이즈가 변경되면 다른 파일
                 continue;
