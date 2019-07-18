@@ -1,12 +1,3 @@
-/*
- * jni for Android
- * 2011-2011 Jaebong Lee (novaever@gmail.com)
- *
- * BasicPlayer is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- */
 #include <android/bitmap.h>
 #include <jni.h>
 #include "Log.h"
@@ -15,6 +6,36 @@
 #include "AudioFormatMap.h"
 #include "AudioQ.h"
 #include "PlayerMap.h" 
+
+#include <signal.h>
+#include <sys/cdefs.h>
+#include <sys/ioctl.h>
+#include <sys/types.h>
+#include <stdint.h>
+#include <linux/termios.h>
+
+int tcgetattr(int fd, struct termios *s)    
+{
+	return ioctl(fd, TCGETS, s);
+}
+    
+int tcsetattr(int fd, int __opt, const struct termios *s)
+{
+	return ioctl(fd, __opt, (void *)s);
+}
+
+char *stpcpy (char *dst, const char *src)
+{
+	const size_t len = strlen (src);
+	return (char *) memcpy (dst, src, len + 1) + len;
+}
+
+
+// typedef void (*sighandler_t)(int);
+
+// sighandler_t signal(int signum, sighandler_t handler) {
+// 	return bsd_signal(signum, handler);
+// }
 
 jint JNI_OnLoad(JavaVM* vm, void* reserved) {
     LOGD("Hello");
