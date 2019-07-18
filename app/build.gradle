@@ -79,13 +79,13 @@ android {
         }
     }
     // Android Oreo 이상에서는 64bit OS에서는 64bit so를 기본적으로 찾게되는데 이를 32bit so를 사용하라고 강제하는 명령임
-    splits {
-        abi {
-            enable true
-            reset()
-            include 'armeabi-v7a'
-        }
-    }
+//    splits {
+//        abi {
+//            enable true
+//            reset()
+//            include 'armeabi-v7a'
+//        }
+//    }
 }
 
 dependencies {

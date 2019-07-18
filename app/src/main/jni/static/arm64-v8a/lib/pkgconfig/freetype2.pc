@@ -1,0 +1,14 @@
+prefix=/Users/a1000149/ffmpeg-binary-android/build_scripts/build_dir
+exec_prefix=/Users/a1000149/ffmpeg-binary-android/build_scripts/build_dir
+libdir=/Users/a1000149/ffmpeg-binary-android/build_scripts/build_dir/lib
+includedir=/Users/a1000149/ffmpeg-binary-android/build_scripts/build_dir/include
+
+Name: FreeType 2
+URL: https://freetype.org
+Description: A free, high-quality, and portable font engine.
+Version: 22.0.16
+Requires:
+Requires.private: zlib, libpng
+Libs: -L${libdir} -lfreetype
+Libs.private: 
+Cflags: -I${includedir}/freetype2
