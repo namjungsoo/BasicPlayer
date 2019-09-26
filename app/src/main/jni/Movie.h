@@ -18,38 +18,37 @@ extern "C" {
 #include <pthread.h>
 
 typedef struct {
-    AVFormatContext *gFormatCtx;
 
-    // 비디오 관련 
+    // 비디오 관련
+    // 입력 비디오
+    AVFormatContext *gFormatCtx;
     AVCodecContext *gVideoCodecCtx;
     AVCodec *gVideoCodec;
     int gVideoStreamIdx;
-
     AVFrame *gFrame;
-    AVFrame *gFrameRGB;
+    int gVideoPictureSize;
 
+    // 출력비디오
     struct SwsContext *gImgConvertCtx;
-
     int gPictureSize;
     uint8_t *gVideoBuffer;
-
-    AVDictionary *optionsDict;
-
+    AVFrame *gFrameRGB;
     int gPixelFormat;
+    int gTargetWidth;
+    int gTargetHeight;
+
+    // 비디오 공통
     double gFps;
     int64_t gCurrentTimeUs;
+    AVDictionary *optionsDict;
 
     // 오디오 관련 
     AVCodecContext *gAudioCodecCtx;
     AVCodec *gAudioCodec;
-    int gAudioStreamIdx;
     AVFrame *gFrameAudio;
-
     pthread_t gAudioThread;
+    int gAudioStreamIdx;
     int gAudioThreadRunning;
-
-    int gTargetWidth;
-    int gTargetHeight;
     enum AVSampleFormat sfmt;
 } Movie;
 

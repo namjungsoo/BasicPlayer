@@ -111,6 +111,8 @@ int openVideoStream(Movie *movie, int width, int height)
 
 	// 픽처 사이즈를 계산한다. 
 	movie->gPictureSize = av_image_get_buffer_size(movie->gPixelFormat, movie->gTargetWidth, movie->gTargetHeight, 1);
+	movie->gVideoPictureSize = av_image_get_buffer_size(movie->gVideoCodecCtx->pix_fmt, movie->gTargetWidth, movie->gTargetHeight, 1);
+    LOGD("openVideoStream gPictureSize=%d gVideoPictureSize=%d", movie->gPictureSize, movie->gVideoPictureSize);
 
 	// 비디오 버퍼를 할당한다. 
 	movie->gVideoBuffer = (uint8_t*)(malloc(sizeof(uint8_t) * movie->gPictureSize));
@@ -119,11 +121,11 @@ int openVideoStream(Movie *movie, int width, int height)
 	// 비디오 버퍼 메모리(gFrameRGB)를 설정함
 	av_image_fill_arrays(movie->gFrameRGB->data, movie->gFrameRGB->linesize, movie->gVideoBuffer, movie->gPixelFormat, movie->gTargetWidth, movie->gTargetHeight, 1);
 
-	LOGD("gFrame->linesize=%d gFrameRGB->linesize=%d", movie->gFrame->linesize, movie->gFrameRGB->linesize);
+	LOGD("openVideoStream gFrame->linesize=%ld gFrameRGB->linesize=%ld", movie->gFrame->linesize, movie->gFrameRGB->linesize);
 	movie->gFps = av_q2d(movie->gFormatCtx->streams[movie->gVideoStreamIdx]->r_frame_rate);
-	LOGD("fps=%f", movie->gFps);
+	LOGD("openVideoStream fps=%f", movie->gFps);
 
-	LOGD("pix_fmt=%d(%s)", movie->gVideoCodecCtx->pix_fmt, av_get_pix_fmt_name(movie->gVideoCodecCtx->pix_fmt));
+	LOGD("openVideoStream pix_fmt=%d(%s)", movie->gVideoCodecCtx->pix_fmt, av_get_pix_fmt_name(movie->gVideoCodecCtx->pix_fmt));
 	return 0;
 }
 
@@ -144,14 +146,14 @@ int openAudioStream(Movie *movie)
 	if (avcodec_open2(movie->gAudioCodecCtx, movie->gAudioCodec, &movie->optionsDict) < 0)
 		return -6;
 
-	LOGD("gAudioCodecCtx->sample_fmt=%d", movie->gAudioCodecCtx->sample_fmt);
-	LOGD("gAudioCodecCtx->sample_rate=%d", movie->gAudioCodecCtx->sample_rate);
-	LOGD("gAudioCodecCtx->channels=%d", movie->gAudioCodecCtx->channels);
+	LOGD("openAudioStream gAudioCodecCtx->sample_fmt=%d", movie->gAudioCodecCtx->sample_fmt);
+	LOGD("openAudioStream gAudioCodecCtx->sample_rate=%d", movie->gAudioCodecCtx->sample_rate);
+	LOGD("openAudioStream gAudioCodecCtx->channels=%d", movie->gAudioCodecCtx->channels);
 
 	movie->sfmt = movie->gAudioCodecCtx->sample_fmt;
 
 	const char *audioFormat = getAudioFormatString(movie->sfmt);
-	LOGD("audioFormat=%s", audioFormat);
+	LOGD("openAudioStream audioFormat=%s", audioFormat);
 }
 
 void* decodeAudioThread(void *param) 
@@ -367,24 +369,31 @@ int decodeFrame(Movie *movie)
 				us = getMicrotime();
 				//LOGD("sws_getCachedContext BEGIN %ld", us);
 				movie->gImgConvertCtx = sws_getCachedContext(movie->gImgConvertCtx,
-					movie->gVideoCodecCtx->width, movie->gVideoCodecCtx->height, movie->gVideoCodecCtx->pix_fmt,
+					movie->gVideoCodecCtx->width,
+					movie->gVideoCodecCtx->height,
+					movie->gVideoCodecCtx->pix_fmt,
 					// 원래 쓰던 파라미터
 					//movie->gVideoCodecCtx->width, movie->gVideoCodecCtx->height, movie->gPixelFormat, SWS_BICUBIC, NULL, NULL, NULL);
 					// 새로운 파라미터: target width/height 추가, fast bilinear 변경
-					movie->gTargetWidth, movie->gTargetHeight, movie->gPixelFormat, SWS_FAST_BILINEAR, NULL, NULL, NULL);
+					movie->gTargetWidth,
+					movie->gTargetHeight,
+					movie->gPixelFormat,
+					SWS_FAST_BILINEAR, NULL, NULL, NULL);
 				us = getMicrotime() - us;
-				LOGD("sws_getCachedContext END %ld", us);// 이거는 솔직히 시간이 안걸림
+				LOGD("sws_getCachedContext END us=%ld gVideoCodecCtx->pix_fmt=%ld gPixelFormat=%ld", us, movie->gVideoCodecCtx->pix_fmt, movie->gPixelFormat);// 이거는 솔직히 시간이 안걸림
+				LOGD("gVideoCodecCtx->width=%ld gVideoCodecCtx->height=%ld movie->gTargetWidth=%ld movie->gTargetHeight=%ld",
+				movie->gVideoCodecCtx->width, movie->gVideoCodecCtx->height, movie->gTargetWidth, movie->gTargetHeight);// 이거는 솔직히 시간이 안걸림
 
 				// 실제로 scale을 하면서 픽셀포맷도 변경한다.
 				us = getMicrotime();
 				//LOGD("sws_scale BEGIN %ld", us);
-				sws_scale(movie->gImgConvertCtx, (const uint8_t * const*)movie->gFrame->data, movie->gFrame->linesize, 0, movie->gVideoCodecCtx->height, movie->gFrameRGB->data, movie->gFrameRGB->linesize);
+//				sws_scale(movie->gImgConvertCtx, (const uint8_t * const*)movie->gFrame->data, movie->gFrame->linesize, 0, movie->gVideoCodecCtx->height, movie->gFrameRGB->data, movie->gFrameRGB->linesize);
 
 				// for(int i=0; i<AV_NUM_DATA_POINTERS; i++) {
 				// 	LOGD("movie->gFrame->linesize[%d]=%d movie->gFrameRGB->linesize[%d]=%d", i, movie->gFrame->linesize[i], i, movie->gFrameRGB->linesize[i]);
 				// }
 				us = getMicrotime() - us;
-				LOGD("sws_scale END %ld", us);
+				LOGD("sws_scale END us=%ld gFrame->linesize=%lld movie->gFrameRGB->linesize=%lld", us, movie->gFrame->linesize, movie->gFrameRGB->linesize);
 				
 				av_packet_unref(&packet);
 				return 0;
@@ -419,7 +428,15 @@ void copyPixels(Movie *movie, uint8_t *pixels)
 //	memcpy(pixels, movie->gFrame->data[0], movie->gPictureSize);
 
 	//ORG
-	memcpy(pixels, movie->gFrameRGB->data[0], movie->gPictureSize);
+//	memcpy(pixels, movie->gFrameRGB->data[0], movie->gPictureSize);
+    LOGD("copyPixels BEGIN %d %d linesize=[%d %d %d]", movie->gFrame->data, movie->gVideoPictureSize, movie->gFrame->linesize[0], movie->gFrame->linesize[1], movie->gFrame->linesize[2]);
+    uint8_t offset = 0;
+    memcpy(pixels+offset, movie->gFrame->data[0], movie->gVideoPictureSize*2/3);// y
+    offset += movie->gVideoPictureSize*2/3;
+    memcpy(pixels+offset, movie->gFrame->data[1], movie->gVideoPictureSize/6);// u
+    offset += movie->gVideoPictureSize/6;
+    memcpy(pixels+offset, movie->gFrame->data[2], movie->gVideoPictureSize/6);// v
+    LOGD("copyPixels END");
 
 	//NEW
 	// int pictureSize = av_image_get_buffer_size(movie->gPixelFormat, width, height, 1);
