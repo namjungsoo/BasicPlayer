@@ -368,10 +368,12 @@ int decodeFrame(Movie *movie)
 				//LOGD("sws_getCachedContext BEGIN %ld", us);
 				movie->gImgConvertCtx = sws_getCachedContext(movie->gImgConvertCtx,
 					movie->gVideoCodecCtx->width, movie->gVideoCodecCtx->height, movie->gVideoCodecCtx->pix_fmt,
+					// 원래 쓰던 파라미터
 					//movie->gVideoCodecCtx->width, movie->gVideoCodecCtx->height, movie->gPixelFormat, SWS_BICUBIC, NULL, NULL, NULL);
+					// 새로운 파라미터: target width/height 추가, fast bilinear 변경
 					movie->gTargetWidth, movie->gTargetHeight, movie->gPixelFormat, SWS_FAST_BILINEAR, NULL, NULL, NULL);
 				us = getMicrotime() - us;
-				LOGD("sws_getCachedContext END %ld", us);
+				LOGD("sws_getCachedContext END %ld", us);// 이거는 솔직히 시간이 안걸림
 
 				// 실제로 scale을 하면서 픽셀포맷도 변경한다.
 				us = getMicrotime();
