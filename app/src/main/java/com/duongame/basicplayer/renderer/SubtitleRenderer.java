@@ -13,11 +13,17 @@ import com.duongame.basicplayer.util.UnitConverter;
 import java.util.ArrayList;
 
 public class SubtitleRenderer {
-    public void render(Context context, Canvas canvas, ArrayList<SmiParser.Subtitle> subtitleList, long currentPositionUs, boolean isPortrait, int width, int height) {
-//        Log.d(TAG, "drawSubtitle currentPositionUs="+currentPositionUs);
+    private ArrayList<SmiParser.Subtitle> subtitleList;
+
+    public void setSubtitleList(ArrayList<SmiParser.Subtitle> subtitleList) {
+        this.subtitleList = subtitleList;
+    }
+
+    public void render(Context context, Canvas canvas, long currentPositionUs, boolean isPortrait, int width, int height) {
+        if(subtitleList == null)
+            return;
 
         // 자막이 있으면 렌더링 하자
-
         final Paint paint = new Paint();
         paint.setColor(Color.WHITE);
         paint.setAntiAlias(true);
@@ -69,7 +75,6 @@ public class SubtitleRenderer {
                 if (subtitle.end == -1 || currentPositionUs < subtitle.end * 1000) {
                     canvas.drawText(subtitle.content, width / 2, subtitleY, strokePaint);
                     canvas.drawText(subtitle.content, width / 2, subtitleY, paint);
-//                            Log.d(TAG, "currentPositionUs=" + currentPositionUs + " start=" + subtitle.start * 1000 + " end=" + subtitle.end * 1000);
                     break;
                 }
             }
