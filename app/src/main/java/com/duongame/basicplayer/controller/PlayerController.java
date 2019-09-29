@@ -1,4 +1,4 @@
-package com.duongame.basicplayer.view;
+package com.duongame.basicplayer.controller;
 
 import android.app.Activity;
 import android.content.Context;
@@ -27,11 +27,11 @@ public class PlayerController {
     private boolean isSeeking;
 
     private Player player = new Player();
-    private View playerView;
+    protected View playerView;
 
     private String filename;
 
-    private PlayerRenderer playerRenderer;
+    protected PlayerRenderer playerRenderer;
     private SubtitleRenderer subtitleRenderer = new SubtitleRenderer();
 
     public PlayerController(View playerView) {
@@ -49,6 +49,11 @@ public class PlayerController {
         Log.d(TAG, "interval=" + interval);
     }
 
+    protected void initPlayerRenderer(int movieWidth, int movieHeight) {
+        playerRenderer = new BitmapRenderer();
+        playerRenderer.initBitmap(movieWidth, movieHeight);
+    }
+
     public boolean openFile(Context context, final String filename) {
         // 파일 존재 여부 체크
         final File file = new File(filename);
@@ -63,9 +68,7 @@ public class PlayerController {
             final int movieWidth = player.getMovieWidth();
             final int movieHeight = player.getMovieHeight();
 
-            //bitmap = Bitmap.createBitmap(movieWidth, movieHeight, Bitmap.Config.ARGB_8888);
-            playerRenderer = new BitmapRenderer();
-            playerRenderer.initBitmap(movieWidth, movieHeight);
+            initPlayerRenderer(movieWidth, movieHeight);
 
             Log.d(TAG, "init createBitmap");
             playerRenderer.setSubtitleRenderer(subtitleRenderer);
@@ -142,6 +145,15 @@ public class PlayerController {
         timer.cancel();
     }
 
+    protected void requestRender() {
+        playerView.post(new Runnable() {
+            @Override
+            public void run() {
+                PlayerController.this.playerView.invalidate();
+            }
+        });
+    }
+
     private void resumeTimer(final Context context) {
         // 렌더링 타이머 24fps
         final TimerTask task = new TimerTask() {
@@ -158,12 +170,7 @@ public class PlayerController {
                 }
 
                 PlayerController.this.playerView.setTag(playerRenderer);
-                PlayerController.this.playerView.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        PlayerController.this.playerView.invalidate();
-                    }
-                });
+                PlayerController.this.requestRender();
             }
         };
 

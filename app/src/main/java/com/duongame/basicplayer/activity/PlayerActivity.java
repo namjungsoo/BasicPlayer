@@ -25,6 +25,7 @@ import android.widget.TextView;
 
 import com.duongame.basicplayer.BuildConfig;
 import com.duongame.basicplayer.R;
+import com.duongame.basicplayer.controller.GLPlayerController;
 import com.duongame.basicplayer.manager.AdBannerManager;
 import com.duongame.basicplayer.manager.AdInterstitialManager;
 import com.duongame.basicplayer.manager.FullscreenManager;
@@ -32,7 +33,8 @@ import com.duongame.basicplayer.manager.PreferenceManager;
 import com.duongame.basicplayer.manager.ScreenManager;
 import com.duongame.basicplayer.util.TimeConverter;
 import com.duongame.basicplayer.util.UnitConverter;
-import com.duongame.basicplayer.view.PlayerController;
+import com.duongame.basicplayer.controller.PlayerController;
+import com.duongame.basicplayer.view.GLPlayerView;
 import com.duongame.basicplayer.view.PlayerView;
 import com.google.android.gms.ads.AdView;
 
@@ -43,7 +45,9 @@ import static com.duongame.basicplayer.manager.AdInterstitialManager.MODE_EXIT;
 public class PlayerActivity extends BaseActivity {
     private final static String TAG = "PlayerActivity";
 
-    private PlayerView playerView;
+    //TEST
+    //private PlayerView playerView;
+    private GLPlayerView playerView;
 
     private ViewGroup toolBox;
     //private float alpha;
@@ -80,7 +84,7 @@ public class PlayerActivity extends BaseActivity {
 
         playerFrame = (FrameLayout) findViewById(R.id.playerFrame);
 
-        playerView = (PlayerView) findViewById(R.id.playerView);
+        playerView =  findViewById(R.id.playerView);
         toolBox = (ViewGroup) findViewById(R.id.toolBox);
 
         currentTime = (TextView) findViewById(R.id.currentTime);
@@ -95,7 +99,9 @@ public class PlayerActivity extends BaseActivity {
         seekTime = (TextView) findViewById(R.id.seekTime);
         seekBar = (SeekBar) findViewById(R.id.seekBar);
 
-        playerController = new PlayerController(playerView);
+        //TEST
+        //playerController = new PlayerController(playerView);
+        playerController = new GLPlayerController(playerView);
 
         // 광고 처리
         //PRO

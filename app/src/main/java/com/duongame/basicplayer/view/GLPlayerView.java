@@ -12,6 +12,7 @@ public class GLPlayerView extends GLSurfaceView {
     private final static String TAG = "GLPlayerView";
 
     private TouchHandler touchHandler = new TouchHandler();
+    private GLRenderer renderer;
 
     public GLPlayerView(Context context) {
         this(context, null);
@@ -20,8 +21,15 @@ public class GLPlayerView extends GLSurfaceView {
     public GLPlayerView(Context context, AttributeSet attrs) {
         super(context, attrs);
 
+        renderer = new GLRenderer();
+
         setEGLContextClientVersion(2);
         setRenderer(new GLRenderer());
+        setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
+    }
+
+    public GLRenderer getRenderer() {
+        return renderer;
     }
 
     //region
