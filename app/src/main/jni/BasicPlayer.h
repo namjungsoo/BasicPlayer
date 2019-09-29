@@ -32,6 +32,7 @@ int openAudioStream(Movie *movie);
 int decodeFrame(Movie *movie);
 
 void copyPixels(Movie *movie, uint8_t *pixels);
+void copyPixelsYUV(Movie *movie, uint8_t *pixelsY, uint8_t *pixelsU, uint8_t *pixelsV);
 
 int getWidth(Movie *movie);
 int getHeight(Movie *movie);

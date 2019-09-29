@@ -14,6 +14,10 @@
 #include <stdint.h>
 #include <linux/termios.h>
 
+#define PLAYER_RESULT_OK (0)
+#define PLAYER_RESULT_ERROR (-1)
+#define PLAYER_RESULT_END (1)
+
 int tcgetattr(int fd, struct termios *s)    
 {
 	return ioctl(fd, TCGETS, s);
@@ -108,10 +112,39 @@ jint Java_com_duongame_basicplayer_Player_openMovie(JNIEnv *env, jobject thiz, i
 	return result;
 }
 
+jint Java_com_duongame_basicplayer_Player_renderFrameYUV(JNIEnv *env, jobject thiz, int id, jobject bitmapY, jobject bitmapU, jobject bitmapV) {
+    void *pixelsY, *pixelsU, *pixelsV;
+	int result;
+
+	Movie *gMovie = MovieMap_get(id);
+	if(gMovie == NULL)
+		return -1;
+
+	// 영상이 종료된 상태임 
+	if(decodeFrame(gMovie) < 0) {
+		return 1;// 종료 상태 
+	}
+	else {
+		if ((result = AndroidBitmap_lockPixels(env, bitmapY, &pixelsY)) < 0)
+			return result;
+		if ((result = AndroidBitmap_lockPixels(env, bitmapU, &pixelsU)) < 0)
+			return result;
+		if ((result = AndroidBitmap_lockPixels(env, bitmapV, &pixelsV)) < 0)
+			return result;
+
+		copyPixelsYUV(gMovie, (uint8_t*)pixelsY, (uint8_t*)pixelsU, (uint8_t*)pixelsV);
+
+		AndroidBitmap_unlockPixels(env, bitmapY);
+		AndroidBitmap_unlockPixels(env, bitmapU);
+		AndroidBitmap_unlockPixels(env, bitmapV);
+	}
+
+	return 0;
+
+}
+
 jint Java_com_duongame_basicplayer_Player_renderFrame(JNIEnv *env, jobject thiz, int id, jobject bitmap)
 {
-//	LOGD("BEGIN renderFrame");
-    
     void *pixels;
 	int result;
 
@@ -119,31 +152,18 @@ jint Java_com_duongame_basicplayer_Player_renderFrame(JNIEnv *env, jobject thiz,
 	if(gMovie == NULL)
 		return -1;
 
-	// LOGD("renderFrame BEGIN");
-
 	// 영상이 종료된 상태임 
 	if(decodeFrame(gMovie) < 0) {
-		// LOGD("closeMovie");
-
-		// 영상이 종료되도 close하지 말자 
-		//closeMovie();
-
-		// LOGD("renderFrame END");
 		return 1;// 종료 상태 
 	}
 	else {
-		//TODO: 렌더링 타겟을 Bitmap이 아닌 다른것으로 설정 
-		// LOGD("renderFrame lockPixels");
 		if ((result = AndroidBitmap_lockPixels(env, bitmap, &pixels)) < 0)
 			return result;
 
 		copyPixels(gMovie, (uint8_t*)pixels);
 
-		// LOGD("renderFrame unlockPixels");
 		AndroidBitmap_unlockPixels(env, bitmap);
 	}
-
-//	LOGD("END renderFrame");
 	return 0;
 }
 
@@ -235,8 +255,6 @@ jlong Java_com_duongame_basicplayer_Player_getCurrentPositionUs(JNIEnv *env, job
 	if(gMovie == NULL)
 		return 0;
 
-//	LOGD("BEGIN getCurrentPositionUs");
 	jlong ret = getPosition(gMovie);
-//	LOGD("END getCurrentPositionUs");
 	return ret;
 }

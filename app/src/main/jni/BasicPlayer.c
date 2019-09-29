@@ -117,7 +117,6 @@ int openVideoStream(Movie *movie, int width, int height)
 	// 비디오 버퍼를 할당한다. 
 	movie->gVideoBuffer = (uint8_t*)(malloc(sizeof(uint8_t) * movie->gPictureSize));
 
-	//TODO: 입력받은 width, height로 동작하게 설정
 	// 비디오 버퍼 메모리(gFrameRGB)를 설정함
 	av_image_fill_arrays(movie->gFrameRGB->data, movie->gFrameRGB->linesize, movie->gVideoBuffer, movie->gPixelFormat, movie->gTargetWidth, movie->gTargetHeight, 1);
 
@@ -362,9 +361,7 @@ int decodeFrame(Movie *movie)
 //			LOGD("pts=%f pts_clock=%f pts_long=%lu", pts, pts_clock, pts_long);
 
 			if (frameFinished) {
-				//TODO: 이부분이 성능이 느리다.
 				// 이미지 컨버트 컨텍스트를 받는다. 없으면 새로 생성
-
 				long us;
 				us = getMicrotime();
 				//LOGD("sws_getCachedContext BEGIN %ld", us);
@@ -421,26 +418,17 @@ int decodeFrame(Movie *movie)
 	return -1;
 }
 
+void copyPixelsYUV(Movie *movie, uint8_t *pixelsY, uint8_t *pixelsU, uint8_t *pixelsV) {
+    LOGD("copyPixelsYUV BEGIN %d %d linesize=[%d %d %d]", movie->gFrame->data, movie->gVideoPictureSize, movie->gFrame->linesize[0], movie->gFrame->linesize[1], movie->gFrame->linesize[2]);
+    memcpy(pixelsY, movie->gFrame->data[0], movie->gVideoPictureSize*2/3);// Y
+    memcpy(pixelsU, movie->gFrame->data[1], movie->gVideoPictureSize/6);// U
+    memcpy(pixelsV, movie->gFrame->data[2], movie->gVideoPictureSize/6);// V
+    LOGD("copyPixelsYUV END");
+}
+
 void copyPixels(Movie *movie, uint8_t *pixels)
 {
-	// 테스트로 gFrameRGB로 memcpy 해봄
-	// 여기서는 크래시 발생 
-//	memcpy(pixels, movie->gFrame->data[0], movie->gPictureSize);
-
-	//ORG
-//	memcpy(pixels, movie->gFrameRGB->data[0], movie->gPictureSize);
-    LOGD("copyPixels BEGIN %d %d linesize=[%d %d %d]", movie->gFrame->data, movie->gVideoPictureSize, movie->gFrame->linesize[0], movie->gFrame->linesize[1], movie->gFrame->linesize[2]);
-    uint8_t offset = 0;
-    memcpy(pixels+offset, movie->gFrame->data[0], movie->gVideoPictureSize*2/3);// y
-    offset += movie->gVideoPictureSize*2/3;
-    memcpy(pixels+offset, movie->gFrame->data[1], movie->gVideoPictureSize/6);// u
-    offset += movie->gVideoPictureSize/6;
-    memcpy(pixels+offset, movie->gFrame->data[2], movie->gVideoPictureSize/6);// v
-    LOGD("copyPixels END");
-
-	//NEW
-	// int pictureSize = av_image_get_buffer_size(movie->gPixelFormat, width, height, 1);
-	// memcpy(pixels, movie->gFrameRGB->data[0], pictureSize);
+	memcpy(pixels, movie->gFrameRGB->data[0], movie->gPictureSize);
 }
 
 int getWidth(Movie *movie)
