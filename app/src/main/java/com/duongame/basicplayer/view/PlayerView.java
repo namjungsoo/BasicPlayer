@@ -43,9 +43,9 @@ public class PlayerView extends View {
         bitmapRenderer.updateUI(getContext());
 
         boolean degree90 = bitmapRenderer.applyRotation(canvas, getWidth(), getHeight());
-        bitmapRenderer.beginRendering(getContext(), getWidth(), getHeight(), degree90);
+        bitmapRenderer.calcTargetRect(getContext(), getWidth(), getHeight(), degree90);
         bitmapRenderer.render(canvas);
-        bitmapRenderer.endRendering(canvas);
+        bitmapRenderer.restoreRotation(canvas);
 
         bitmapRenderer.renderSubtitle(getContext(), canvas, getWidth(), getHeight());
     }

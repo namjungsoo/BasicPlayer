@@ -384,7 +384,7 @@ int decodeFrame(Movie *movie)
 				// 실제로 scale을 하면서 픽셀포맷도 변경한다.
 				us = getMicrotime();
 				//LOGD("sws_scale BEGIN %ld", us);
-//				sws_scale(movie->gImgConvertCtx, (const uint8_t * const*)movie->gFrame->data, movie->gFrame->linesize, 0, movie->gVideoCodecCtx->height, movie->gFrameRGB->data, movie->gFrameRGB->linesize);
+				sws_scale(movie->gImgConvertCtx, (const uint8_t * const*)movie->gFrame->data, movie->gFrame->linesize, 0, movie->gVideoCodecCtx->height, movie->gFrameRGB->data, movie->gFrameRGB->linesize);
 
 				// for(int i=0; i<AV_NUM_DATA_POINTERS; i++) {
 				// 	LOGD("movie->gFrame->linesize[%d]=%d movie->gFrameRGB->linesize[%d]=%d", i, movie->gFrame->linesize[i], i, movie->gFrameRGB->linesize[i]);

@@ -84,6 +84,10 @@ public class Player {
         return renderFrame(id, bitmap);
     }
 
+    public int renderFrameYUV(Bitmap bitmapY, Bitmap bitmapU, Bitmap bitmapV) {
+        return renderFrameYUV(id, bitmapY, bitmapU, bitmapV);
+    }
+
     public int getMovieWidth() {
         return getMovieWidth(id);
     }

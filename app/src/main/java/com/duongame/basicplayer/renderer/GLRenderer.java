@@ -6,10 +6,12 @@ import android.opengl.GLSurfaceView;
 import android.opengl.GLUtils;
 import android.opengl.Matrix;
 
+import com.duongame.basicplayer.Player;
+
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
-public class GLRenderer implements GLSurfaceView.Renderer {
+public class GLRenderer extends PlayerRenderer implements GLSurfaceView.Renderer {
     private Square mSquare;
 
     private final float[] mMVPMatrix = new float[16];
@@ -17,6 +19,21 @@ public class GLRenderer implements GLSurfaceView.Renderer {
     private final float[] mViewMatrix = new float[16];
 
     private int textureId;
+
+    public GLRenderer() {
+    }
+
+    @Override
+    public void initBitmap(int movieWidth, int movieHeight) {
+        super.initBitmap(movieWidth, movieHeight);
+        textureId = initTexture(this.getBitmap());
+    }
+
+    @Override
+    public void renderFrame(Player player) {
+        super.renderFrame(player);
+        updateTexture(this.getBitmap(), textureId);
+    }
 
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
@@ -42,7 +59,7 @@ public class GLRenderer implements GLSurfaceView.Renderer {
         mSquare.draw(mMVPMatrix, textureId);
     }
 
-    void initTexture(Bitmap bitmap) {
+    int initTexture(Bitmap bitmap) {
         final int[] textureHandle = new int[1];
         GLES20.glGenTextures(1, textureHandle, 0);
         if (textureHandle[0] == 0) {
@@ -58,7 +75,7 @@ public class GLRenderer implements GLSurfaceView.Renderer {
         // Load the bitmap into the bound texture.
         GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0);
 
-        textureId = textureHandle[0];
+        return textureHandle[0];
     }
 
     void updateTexture(Bitmap bitmap, int texId) {

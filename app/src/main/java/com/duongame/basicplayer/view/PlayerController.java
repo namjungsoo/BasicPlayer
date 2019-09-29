@@ -9,6 +9,7 @@ import android.widget.Toast;
 import com.duongame.basicplayer.Player;
 import com.duongame.basicplayer.manager.PreferenceManager;
 import com.duongame.basicplayer.renderer.BitmapRenderer;
+import com.duongame.basicplayer.renderer.PlayerRenderer;
 import com.duongame.basicplayer.renderer.SubtitleRenderer;
 import com.duongame.basicplayer.util.SmiParser;
 
@@ -30,7 +31,7 @@ public class PlayerController {
 
     private String filename;
 
-    private BitmapRenderer bitmapRenderer;
+    private PlayerRenderer playerRenderer;
     private SubtitleRenderer subtitleRenderer = new SubtitleRenderer();
 
     public PlayerController(View playerView) {
@@ -63,9 +64,11 @@ public class PlayerController {
             final int movieHeight = player.getMovieHeight();
 
             //bitmap = Bitmap.createBitmap(movieWidth, movieHeight, Bitmap.Config.ARGB_8888);
-            bitmapRenderer = new BitmapRenderer(movieWidth, movieHeight);
+            playerRenderer = new BitmapRenderer();
+            playerRenderer.initBitmap(movieWidth, movieHeight);
+
             Log.d(TAG, "init createBitmap");
-            bitmapRenderer.setSubtitleRenderer(subtitleRenderer);
+            playerRenderer.setSubtitleRenderer(subtitleRenderer);
 
             subtitleRenderer.setSubtitleList(null);
 
@@ -105,20 +108,20 @@ public class PlayerController {
 
     public void setBitmapRotation(int rotation) {
         //this.rotation = rotation;
-        if (bitmapRenderer == null)
+        if (playerRenderer == null)
             return;
-        bitmapRenderer.setRotation(rotation);
+        playerRenderer.setRotation(rotation);
     }
 
     public int getBitmapRotation() {
         //return rotation;
-        return bitmapRenderer.getRotation();
+        return playerRenderer.getRotation();
     }
 
     public void setPortrait(boolean portrait) {
-        if (bitmapRenderer == null)
+        if (playerRenderer == null)
             return;
-        bitmapRenderer.setPortrait(portrait);
+        playerRenderer.setPortrait(portrait);
     }
 
     public void pause(Context context, boolean end) {
@@ -147,16 +150,14 @@ public class PlayerController {
 //                Log.d(TAG, "Timer");
 
                 // 미리 렌더링후 invalidate 호출
-                long currentPositionUs = player.getCurrentPositionUs();
                 if (isPlaying || isSeeking) {
-                    if (bitmapRenderer == null)
+                    if (playerRenderer == null)
                         return;
 
-                    bitmapRenderer.renderFrame(player);
-                    //bitmapRenderer.updateUI(context);
+                    playerRenderer.renderFrame(player);
                 }
 
-                PlayerController.this.playerView.setTag(bitmapRenderer);
+                PlayerController.this.playerView.setTag(playerRenderer);
                 PlayerController.this.playerView.post(new Runnable() {
                     @Override
                     public void run() {
