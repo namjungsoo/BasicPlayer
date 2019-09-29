@@ -105,7 +105,7 @@ public class PlayerController {
 
     public void setBitmapRotation(int rotation) {
         //this.rotation = rotation;
-        if(bitmapRenderer == null)
+        if (bitmapRenderer == null)
             return;
         bitmapRenderer.setRotation(rotation);
     }
@@ -116,7 +116,7 @@ public class PlayerController {
     }
 
     public void setPortrait(boolean portrait) {
-        if(bitmapRenderer == null)
+        if (bitmapRenderer == null)
             return;
         bitmapRenderer.setPortrait(portrait);
     }
@@ -149,7 +149,7 @@ public class PlayerController {
                 // 미리 렌더링후 invalidate 호출
                 long currentPositionUs = player.getCurrentPositionUs();
                 if (isPlaying || isSeeking) {
-                    if(bitmapRenderer == null)
+                    if (bitmapRenderer == null)
                         return;
 
                     bitmapRenderer.renderFrame(player);
