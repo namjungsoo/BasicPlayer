@@ -11,3 +11,7 @@
   
 main -> original 변경: flavor에서 main은 더이상 지원 안함
 APK -> bundle 실패: Google Play 서명 등록해야 함 
+
+## NDK Build
+`c:\Android\android-ndk-r14b\build\ndk-build`
+APP_PLATFORM := android-16

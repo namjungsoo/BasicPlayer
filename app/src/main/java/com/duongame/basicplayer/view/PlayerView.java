@@ -48,6 +48,5 @@ public class PlayerView extends View {
         bitmapRenderer.endRendering(canvas);
 
         bitmapRenderer.renderSubtitle(getContext(), canvas, getWidth(), getHeight());
-
     }
 }

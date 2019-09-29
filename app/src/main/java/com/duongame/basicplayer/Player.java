@@ -127,7 +127,7 @@ public class Player {
 
     private native int renderFrame(int id, Bitmap bitmap);
 
-    private native int renderFrameYUV(int id, Bitmap bitmapY, Bitmap bitmapU, bitmapV);
+    private native int renderFrameYUV(int id, Bitmap bitmapY, Bitmap bitmapU, Bitmap bitmapV);
 
     private native int getMovieWidth(int id);
 
