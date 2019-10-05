@@ -6,6 +6,7 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 
+import com.duongame.basicplayer.controller.GLPlayerController;
 import com.duongame.basicplayer.renderer.GLRenderer;
 
 public class GLPlayerView extends GLSurfaceView {
@@ -21,15 +22,18 @@ public class GLPlayerView extends GLSurfaceView {
     public GLPlayerView(Context context, AttributeSet attrs) {
         super(context, attrs);
 
-        renderer = new GLRenderer();
-
-        setEGLContextClientVersion(2);
-        setRenderer(new GLRenderer());
-        setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
     }
 
     public GLRenderer getRenderer() {
         return renderer;
+    }
+
+    public void initRenderer(GLPlayerController controller) {
+        renderer = new GLRenderer(controller);
+
+        setEGLContextClientVersion(2);
+        setRenderer(renderer);
+        setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
     }
 
     //region

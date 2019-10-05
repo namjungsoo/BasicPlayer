@@ -84,6 +84,7 @@ public class PlayerActivity extends BaseActivity {
 
         playerFrame = (FrameLayout) findViewById(R.id.playerFrame);
 
+        //TEST
         playerView =  findViewById(R.id.playerView);
         toolBox = (ViewGroup) findViewById(R.id.toolBox);
 
@@ -102,6 +103,7 @@ public class PlayerActivity extends BaseActivity {
         //TEST
         //playerController = new PlayerController(playerView);
         playerController = new GLPlayerController(playerView);
+        playerController.initPlayerRendererer();
 
         // 광고 처리
         //PRO
@@ -134,7 +136,15 @@ public class PlayerActivity extends BaseActivity {
 
         updateRotation();
 
-        openFile();
+        Log.e(TAG, "PlayerActivity.onCreate threadId=" + Thread.currentThread().getId());
+
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Log.e(TAG, "PlayerActivity.runOnUiThread threadId=" + Thread.currentThread().getId());
+                openFile();
+            }
+        });
     }
 
 
@@ -297,7 +307,7 @@ public class PlayerActivity extends BaseActivity {
                     if (playerView != null) {
                         // 플레이 상태 복구
                         if (!startAtPaused) {
-                            playerController.resume(PlayerActivity.this);
+                            playerController.resume();
                             updatePlayButton();
                         }
                         playerController.setSeeking(false);
@@ -370,7 +380,7 @@ public class PlayerActivity extends BaseActivity {
                         if (playerController.getPlaying()) {
                             playerController.pause(PlayerActivity.this, false);
                         } else {
-                            playerController.resume(PlayerActivity.this);
+                            playerController.resume();
                         }
                     }
                     updatePlayButton();
@@ -399,6 +409,8 @@ public class PlayerActivity extends BaseActivity {
 
         // 파일 읽기 성공일때
         if (playerController.openFile(this, filename)) {
+            //TEST
+            //playerController.preparePlaying(this);
             playerController.setBitmapRotation(rotation);
             updateBitmapRotation();
 

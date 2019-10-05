@@ -5,23 +5,19 @@ import android.view.View;
 import com.duongame.basicplayer.view.GLPlayerView;
 
 public class GLPlayerController extends PlayerController {
+    private static String TAG = GLPlayerController.class.getSimpleName();
     GLPlayerView glPlayerView;
 
     public GLPlayerController(View playerView) {
         super(playerView);
 
         glPlayerView = (GLPlayerView) playerView;
+        glPlayerView.initRenderer(this);
     }
 
     @Override
-    protected void initPlayerRenderer(final int movieWidth, final int movieHeight) {
+    public void initPlayerRendererer() {
         playerRenderer = glPlayerView.getRenderer();
-        glPlayerView.post(new Runnable() {
-            @Override
-            public void run() {
-                playerRenderer.initBitmap(movieWidth, movieHeight);
-            }
-        });
     }
 
     @Override

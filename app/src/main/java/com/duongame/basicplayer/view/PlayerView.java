@@ -8,6 +8,7 @@ import android.view.MotionEvent;
 import android.view.View;
 
 import com.duongame.basicplayer.renderer.BitmapRenderer;
+import com.duongame.basicplayer.renderer.PlayerRenderer;
 
 /**
  * Created by namjungsoo on 16. 6. 18..
@@ -36,7 +37,7 @@ public class PlayerView extends View {
         super.onDraw(canvas);
         canvas.drawColor(Color.BLACK);
 
-        BitmapRenderer bitmapRenderer = (BitmapRenderer) getTag();
+        PlayerRenderer bitmapRenderer = (BitmapRenderer) getTag();
         if (bitmapRenderer == null)
             return;
 

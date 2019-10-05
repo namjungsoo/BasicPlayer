@@ -4,12 +4,15 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Rect;
+import android.util.Log;
 import android.view.Surface;
 
 import com.duongame.basicplayer.Player;
 import com.duongame.basicplayer.activity.PlayerActivity;
+import com.duongame.basicplayer.controller.PlayerController;
 
 public class PlayerRenderer {
+    private static String TAG = PlayerRenderer.class.getSimpleName();
     private Bitmap bitmap;
 
     private int rotation = Surface.ROTATION_0;
@@ -21,8 +24,12 @@ public class PlayerRenderer {
     private int ret;
     private long currentPositionUs;
     SubtitleRenderer subtitleRenderer;
+    Player player;
+    PlayerController playerController;
 
-    public PlayerRenderer() {
+    public PlayerRenderer(PlayerController playerController) {
+        this.playerController = playerController;
+        this.player = playerController.getPlayer();
     }
 
     public void initBitmap(int movieWidth, int movieHeight) {
@@ -30,8 +37,9 @@ public class PlayerRenderer {
     }
 
     // bitmap에 영상을 렌더링한다
-    public void renderFrame(Player player) {
+    public void renderFrame() {
         if (bitmap == null) {
+            Log.e(TAG, "renderFrame bitmap is null");
             return;
         }
 

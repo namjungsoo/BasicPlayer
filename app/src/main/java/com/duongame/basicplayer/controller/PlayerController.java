@@ -8,7 +8,6 @@ import android.widget.Toast;
 
 import com.duongame.basicplayer.Player;
 import com.duongame.basicplayer.manager.PreferenceManager;
-import com.duongame.basicplayer.renderer.BitmapRenderer;
 import com.duongame.basicplayer.renderer.PlayerRenderer;
 import com.duongame.basicplayer.renderer.SubtitleRenderer;
 import com.duongame.basicplayer.util.SmiParser;
@@ -39,6 +38,14 @@ public class PlayerController {
         player.init();
     }
 
+    public void initPlayerRendererer() {
+        this.playerRenderer = new PlayerRenderer(this);
+    }
+
+    public Player getPlayer() {
+        return player;
+    }
+
     private void initRenderTimer() {
         double fps = player.getFps();
         Log.d(TAG, "fps=" + fps);
@@ -49,9 +56,44 @@ public class PlayerController {
         Log.d(TAG, "interval=" + interval);
     }
 
-    protected void initPlayerRenderer(int movieWidth, int movieHeight) {
-        playerRenderer = new BitmapRenderer();
+    protected void initPlayerRendererBitmap(int movieWidth, int movieHeight) {
         playerRenderer.initBitmap(movieWidth, movieHeight);
+    }
+
+    public void initSubtitleRenderer() {
+        playerRenderer.setSubtitleRenderer(subtitleRenderer);
+        subtitleRenderer.setSubtitleList(null);
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                // 자막이 있으면 자막을 로딩하자
+                final String smiFile = filename.substring(0, filename.lastIndexOf(".")) + ".smi";
+                Log.d(TAG, "smiFile=" + smiFile);
+
+                final SmiParser parser = new SmiParser();
+                try {
+                    parser.load(smiFile);
+                    subtitleRenderer.setSubtitleList(parser.getSubtitleList());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    subtitleRenderer.setSubtitleList(null);
+                }
+            }
+        }).start();
+    }
+
+    public void preparePlaying() {
+        Log.d(TAG, "preparePlaying");
+        final int movieWidth = player.getMovieWidth();
+        final int movieHeight = player.getMovieHeight();
+
+        initPlayerRendererBitmap(movieWidth, movieHeight);
+
+        initSubtitleRenderer();
+        initRenderTimer();
+
+        resume();
     }
 
     public boolean openFile(Context context, final String filename) {
@@ -65,37 +107,6 @@ public class PlayerController {
             ((Activity) context).finish();
             return false;
         } else {
-            final int movieWidth = player.getMovieWidth();
-            final int movieHeight = player.getMovieHeight();
-
-            initPlayerRenderer(movieWidth, movieHeight);
-
-            Log.d(TAG, "init createBitmap");
-            playerRenderer.setSubtitleRenderer(subtitleRenderer);
-
-            subtitleRenderer.setSubtitleList(null);
-
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    // 자막이 있으면 자막을 로딩하자
-                    final String smiFile = filename.substring(0, filename.lastIndexOf(".")) + ".smi";
-                    Log.d(TAG, "smiFile=" + smiFile);
-
-                    final SmiParser parser = new SmiParser();
-                    try {
-                        parser.load(smiFile);
-                        subtitleRenderer.setSubtitleList(parser.getSubtitleList());
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        subtitleRenderer.setSubtitleList(null);
-                    }
-                }
-            }).start();
-
-            initRenderTimer();
-            resume(context);
-
             this.filename = filename;
             return true;
         }
@@ -135,9 +146,9 @@ public class PlayerController {
         PreferenceManager.saveRecentFile(context, filename, player.getCurrentPositionUs(), getBitmapRotation());
     }
 
-    public void resume(Context context) {
+    public void resume() {
         isPlaying = true;
-        resumeTimer(context);
+        resumeTimer();
         Player.resumeMovie();
     }
 
@@ -154,7 +165,7 @@ public class PlayerController {
         });
     }
 
-    private void resumeTimer(final Context context) {
+    protected void resumeTimer() {
         // 렌더링 타이머 24fps
         final TimerTask task = new TimerTask() {
             @Override
@@ -166,7 +177,7 @@ public class PlayerController {
                     if (playerRenderer == null)
                         return;
 
-                    playerRenderer.renderFrame(player);
+                    playerRenderer.renderFrame();
                 }
 
                 PlayerController.this.playerView.setTag(playerRenderer);
