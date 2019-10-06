@@ -32,6 +32,7 @@ import com.duongame.basicplayer.manager.PreferenceManager;
 import com.duongame.basicplayer.manager.ScreenManager;
 import com.duongame.basicplayer.util.TimeConverter;
 import com.duongame.basicplayer.util.UnitConverter;
+import com.duongame.basicplayer.view.GLPlayerView;
 import com.duongame.basicplayer.view.PlayerView;
 import com.google.android.gms.ads.AdView;
 
@@ -43,7 +44,7 @@ public class PlayerActivity extends BaseActivity {
     private final static String TAG = "PlayerActivity";
 
     //TEST
-    private PlayerView playerView;
+    private GLPlayerView playerView;
     //private GLPlayerView playerView;
 
     private ViewGroup toolBox;
