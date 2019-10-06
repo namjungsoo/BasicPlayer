@@ -5,10 +5,8 @@ import android.view.MotionEvent;
 import android.view.VelocityTracker;
 import android.view.View;
 
-import static com.duongame.basicplayer.view.TouchHandler.Axis.AXIS_X;
-import static com.duongame.basicplayer.view.TouchHandler.Axis.AXIS_Y;
-
 public class TouchHandler {
+    //region
     // Touch
     protected enum Axis {
         AXIS_X,
@@ -16,7 +14,7 @@ public class TouchHandler {
         AXIS_BOTH
     }
 
-    Axis touchAxis = AXIS_X;
+    Axis touchAxis = Axis.AXIS_X;
 
     // touch
     boolean isBeingDragged = false;
@@ -65,9 +63,9 @@ public class TouchHandler {
 
             case MotionEvent.ACTION_MOVE: {
                 if (!isBeingDragged) {
-                    if (touchAxis == AXIS_X) {
+                    if (touchAxis == Axis.AXIS_X) {
                         startDragXIfNeeded(ev);
-                    } else if (touchAxis == AXIS_Y) {
+                    } else if (touchAxis == Axis.AXIS_Y) {
                         startDragYIfNeeded(ev);
                     }
                 }
@@ -103,4 +101,5 @@ public class TouchHandler {
         return false;
     }
 
+    //endregion
 }

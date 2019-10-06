@@ -25,7 +25,6 @@ import android.widget.TextView;
 
 import com.duongame.basicplayer.BuildConfig;
 import com.duongame.basicplayer.R;
-import com.duongame.basicplayer.controller.GLPlayerController;
 import com.duongame.basicplayer.manager.AdBannerManager;
 import com.duongame.basicplayer.manager.AdInterstitialManager;
 import com.duongame.basicplayer.manager.FullscreenManager;
@@ -33,8 +32,6 @@ import com.duongame.basicplayer.manager.PreferenceManager;
 import com.duongame.basicplayer.manager.ScreenManager;
 import com.duongame.basicplayer.util.TimeConverter;
 import com.duongame.basicplayer.util.UnitConverter;
-import com.duongame.basicplayer.controller.PlayerController;
-import com.duongame.basicplayer.view.GLPlayerView;
 import com.duongame.basicplayer.view.PlayerView;
 import com.google.android.gms.ads.AdView;
 
@@ -46,8 +43,8 @@ public class PlayerActivity extends BaseActivity {
     private final static String TAG = "PlayerActivity";
 
     //TEST
-    //private PlayerView playerView;
-    private GLPlayerView playerView;
+    private PlayerView playerView;
+    //private GLPlayerView playerView;
 
     private ViewGroup toolBox;
     //private float alpha;
@@ -71,8 +68,6 @@ public class PlayerActivity extends BaseActivity {
     //private int statusBarHeight;
     //private FirebaseRemoteConfig firebaseRemoteConfig;
 
-    private PlayerController playerController;
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -85,7 +80,7 @@ public class PlayerActivity extends BaseActivity {
         playerFrame = (FrameLayout) findViewById(R.id.playerFrame);
 
         //TEST
-        playerView =  findViewById(R.id.playerView);
+        playerView = findViewById(R.id.playerView);
         toolBox = (ViewGroup) findViewById(R.id.toolBox);
 
         currentTime = (TextView) findViewById(R.id.currentTime);
@@ -99,11 +94,6 @@ public class PlayerActivity extends BaseActivity {
         // 전체화면에 그려지는 흰색 탐색 시간
         seekTime = (TextView) findViewById(R.id.seekTime);
         seekBar = (SeekBar) findViewById(R.id.seekBar);
-
-        //TEST
-        //playerController = new PlayerController(playerView);
-        playerController = new GLPlayerController(playerView);
-        playerController.initPlayerRendererer();
 
         // 광고 처리
         //PRO
@@ -178,7 +168,7 @@ public class PlayerActivity extends BaseActivity {
         Log.d(TAG, "onPause");
         super.onPause();
 
-        playerController.pause(this, false);
+        playerView.pause(false);
         updatePlayButton();
     }
 
@@ -201,7 +191,7 @@ public class PlayerActivity extends BaseActivity {
         Log.d(TAG, "onDestroy");
         super.onDestroy();
 
-        playerController.close();
+        playerView.close();
         if (adView != null) {
             playerFrame.removeView(adView);
         }
@@ -281,7 +271,7 @@ public class PlayerActivity extends BaseActivity {
                     // 유저가 움직였을 경우에만 탐색
                     if (fromUser) {
                         final long positionUs = progress * TimeConverter.SEC_TO_US;
-                        playerController.seekMovie(positionUs);
+                        playerView.seekMovie(positionUs);
                         seekTime.setText(TimeConverter.convertUsToString(positionUs));
                         playerView.invalidate();
                     }
@@ -290,12 +280,12 @@ public class PlayerActivity extends BaseActivity {
                 @Override
                 public void onStartTrackingTouch(SeekBar seekBar) {
                     if (playerView != null) {
-                        playerController.setSeeking(true);
-                        if (!playerController.getPlaying())
+                        playerView.setSeeking(true);
+                        if (!playerView.getPlaying())
                             startAtPaused = true;
                         else {
                             startAtPaused = false;
-                            playerController.pause(PlayerActivity.this, false);
+                            playerView.pause(false);
                             updatePlayButton();
                         }
                         seekTime.setVisibility(View.VISIBLE);
@@ -307,10 +297,10 @@ public class PlayerActivity extends BaseActivity {
                     if (playerView != null) {
                         // 플레이 상태 복구
                         if (!startAtPaused) {
-                            playerController.resume();
+                            playerView.resume();
                             updatePlayButton();
                         }
-                        playerController.setSeeking(false);
+                        playerView.setSeeking(false);
                         seekTime.setVisibility(View.INVISIBLE);
                     }
                 }
@@ -345,7 +335,7 @@ public class PlayerActivity extends BaseActivity {
                     setToolBox(!FullscreenManager.isFullscreen());
 
                     // 포즈 상태이면
-                    if (!playerController.getPlaying()) {
+                    if (!playerView.getPlaying()) {
                         if (adView != null && adView.getVisibility() == View.VISIBLE)
                             setAdView(!FullscreenManager.isFullscreen());
                     }
@@ -361,8 +351,8 @@ public class PlayerActivity extends BaseActivity {
             @Override
             public void onClick(View v) {
                 if (playerView != null) {
-                    final int newRotation = (playerController.getBitmapRotation() + 1) % (Surface.ROTATION_270 + 1);
-                    playerController.setBitmapRotation(newRotation);
+                    final int newRotation = (playerView.getBitmapRotation() + 1) % (Surface.ROTATION_270 + 1);
+                    playerView.setBitmapRotation(newRotation);
                     updateBitmapRotation();
                     playerView.invalidate();
                 }
@@ -377,10 +367,10 @@ public class PlayerActivity extends BaseActivity {
                 public void onClick(View v) {
                     if (playerView != null) {
                         Animation animation;
-                        if (playerController.getPlaying()) {
-                            playerController.pause(PlayerActivity.this, false);
+                        if (playerView.getPlaying()) {
+                            playerView.pause(false);
                         } else {
-                            playerController.resume();
+                            playerView.resume();
                         }
                     }
                     updatePlayButton();
@@ -408,15 +398,13 @@ public class PlayerActivity extends BaseActivity {
         boolean result;
 
         // 파일 읽기 성공일때
-        if (playerController.openFile(this, filename)) {
-            //TEST
-            //playerController.preparePlaying(this);
-            playerController.setBitmapRotation(rotation);
+        if (playerView.openFile(filename)) {
+            playerView.setBitmapRotation(rotation);
             updateBitmapRotation();
 
-            playerController.seekMovie(time);
+            playerView.seekMovie(time);
 
-            final long durationUs = playerController.getMovieDurationUs();
+            final long durationUs = playerView.getMovieDurationUs();
             long durationSec = durationUs / TimeConverter.SEC_TO_US;
             final String duration = TimeConverter.convertUsToString(durationUs);
 
@@ -429,7 +417,7 @@ public class PlayerActivity extends BaseActivity {
 
             setTitle(new File(filename).getName());
 
-            PreferenceManager.saveRecentFile(this, filename, time, playerController.getBitmapRotation());
+            PreferenceManager.saveRecentFile(this, filename, time, playerView.getBitmapRotation());
 
             result = true;
         } else {
@@ -447,7 +435,7 @@ public class PlayerActivity extends BaseActivity {
     }
 
     private void updateBitmapRotation() {
-        final int rotation = playerController.getBitmapRotation();
+        final int rotation = playerView.getBitmapRotation();
         if (rotation == Surface.ROTATION_0) {
             degree.setVisibility(View.INVISIBLE);
             rotate.setColorFilter(Color.WHITE);
@@ -548,7 +536,7 @@ public class PlayerActivity extends BaseActivity {
     private void applyNavigationBarHeight(boolean portrait) {
         // 플레이어에게 회전정보를 입력
         if (playerView != null) {
-            playerController.setPortrait(portrait);
+            playerView.setPortrait(portrait);
         }
 
         if (portrait) {
@@ -579,7 +567,7 @@ public class PlayerActivity extends BaseActivity {
     }
 
     public void updatePlayButton() {
-        if (playerController.getPlaying()) {
+        if (playerView.getPlaying()) {
             play.setImageDrawable(ResourcesCompat.getDrawable(getResources(), R.drawable.pause, getApplicationContext().getTheme()));
         } else {
             play.setImageDrawable(ResourcesCompat.getDrawable(getResources(), R.drawable.play, getApplicationContext().getTheme()));
@@ -587,6 +575,6 @@ public class PlayerActivity extends BaseActivity {
     }
 
     public void pause() {
-        playerController.pause(this, false);
+        playerView.pause(false);
     }
 }
