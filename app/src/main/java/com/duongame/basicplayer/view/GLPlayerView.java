@@ -177,6 +177,10 @@ public class GLPlayerView extends GLSurfaceView {
         private int mTextureIdU;
         private int mTextureIdV;
 
+        ByteBuffer bufferY;
+        ByteBuffer bufferU;
+        ByteBuffer bufferV;
+
         @Override
         public void onSurfaceCreated(GL10 gl, EGLConfig config) {
             Log.e(TAG, "GLRenderer.onSurfaceCreated threadId=" + Thread.currentThread().getId());
@@ -186,15 +190,18 @@ public class GLPlayerView extends GLSurfaceView {
             mSquare = new Square();
 
             if (mTextureIdY == 0) {
-                mTextureIdY = initTexture(bitmapY);
+                bufferY = ByteBuffer.allocate(bitmapY.getWidth() * bitmapY.getHeight());
+                mTextureIdY = initTexture(bitmapY, bufferY);
                 Log.e(TAG, "GLRenderer.onSurfaceCreated mTextureId=" + mTextureIdY + " " + bitmapY);
             }
             if (mTextureIdU == 0) {
-                mTextureIdU = initTexture(bitmapU);
+                bufferU = ByteBuffer.allocate(bitmapU.getWidth() * bitmapU.getHeight());
+                mTextureIdU = initTexture(bitmapU, bufferU);
                 Log.e(TAG, "GLRenderer.onSurfaceCreated mTextureId=" + mTextureIdU + " " + bitmapU);
             }
             if (mTextureIdV == 0) {
-                mTextureIdV = initTexture(bitmapV);
+                bufferV = ByteBuffer.allocate(bitmapV.getWidth() * bitmapV.getHeight());
+                mTextureIdV = initTexture(bitmapV, bufferV);
                 Log.e(TAG, "GLRenderer.onSurfaceCreated mTextureId=" + mTextureIdV + " " + bitmapV);
             }
         }
@@ -211,13 +218,13 @@ public class GLPlayerView extends GLSurfaceView {
             int ret = player.renderFrameYUV(bitmapY, bitmapU, bitmapV);
             Log.e(TAG, "onDrawFrame=" + ret);
             if (mTextureIdY != 0) {
-                updateTexture(bitmapY, mTextureIdY);
+                updateTexture(bitmapY, mTextureIdY, bufferY);
             }
             if (mTextureIdU != 0) {
-                updateTexture(bitmapU, mTextureIdU);
+                updateTexture(bitmapU, mTextureIdU, bufferU);
             }
             if (mTextureIdV != 0) {
-                updateTexture(bitmapV, mTextureIdV);
+                updateTexture(bitmapV, mTextureIdV, bufferV);
             }
 
             // Draw background color
@@ -228,7 +235,7 @@ public class GLPlayerView extends GLSurfaceView {
             mSquare.draw(mMVPMatrix, mTextureIdY, mTextureIdU, mTextureIdV);
         }
 
-        int initTexture(Bitmap bitmap) {
+        int initTexture(Bitmap bitmap, ByteBuffer buffer) {
             Log.e(TAG, "initTexture bitmap=" + bitmap + " threadId=" + Thread.currentThread().getId());
             if (bitmap == null) {
                 Log.e(TAG, "initTexture bitmap is null");
@@ -248,7 +255,6 @@ public class GLPlayerView extends GLSurfaceView {
 
             // Load the bitmap into the bound texture.
             //GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0);
-            ByteBuffer buffer = ByteBuffer.allocate(bitmap.getWidth() * bitmap.getHeight());
             bitmap.copyPixelsToBuffer(buffer);
             buffer.position(0);
 
@@ -266,7 +272,7 @@ public class GLPlayerView extends GLSurfaceView {
             return textureHandle[0];
         }
 
-        void updateTexture(Bitmap bitmap, int texId) {
+        void updateTexture(Bitmap bitmap, int texId, ByteBuffer buffer) {
             // init 되기전에 update가 호출될수 있음
             if (bitmap == null)
                 return;
@@ -276,7 +282,6 @@ public class GLPlayerView extends GLSurfaceView {
             // Bind to the texture in OpenGL
             GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texId);
 
-            ByteBuffer buffer = ByteBuffer.allocate(bitmap.getWidth() * bitmap.getHeight());
             bitmap.copyPixelsToBuffer(buffer);
             buffer.position(0);
 
