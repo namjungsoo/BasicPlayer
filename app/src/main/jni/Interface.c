@@ -13,6 +13,7 @@
 #include <sys/types.h>
 #include <stdint.h>
 #include <linux/termios.h>
+#include <GLES/gl.h>
 
 #define PLAYER_RESULT_OK (0)
 #define PLAYER_RESULT_ERROR (-1)
@@ -110,6 +111,31 @@ jint Java_com_duongame_basicplayer_Player_openMovie(JNIEnv *env, jobject thiz, i
 
 	LOGD("END openMovie");
 	return result;
+}
+
+jint Java_com_duongame_basicplayer_Player_renderFrameYUVTexId(JNIEnv *env, jobject thiz, int id, int width, int height, int texIdY, int texIdU, int texIdV) {
+	int result;
+
+	Movie *gMovie = MovieMap_get(id);
+	if(gMovie == NULL)
+		return -1;
+
+	// 영상이 종료된 상태임 
+	if(decodeFrame(gMovie) < 0) {
+		return 1;// 종료 상태 
+	}
+	else {
+		Movie *movie = gMovie;
+
+		glBindTexture(GL_TEXTURE_2D, texIdY);
+		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_LUMINANCE, GL_UNSIGNED_BYTE, movie->gFrame->data[0]);
+		glBindTexture(GL_TEXTURE_2D, texIdU);
+		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width/2, height/2, GL_LUMINANCE, GL_UNSIGNED_BYTE, movie->gFrame->data[1]);
+		glBindTexture(GL_TEXTURE_2D, texIdV);
+		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width/2, height/2, GL_LUMINANCE, GL_UNSIGNED_BYTE, movie->gFrame->data[2]);
+	}
+
+	return 0;
 }
 
 jint Java_com_duongame_basicplayer_Player_renderFrameYUVArray(JNIEnv *env, jobject thiz, int id, jbyteArray arrayY, jbyteArray arrayU, jbyteArray arrayV) {

@@ -128,6 +128,12 @@ int openVideoStream(Movie *movie, int width, int height)
 	return 0;
 }
 
+int frameFinished = 0;
+int buffer_size = AVCODEC_MAX_AUDIO_FRAME_SIZE + FF_INPUT_BUFFER_PADDING_SIZE;
+
+uint8_t *buffer;
+uint8_t *samples;
+
 int openAudioStream(Movie *movie) 
 {
 	LOGD("openAudioStream gAudioStreamIdx=%d", movie->gAudioStreamIdx);
@@ -153,30 +159,12 @@ int openAudioStream(Movie *movie)
 
 	const char *audioFormat = getAudioFormatString(movie->sfmt);
 	LOGD("openAudioStream audioFormat=%s", audioFormat);
+
+	buffer = av_malloc(sizeof(uint8_t)*buffer_size);
+	samples = av_malloc(sizeof(uint8_t)*buffer_size);
 }
 
-void* decodeAudioThread(void *param) 
-{
-	LOGD("decodeAudioThread BEGIN");
-	Movie *movie = (Movie*)param;
-	int frameFinished = 0;
-
-	int buffer_size = AVCODEC_MAX_AUDIO_FRAME_SIZE + FF_INPUT_BUFFER_PADDING_SIZE;
-	LOGD("decodeAudioThread buffer_size=%d", buffer_size);
-
-	uint8_t *buffer = av_malloc(sizeof(uint8_t)*buffer_size);
-	uint8_t *samples = av_malloc(sizeof(uint8_t)*buffer_size);
-
-	while(movie->gAudioThreadRunning) {
-		AudioQ_lock();
-		size_t size = AudioQ_size();
-		AudioQ_unlock();
-
-		if(size > 0) {
-			AudioQ_lock();
-			AVPacket packet = AudioQ_pop();
-			AudioQ_unlock();
-
+void decodeAudio(Movie *movie, AVPacket packet) {
 			int64_t begin = getTimeNsec();
  			int len = avcodec_decode_audio4(movie->gAudioCodecCtx, movie->gFrameAudio, &frameFinished, &packet);
 			int64_t end = getTimeNsec();
@@ -195,6 +183,8 @@ void* decodeAudioThread(void *param)
 				int plane_size;
 				int data_size = av_samples_get_buffer_size(&plane_size, movie->gAudioCodecCtx->channels, movie->gFrameAudio->nb_samples, movie->gAudioCodecCtx->sample_fmt, 1);
 				uint16_t nb, ch;
+
+				LOGD("movie->sfmt=%d", movie->sfmt);
 
 				if(movie->sfmt == AV_SAMPLE_FMT_S16P) {
 					uint16_t *out = (uint16_t *)samples;
@@ -254,8 +244,28 @@ void* decodeAudioThread(void *param)
 				av_packet_unref(&packet);
 			}
 
+}
+
+
+void* decodeAudioThread(void *param) 
+{
+	LOGD("decodeAudioThread BEGIN");
+	Movie *movie = (Movie*)param;
+
+
+	while(movie->gAudioThreadRunning) {
+		AudioQ_lock();
+		size_t size = AudioQ_size();
+		AudioQ_unlock();
+
+		if(size > 0) {
+			AudioQ_lock();
+			AVPacket packet = AudioQ_pop();
+			AudioQ_unlock();
+
+			decodeAudio(movie, packet);
 		}
-		usleep(1);
+		//usleep(1);
 	}
 
 	LOGW("decodeAudioThread END");
@@ -314,8 +324,8 @@ int openMovieWithAudio(Movie *movie, const char *filePath, int audio, int width,
 		}
 		else {
 			prepareAudioTrack(movie->gAudioCodecCtx->sample_fmt, movie->gAudioCodecCtx->sample_rate, movie->gAudioCodecCtx->channels);
-			movie->gAudioThreadRunning = 1;
-			ret = pthread_create(&movie->gAudioThread, NULL, decodeAudioThread, movie);
+			// movie->gAudioThreadRunning = 1;
+			// ret = pthread_create(&movie->gAudioThread, NULL, decodeAudioThread, movie);
 		}		
 	}
 
@@ -365,32 +375,35 @@ int decodeFrame(Movie *movie)
 				long us;
 				us = getMicrotime();
 				//LOGD("sws_getCachedContext BEGIN %ld", us);
-				movie->gImgConvertCtx = sws_getCachedContext(movie->gImgConvertCtx,
-					movie->gVideoCodecCtx->width,
-					movie->gVideoCodecCtx->height,
-					movie->gVideoCodecCtx->pix_fmt,
-					// 원래 쓰던 파라미터
-					//movie->gVideoCodecCtx->width, movie->gVideoCodecCtx->height, movie->gPixelFormat, SWS_BICUBIC, NULL, NULL, NULL);
-					// 새로운 파라미터: target width/height 추가, fast bilinear 변경
-					movie->gTargetWidth,
-					movie->gTargetHeight,
-					movie->gPixelFormat,
-					SWS_FAST_BILINEAR, NULL, NULL, NULL);
-				us = getMicrotime() - us;
-				LOGD("sws_getCachedContext END us=%ld gVideoCodecCtx->pix_fmt=%ld gPixelFormat=%ld", us, movie->gVideoCodecCtx->pix_fmt, movie->gPixelFormat);// 이거는 솔직히 시간이 안걸림
-				LOGD("gVideoCodecCtx->width=%ld gVideoCodecCtx->height=%ld movie->gTargetWidth=%ld movie->gTargetHeight=%ld",
-					movie->gVideoCodecCtx->width, movie->gVideoCodecCtx->height, movie->gTargetWidth, movie->gTargetHeight);// 이거는 솔직히 시간이 안걸림
+				// movie->gImgConvertCtx = sws_getCachedContext(movie->gImgConvertCtx,
+				// 	movie->gVideoCodecCtx->width,
+				// 	movie->gVideoCodecCtx->height,
+				// 	movie->gVideoCodecCtx->pix_fmt,
+				// 	// 원래 쓰던 파라미터
+				// 	//movie->gVideoCodecCtx->width, movie->gVideoCodecCtx->height, movie->gPixelFormat, SWS_BICUBIC, NULL, NULL, NULL);
+				// 	// 새로운 파라미터: target width/height 추가, fast bilinear 변경
+				// 	movie->gTargetWidth,
+				// 	movie->gTargetHeight,
+				// 	movie->gPixelFormat,
+				// 	SWS_FAST_BILINEAR, NULL, NULL, NULL);
+
+				// us = getMicrotime() - us;
+
+				// LOGD("sws_getCachedContext END us=%ld gVideoCodecCtx->pix_fmt=%ld gPixelFormat=%ld", us, movie->gVideoCodecCtx->pix_fmt, movie->gPixelFormat);// 이거는 솔직히 시간이 안걸림
+				// LOGD("gVideoCodecCtx->width=%ld gVideoCodecCtx->height=%ld movie->gTargetWidth=%ld movie->gTargetHeight=%ld",
+				// 	movie->gVideoCodecCtx->width, movie->gVideoCodecCtx->height, movie->gTargetWidth, movie->gTargetHeight);// 이거는 솔직히 시간이 안걸림
 
 				// 실제로 scale을 하면서 픽셀포맷도 변경한다.
-				us = getMicrotime();
+				// us = getMicrotime();
+
 				//LOGD("sws_scale BEGIN %ld", us);
 				// sws_scale(movie->gImgConvertCtx, (const uint8_t * const*)movie->gFrame->data, movie->gFrame->linesize, 0, movie->gVideoCodecCtx->height, movie->gFrameRGB->data, movie->gFrameRGB->linesize);
 
 				// for(int i=0; i<AV_NUM_DATA_POINTERS; i++) {
 				// 	LOGD("movie->gFrame->linesize[%d]=%d movie->gFrameRGB->linesize[%d]=%d", i, movie->gFrame->linesize[i], i, movie->gFrameRGB->linesize[i]);
 				// }
-				us = getMicrotime() - us;
-				LOGD("sws_scale END us=%ld gFrame->linesize=%lld movie->gFrameRGB->linesize=%lld", us, movie->gFrame->linesize, movie->gFrameRGB->linesize);
+				// us = getMicrotime() - us;
+				// LOGD("sws_scale END us=%ld gFrame->linesize=%lld movie->gFrameRGB->linesize=%lld", us, movie->gFrame->linesize, movie->gFrameRGB->linesize);
 				
 				av_packet_unref(&packet);
 				return 0;
@@ -400,18 +413,19 @@ int decodeFrame(Movie *movie)
 			}
 		}
 		else if(packet.stream_index == movie->gAudioStreamIdx) {
+			decodeAudio(movie, packet);
 			//TODO: 큐 동기화가 필요함 
-			if(movie->gAudioThread != 0) {
-				AudioQ_lock();
-				AudioQ_push(packet);
-				AudioQ_unlock();
-			}
+			// if(movie->gAudioThread != 0) {
+			// 	AudioQ_lock();
+			// 	AudioQ_push(packet);
+			// 	AudioQ_unlock();
+			// }
 		}
 		else {
 			// 처리하지 못했을때 자체적으로 packet을 free 함 
 			av_packet_unref(&packet);
 		}
-		usleep(100);
+		//usleep(100);
 	}
 
 	LOGD("decodeFrame END");
@@ -497,18 +511,21 @@ void closeMovie(Movie *movie)
 
 		pthread_join(movie->gAudioThread, (void**)&status);
 		movie->gAudioThread = 0;		
-
-		if(movie->gAudioCodecCtx != NULL) {
-			avcodec_close(movie->gAudioCodecCtx);
-			movie->gAudioCodecCtx = NULL;
-		}
-		LOGW("closeMovie gAudioCodecCtx");
-		movie->gAudioStreamIdx = -1;
-		
-		AudioQ_lock();
-		AudioQ_clear();
-		AudioQ_unlock();
 	}
+	
+	if(movie->gAudioCodecCtx != NULL) {
+		avcodec_close(movie->gAudioCodecCtx);
+		movie->gAudioCodecCtx = NULL;
+	}
+	LOGW("closeMovie gAudioCodecCtx");
+	movie->gAudioStreamIdx = -1;
+	
+	av_free(buffer);
+	av_free(samples);
+
+	AudioQ_lock();
+	AudioQ_clear();
+	AudioQ_unlock();	
 	//END Audio 
 
 	LOGD("closeMovie END");

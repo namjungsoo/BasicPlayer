@@ -138,16 +138,19 @@ void detatchThread()
 void writeAudioTrack(char* data, int data_size) 
 {
     // 쓰레드에서 호출되므로 javavm에서 env를 호출해야함 
-    JNIEnv *env = attachThread();
-    jobject thiz = player->thiz;
+    JNIEnv *env = player->env;
+
+    // JNIEnv *env = attachThread();
+    // jobject thiz = player->thiz;
 
     // 오디오 트랙에 데이터를 쓰면 된다 여기서
     // 어떤 소리가 나던지 일단은 써보자 
     jbyteArray samples_byte_array = env->NewByteArray(data_size);
+    env->SetByteArrayRegion(samples_byte_array, 0, data_size, (const jbyte*)data);
 
-	jbyte *jni_samples = env->GetByteArrayElements(samples_byte_array, 0);
-	memcpy(jni_samples, data, data_size);
-	env->ReleaseByteArrayElements(samples_byte_array, jni_samples, 0);
+	// jbyte *jni_samples = env->GetByteArrayElements(samples_byte_array, 0);
+	// memcpy(jni_samples, data, data_size);
+	// env->ReleaseByteArrayElements(samples_byte_array, jni_samples, 0);
 
     LOGD("writeAudioTrack=%d", data_size);
 
@@ -155,7 +158,7 @@ void writeAudioTrack(char* data, int data_size)
 	   int ret = env->CallIntMethod(player->audio_track, player->audio_track_write_method, samples_byte_array, 0, data_size);
     }
 
-    detatchThread();
+    // detatchThread();
 }
 
 void pauseAudioTrack(JNIEnv *env, jobject thiz) 

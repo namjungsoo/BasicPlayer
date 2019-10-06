@@ -211,16 +211,17 @@ public class GLPlayerView extends GLSurfaceView {
         @Override
         public void onDrawFrame(GL10 gl) {
             if (isPlaying) {
-                player.renderFrameYUVArray(arrayY, arrayU, arrayV);
-                if (mTextureIdY != 0) {
-                    updateTexture(player.getMovieWidth(), player.getMovieHeight(), mTextureIdY, arrayY);
-                }
-                if (mTextureIdU != 0) {
-                    updateTexture(player.getMovieWidth() / 2, player.getMovieHeight() / 2, mTextureIdU, arrayU);
-                }
-                if (mTextureIdV != 0) {
-                    updateTexture(player.getMovieWidth() / 2, player.getMovieHeight() / 2, mTextureIdV, arrayV);
-                }
+                player.renderFrameYUVTexId(player.getMovieWidth(), player.getMovieHeight(), mTextureIdY, mTextureIdU, mTextureIdV);
+//                player.renderFrameYUVArray(arrayY, arrayU, arrayV);
+//                if (mTextureIdY != 0) {
+//                    updateTexture(player.getMovieWidth(), player.getMovieHeight(), mTextureIdY, arrayY);
+//                }
+//                if (mTextureIdU != 0) {
+//                    updateTexture(player.getMovieWidth() / 2, player.getMovieHeight() / 2, mTextureIdU, arrayU);
+//                }
+//                if (mTextureIdV != 0) {
+//                    updateTexture(player.getMovieWidth() / 2, player.getMovieHeight() / 2, mTextureIdV, arrayV);
+//                }
             }
 
             // Draw background color

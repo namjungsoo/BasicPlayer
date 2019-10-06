@@ -92,6 +92,10 @@ public class Player {
         return renderFrameYUVArray(id, arrayY, arrayU, arrayV);
     }
 
+    public int renderFrameYUVTexId(int width, int height, int texIdY, int texIdU, int texIdV) {
+        return renderFrameYUVTexId(id, width, height, texIdY, texIdU, texIdV);
+    }
+
     public int getMovieWidth() {
         return getMovieWidth(id);
     }
@@ -138,6 +142,8 @@ public class Player {
     private native int renderFrameYUV(int id, Bitmap bitmapY, Bitmap bitmapU, Bitmap bitmapV);
 
     private native int renderFrameYUVArray(int id, byte[] arrayY, byte[] arrayU, byte[] arrayV);
+
+    private native int renderFrameYUVTexId(int id, int width, int height, int texIdY, int texIdU, int texIdV);
 
     private native int getMovieWidth(int id);
 
