@@ -27,11 +27,21 @@ public class Square {
     private final String fragmentShaderCode =
             "precision mediump float;" +
                     "uniform vec4 vColor;" +
-                    "uniform sampler2D tex;" +
+                    "uniform sampler2D texY;" +
+                    "uniform sampler2D texU;" +
+                    "uniform sampler2D texV;" +
                     "varying vec2 TexCoord;" +
                     "void main() {" +
-                    "  float r = texture2D(tex, TexCoord).r;" +
-                    "  gl_FragColor = vec4(r, r, r, 1);" +
+                    "   highp float y = texture2D(texY, TexCoord).r;" +
+                    "   highp float u = texture2D(texU, TexCoord).r;" +
+                    "   highp float v = texture2D(texV, TexCoord).r;" +
+                    "   y = 1.1643 * (y - 0.0625);" +
+                    "   u = u - 0.5;" +
+                    "   v = v - 0.5;" +
+                    "   highp float r = y + 1.5958 * v;" +
+                    "   highp float g = y - 0.39173 * u - 0.81290 * v;" +
+                    "   highp float b = y + 2.017 * u;" +
+                    "   gl_FragColor = vec4(r, g, b, 1.0);" +
                     "}";
     private FloatBuffer vertexBuffer;
     private final ShortBuffer drawListBuffer;
@@ -61,6 +71,8 @@ public class Square {
             1.0f, 1.0f
     };
     private final FloatBuffer texCoordBuffer;
+
+    private int texY, texU, texV;
 
     /**
      * Sets up the drawing object data for use in an OpenGL ES context.
@@ -142,7 +154,7 @@ public class Square {
      * @param mvpMatrix - The Model View Project matrix in which to draw
      *                  this shape.
      */
-    public void draw(float[] mvpMatrix, int texId) {
+    public void draw(float[] mvpMatrix, int texIdY, int texIdU, int texIdV) {
         // Add program to OpenGL environment
         GLES20.glUseProgram(mProgram);
 
@@ -166,7 +178,14 @@ public class Square {
                 mTexCoordHandle, TEX_COORDS_PER_VERTEX,
                 GLES20.GL_FLOAT, false,
                 0, texCoordBuffer);
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texId);
+
+        // 텍스처 유닛별 바인딩
+        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texIdY);
+        GLES20.glActiveTexture(GLES20.GL_TEXTURE1);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texIdU);
+        GLES20.glActiveTexture(GLES20.GL_TEXTURE2);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texIdV);
 
         // get handle to fragment shader's vColor member
         mColorHandle = GLES20.glGetUniformLocation(mProgram, "vColor");
@@ -180,6 +199,14 @@ public class Square {
         // Apply the projection and view transformation
         GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, mvpMatrix, 0);
         checkGlError("glUniformMatrix4fv");
+
+        // 텍스처 바인딩
+        texY = GLES20.glGetUniformLocation(mProgram, "texY");
+        texU = GLES20.glGetUniformLocation(mProgram, "texU");
+        texV = GLES20.glGetUniformLocation(mProgram, "texV");
+        GLES20.glUniform1i(texY, 0);
+        GLES20.glUniform1i(texU, 1);
+        GLES20.glUniform1i(texV, 2);
 
         // Draw the square
         GLES20.glDrawElements(

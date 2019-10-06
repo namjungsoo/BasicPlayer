@@ -34,8 +34,8 @@ import javax.microedition.khronos.opengles.GL10;
 // 3. 자막 렌더링
 // 4. 크기 딱맞게 업데이트
 // 5. 회전 처리 (회전은 텍스처 좌표를 적용하자)
-
 // 6. YUV 처리
+
 public class GLPlayerView extends GLSurfaceView {
     private final static String TAG = "GLPlayerView";
 
@@ -86,8 +86,8 @@ public class GLPlayerView extends GLSurfaceView {
 
             //bitmap = Bitmap.createBitmap(movieWidth, movieHeight, Bitmap.Config.ARGB_8888);
             bitmapY = Bitmap.createBitmap(movieWidth, movieHeight, Bitmap.Config.ALPHA_8);
-            bitmapU = Bitmap.createBitmap(movieWidth/2, movieHeight/2, Bitmap.Config.ALPHA_8);
-            bitmapV = Bitmap.createBitmap(movieWidth/2, movieHeight/2, Bitmap.Config.ALPHA_8);
+            bitmapU = Bitmap.createBitmap(movieWidth / 2, movieHeight / 2, Bitmap.Config.ALPHA_8);
+            bitmapV = Bitmap.createBitmap(movieWidth / 2, movieHeight / 2, Bitmap.Config.ALPHA_8);
 
             Log.d(TAG, "init createBitmap");
 
@@ -173,7 +173,9 @@ public class GLPlayerView extends GLSurfaceView {
         private final float[] mProjectionMatrix = new float[16];
         private final float[] mViewMatrix = new float[16];
 
-        private int mTextureId;
+        private int mTextureIdY;
+        private int mTextureIdU;
+        private int mTextureIdV;
 
         @Override
         public void onSurfaceCreated(GL10 gl, EGLConfig config) {
@@ -183,10 +185,17 @@ public class GLPlayerView extends GLSurfaceView {
             GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
             mSquare = new Square();
 
-            Log.e(TAG, "GLRenderer.onSurfaceCreated mTextureId=" + mTextureId + " " + bitmapY);
-            if (mTextureId == 0) {
-                mTextureId = initTexture(bitmapY);
-                Log.e(TAG, "GLRenderer.onSurfaceCreated mTextureId=" + mTextureId + " " + bitmapY);
+            if (mTextureIdY == 0) {
+                mTextureIdY = initTexture(bitmapY);
+                Log.e(TAG, "GLRenderer.onSurfaceCreated mTextureId=" + mTextureIdY + " " + bitmapY);
+            }
+            if (mTextureIdU == 0) {
+                mTextureIdU = initTexture(bitmapU);
+                Log.e(TAG, "GLRenderer.onSurfaceCreated mTextureId=" + mTextureIdU + " " + bitmapU);
+            }
+            if (mTextureIdV == 0) {
+                mTextureIdV = initTexture(bitmapV);
+                Log.e(TAG, "GLRenderer.onSurfaceCreated mTextureId=" + mTextureIdV + " " + bitmapV);
             }
         }
 
@@ -200,9 +209,15 @@ public class GLPlayerView extends GLSurfaceView {
         @Override
         public void onDrawFrame(GL10 gl) {
             int ret = player.renderFrameYUV(bitmapY, bitmapU, bitmapV);
-            Log.e(TAG, "onDrawFrame="+ret);
-            if (mTextureId != 0) {
-                updateTexture(bitmapY, mTextureId);
+            Log.e(TAG, "onDrawFrame=" + ret);
+            if (mTextureIdY != 0) {
+                updateTexture(bitmapY, mTextureIdY);
+            }
+            if (mTextureIdU != 0) {
+                updateTexture(bitmapU, mTextureIdU);
+            }
+            if (mTextureIdV != 0) {
+                updateTexture(bitmapV, mTextureIdV);
             }
 
             // Draw background color
@@ -210,7 +225,7 @@ public class GLPlayerView extends GLSurfaceView {
             Matrix.setIdentityM(mViewMatrix, 0);
             Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mViewMatrix, 0);
             // Draw square
-            mSquare.draw(mMVPMatrix, mTextureId);
+            mSquare.draw(mMVPMatrix, mTextureIdY, mTextureIdU, mTextureIdV);
         }
 
         int initTexture(Bitmap bitmap) {
@@ -233,7 +248,7 @@ public class GLPlayerView extends GLSurfaceView {
 
             // Load the bitmap into the bound texture.
             //GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0);
-            ByteBuffer buffer = ByteBuffer.allocate(bitmap.getWidth()*bitmap.getHeight());
+            ByteBuffer buffer = ByteBuffer.allocate(bitmap.getWidth() * bitmap.getHeight());
             bitmap.copyPixelsToBuffer(buffer);
             buffer.position(0);
 
@@ -261,7 +276,7 @@ public class GLPlayerView extends GLSurfaceView {
             // Bind to the texture in OpenGL
             GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texId);
 
-            ByteBuffer buffer = ByteBuffer.allocate(bitmap.getWidth()*bitmap.getHeight());
+            ByteBuffer buffer = ByteBuffer.allocate(bitmap.getWidth() * bitmap.getHeight());
             bitmap.copyPixelsToBuffer(buffer);
             buffer.position(0);
 
