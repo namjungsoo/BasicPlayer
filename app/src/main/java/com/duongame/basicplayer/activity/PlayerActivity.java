@@ -44,8 +44,8 @@ public class PlayerActivity extends BaseActivity {
     private final static String TAG = "PlayerActivity";
 
     //TEST
-    //private GLPlayerView playerView;
-    private PlayerView playerView;
+    private GLPlayerView playerView;
+    //private PlayerView playerView;
 
     private ViewGroup toolBox;
     //private float alpha;
@@ -79,7 +79,7 @@ public class PlayerActivity extends BaseActivity {
 //        setSupportActionBar(toolbar);
 
         playerFrame = (FrameLayout) findViewById(R.id.playerFrame);
-        playerView = new PlayerView(this);
+        playerView = new GLPlayerView(this);
         FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         playerView.setLayoutParams(params);
         playerFrame.addView(playerView, 0);

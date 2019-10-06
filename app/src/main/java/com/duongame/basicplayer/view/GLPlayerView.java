@@ -6,7 +6,6 @@ import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
-import android.opengl.GLUtils;
 import android.opengl.Matrix;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -23,6 +22,7 @@ import com.duongame.basicplayer.util.SmiParser;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
 import javax.microedition.khronos.egl.EGLConfig;
@@ -86,6 +86,9 @@ public class GLPlayerView extends GLSurfaceView {
 
             //bitmap = Bitmap.createBitmap(movieWidth, movieHeight, Bitmap.Config.ARGB_8888);
             bitmapY = Bitmap.createBitmap(movieWidth, movieHeight, Bitmap.Config.ALPHA_8);
+            bitmapU = Bitmap.createBitmap(movieWidth/2, movieHeight/2, Bitmap.Config.ALPHA_8);
+            bitmapV = Bitmap.createBitmap(movieWidth/2, movieHeight/2, Bitmap.Config.ALPHA_8);
+
             Log.d(TAG, "init createBitmap");
 
             subtitleList = null;
@@ -196,7 +199,8 @@ public class GLPlayerView extends GLSurfaceView {
 
         @Override
         public void onDrawFrame(GL10 gl) {
-            player.renderFrameYUV(bitmapY, bitmapU, bitmapV);
+            int ret = player.renderFrameYUV(bitmapY, bitmapU, bitmapV);
+            Log.e(TAG, "onDrawFrame="+ret);
             if (mTextureId != 0) {
                 updateTexture(bitmapY, mTextureId);
             }
@@ -228,8 +232,22 @@ public class GLPlayerView extends GLSurfaceView {
             GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
 
             // Load the bitmap into the bound texture.
-            GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0);
+            //GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0);
+            ByteBuffer buffer = ByteBuffer.allocate(bitmap.getWidth()*bitmap.getHeight());
+            bitmap.copyPixelsToBuffer(buffer);
+            buffer.position(0);
 
+            GLES20.glTexImage2D(GLES20.GL_TEXTURE_2D,
+                    0,
+                    GLES20.GL_LUMINANCE,
+                    bitmap.getWidth(),
+                    bitmap.getHeight(),
+                    0,
+                    GLES20.GL_LUMINANCE,
+                    GLES20.GL_UNSIGNED_BYTE,
+                    buffer);
+
+            buffer.clear();
             return textureHandle[0];
         }
 
@@ -243,8 +261,18 @@ public class GLPlayerView extends GLSurfaceView {
             // Bind to the texture in OpenGL
             GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, texId);
 
-            GLUtils.texSubImage2D(GLES20.GL_TEXTURE_2D, 0, 0, 0, bitmap);
-        }
+            ByteBuffer buffer = ByteBuffer.allocate(bitmap.getWidth()*bitmap.getHeight());
+            bitmap.copyPixelsToBuffer(buffer);
+            buffer.position(0);
 
+            //GLUtils.texSubImage2D(GLES20.GL_TEXTURE_2D, 0, 0, 0, bitmap);
+            GLES20.glTexSubImage2D(GLES20.GL_TEXTURE_2D, 0, 0, 0,
+                    bitmap.getWidth(),
+                    bitmap.getHeight(),
+                    GLES20.GL_LUMINANCE,
+                    GLES20.GL_UNSIGNED_BYTE,
+                    buffer);
+            buffer.clear();
+        }
     }
 }
