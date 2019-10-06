@@ -112,6 +112,42 @@ jint Java_com_duongame_basicplayer_Player_openMovie(JNIEnv *env, jobject thiz, i
 	return result;
 }
 
+jint Java_com_duongame_basicplayer_Player_renderFrameYUVArray(JNIEnv *env, jobject thiz, int id, jbyteArray arrayY, jbyteArray arrayU, jbyteArray arrayV) {
+    void *pixelsY, *pixelsU, *pixelsV;
+	int result;
+
+	Movie *gMovie = MovieMap_get(id);
+	if(gMovie == NULL)
+		return -1;
+
+	// 영상이 종료된 상태임 
+	if(decodeFrame(gMovie) < 0) {
+		return 1;// 종료 상태 
+	}
+	else {
+		// if ((result = AndroidBitmap_lockPixels(env, bitmapY, &pixelsY)) < 0)
+		// 	return result;
+		// if ((result = AndroidBitmap_lockPixels(env, bitmapU, &pixelsU)) < 0)
+		// 	return result;
+		// if ((result = AndroidBitmap_lockPixels(env, bitmapV, &pixelsV)) < 0)
+		// 	return result;
+
+		pixelsY = (*env)->GetByteArrayElements(env, arrayY, 0);
+		pixelsU = (*env)->GetByteArrayElements(env, arrayU, 0);
+		pixelsV = (*env)->GetByteArrayElements(env, arrayV, 0);
+		copyPixelsYUV(gMovie, (uint8_t*)pixelsY, (uint8_t*)pixelsU, (uint8_t*)pixelsV);
+
+		(*env)->ReleaseByteArrayElements(env, arrayY, pixelsY, 0);
+		(*env)->ReleaseByteArrayElements(env, arrayU, pixelsU, 0);
+		(*env)->ReleaseByteArrayElements(env, arrayV, pixelsV, 0);
+		// AndroidBitmap_unlockPixels(env, bitmapY);
+		// AndroidBitmap_unlockPixels(env, bitmapU);
+		// AndroidBitmap_unlockPixels(env, bitmapV);
+	}
+
+	return 0;
+}
+
 jint Java_com_duongame_basicplayer_Player_renderFrameYUV(JNIEnv *env, jobject thiz, int id, jobject bitmapY, jobject bitmapU, jobject bitmapV) {
     void *pixelsY, *pixelsU, *pixelsV;
 	int result;
@@ -140,7 +176,6 @@ jint Java_com_duongame_basicplayer_Player_renderFrameYUV(JNIEnv *env, jobject th
 	}
 
 	return 0;
-
 }
 
 jint Java_com_duongame_basicplayer_Player_renderFrame(JNIEnv *env, jobject thiz, int id, jobject bitmap)

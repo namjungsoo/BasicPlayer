@@ -172,7 +172,7 @@ public class Square {
 
         mTexCoordHandle = GLES20.glGetAttribLocation(mProgram, "vTexCoord");
         checkGlError("glGetAttribLocation vTexCoord");
-        Log.d("TAG", "mTexCoordHandle=" + mTexCoordHandle);
+//        Log.d("TAG", "mTexCoordHandle=" + mTexCoordHandle);
         GLES20.glEnableVertexAttribArray(mTexCoordHandle);
         GLES20.glVertexAttribPointer(
                 mTexCoordHandle, TEX_COORDS_PER_VERTEX,
