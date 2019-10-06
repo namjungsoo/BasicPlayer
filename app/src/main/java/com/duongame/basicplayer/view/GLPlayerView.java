@@ -2,7 +2,6 @@ package com.duongame.basicplayer.view;
 
 import android.app.Activity;
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
@@ -195,10 +194,10 @@ public class GLPlayerView extends GLSurfaceView {
                 mTextureIdY = initTexture(player.getMovieWidth(), player.getMovieHeight(), arrayY);
             }
             if (mTextureIdU == 0) {
-                mTextureIdU = initTexture(player.getMovieWidth()/2, player.getMovieHeight()/2, arrayU);
+                mTextureIdU = initTexture(player.getMovieWidth() / 2, player.getMovieHeight() / 2, arrayU);
             }
             if (mTextureIdV == 0) {
-                mTextureIdV = initTexture(player.getMovieWidth()/2, player.getMovieHeight()/2, arrayV);
+                mTextureIdV = initTexture(player.getMovieWidth() / 2, player.getMovieHeight() / 2, arrayV);
             }
         }
 
@@ -211,16 +210,16 @@ public class GLPlayerView extends GLSurfaceView {
 
         @Override
         public void onDrawFrame(GL10 gl) {
-            if(isPlaying) {
+            if (isPlaying) {
                 player.renderFrameYUVArray(arrayY, arrayU, arrayV);
                 if (mTextureIdY != 0) {
                     updateTexture(player.getMovieWidth(), player.getMovieHeight(), mTextureIdY, arrayY);
                 }
                 if (mTextureIdU != 0) {
-                    updateTexture(player.getMovieWidth()/2, player.getMovieHeight()/2, mTextureIdU, arrayU);
+                    updateTexture(player.getMovieWidth() / 2, player.getMovieHeight() / 2, mTextureIdU, arrayU);
                 }
                 if (mTextureIdV != 0) {
-                    updateTexture(player.getMovieWidth()/2, player.getMovieHeight()/2, mTextureIdV, arrayV);
+                    updateTexture(player.getMovieWidth() / 2, player.getMovieHeight() / 2, mTextureIdV, arrayV);
                 }
             }
 

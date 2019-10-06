@@ -149,6 +149,8 @@ void writeAudioTrack(char* data, int data_size)
 	memcpy(jni_samples, data, data_size);
 	env->ReleaseByteArrayElements(samples_byte_array, jni_samples, 0);
 
+    LOGD("writeAudioTrack=%d", data_size);
+
     if(player->audio_track != NULL) {
 	   int ret = env->CallIntMethod(player->audio_track, player->audio_track_write_method, samples_byte_array, 0, data_size);
     }

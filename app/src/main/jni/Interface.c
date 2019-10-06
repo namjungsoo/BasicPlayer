@@ -113,7 +113,7 @@ jint Java_com_duongame_basicplayer_Player_openMovie(JNIEnv *env, jobject thiz, i
 }
 
 jint Java_com_duongame_basicplayer_Player_renderFrameYUVArray(JNIEnv *env, jobject thiz, int id, jbyteArray arrayY, jbyteArray arrayU, jbyteArray arrayV) {
-    void *pixelsY, *pixelsU, *pixelsV;
+//    void *pixelsY, *pixelsU, *pixelsV;
 	int result;
 
 	Movie *gMovie = MovieMap_get(id);
@@ -125,24 +125,19 @@ jint Java_com_duongame_basicplayer_Player_renderFrameYUVArray(JNIEnv *env, jobje
 		return 1;// 종료 상태 
 	}
 	else {
-		// if ((result = AndroidBitmap_lockPixels(env, bitmapY, &pixelsY)) < 0)
-		// 	return result;
-		// if ((result = AndroidBitmap_lockPixels(env, bitmapU, &pixelsU)) < 0)
-		// 	return result;
-		// if ((result = AndroidBitmap_lockPixels(env, bitmapV, &pixelsV)) < 0)
-		// 	return result;
+		Movie *movie = gMovie;
+		(*env)->SetByteArrayRegion(env, arrayY, 0, movie->gVideoPictureSize*2/3, movie->gFrame->data[0]);
+		(*env)->SetByteArrayRegion(env, arrayU, 0, movie->gVideoPictureSize/6,   movie->gFrame->data[1]);
+		(*env)->SetByteArrayRegion(env, arrayV, 0, movie->gVideoPictureSize/6,   movie->gFrame->data[2]);
+		
+		// pixelsY = (*env)->GetByteArrayElements(env, arrayY, 0);
+		// pixelsU = (*env)->GetByteArrayElements(env, arrayU, 0);
+		// pixelsV = (*env)->GetByteArrayElements(env, arrayV, 0);
+		// copyPixelsYUV(gMovie, (uint8_t*)pixelsY, (uint8_t*)pixelsU, (uint8_t*)pixelsV);
 
-		pixelsY = (*env)->GetByteArrayElements(env, arrayY, 0);
-		pixelsU = (*env)->GetByteArrayElements(env, arrayU, 0);
-		pixelsV = (*env)->GetByteArrayElements(env, arrayV, 0);
-		copyPixelsYUV(gMovie, (uint8_t*)pixelsY, (uint8_t*)pixelsU, (uint8_t*)pixelsV);
-
-		(*env)->ReleaseByteArrayElements(env, arrayY, pixelsY, 0);
-		(*env)->ReleaseByteArrayElements(env, arrayU, pixelsU, 0);
-		(*env)->ReleaseByteArrayElements(env, arrayV, pixelsV, 0);
-		// AndroidBitmap_unlockPixels(env, bitmapY);
-		// AndroidBitmap_unlockPixels(env, bitmapU);
-		// AndroidBitmap_unlockPixels(env, bitmapV);
+		// (*env)->ReleaseByteArrayElements(env, arrayY, pixelsY, 0);
+		// (*env)->ReleaseByteArrayElements(env, arrayU, pixelsU, 0);
+		// (*env)->ReleaseByteArrayElements(env, arrayV, pixelsV, 0);
 	}
 
 	return 0;
