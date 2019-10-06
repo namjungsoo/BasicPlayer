@@ -30,7 +30,8 @@ public class Square {
                     "uniform sampler2D tex;" +
                     "varying vec2 TexCoord;" +
                     "void main() {" +
-                    "  gl_FragColor = texture2D(tex, TexCoord);" +
+                    "  float r = texture2D(tex, TexCoord).r;" +
+                    "  gl_FragColor = vec4(r, r, r, 1);" +
                     "}";
     private FloatBuffer vertexBuffer;
     private final ShortBuffer drawListBuffer;
@@ -46,7 +47,7 @@ public class Square {
             0, 1, 0.0f,   // top left
             0, 0, 0.0f,   // bottom left
             1, 0, 0.0f,   // bottom right
-            1, 1, 0.0f}; // top right
+            1, 1, 0.0f};  // top right
 
     private final short drawOrder[] = {0, 1, 2, 0, 2, 3}; // order to draw vertices
     private final int vertexStride = COORDS_PER_VERTEX * 4; // 4 bytes per vertex

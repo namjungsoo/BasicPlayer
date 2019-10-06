@@ -28,11 +28,20 @@ import java.util.ArrayList;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
+//TODO:
+// 1. 렌더링시 UI 업데이트
+// 2. Pause 처리
+// 3. 자막 렌더링
+// 4. 크기 딱맞게 업데이트
+// 5. 회전 처리 (회전은 텍스처 좌표를 적용하자)
+
+// 6. YUV 처리
 public class GLPlayerView extends GLSurfaceView {
     private final static String TAG = "GLPlayerView";
 
     // 순수하게 Player 관련 항목
-    private Bitmap bitmap;
+    //private Bitmap bitmap;
+    private Bitmap bitmapY, bitmapU, bitmapV;
     private boolean isPlaying;
     private boolean isSeeking;
     private int rotation = Surface.ROTATION_0;
@@ -75,7 +84,8 @@ public class GLPlayerView extends GLSurfaceView {
             final int movieWidth = player.getMovieWidth();
             final int movieHeight = player.getMovieHeight();
 
-            bitmap = Bitmap.createBitmap(movieWidth, movieHeight, Bitmap.Config.ARGB_8888);
+            //bitmap = Bitmap.createBitmap(movieWidth, movieHeight, Bitmap.Config.ARGB_8888);
+            bitmapY = Bitmap.createBitmap(movieWidth, movieHeight, Bitmap.Config.ALPHA_8);
             Log.d(TAG, "init createBitmap");
 
             subtitleList = null;
@@ -170,10 +180,10 @@ public class GLPlayerView extends GLSurfaceView {
             GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
             mSquare = new Square();
 
-            Log.e(TAG, "GLRenderer.onSurfaceCreated mTextureId=" + mTextureId + " " + bitmap);
+            Log.e(TAG, "GLRenderer.onSurfaceCreated mTextureId=" + mTextureId + " " + bitmapY);
             if (mTextureId == 0) {
-                mTextureId = initTexture(bitmap);
-                Log.e(TAG, "GLRenderer.onSurfaceCreated mTextureId=" + mTextureId + " " + bitmap);
+                mTextureId = initTexture(bitmapY);
+                Log.e(TAG, "GLRenderer.onSurfaceCreated mTextureId=" + mTextureId + " " + bitmapY);
             }
         }
 
@@ -186,9 +196,9 @@ public class GLPlayerView extends GLSurfaceView {
 
         @Override
         public void onDrawFrame(GL10 gl) {
-            player.renderFrame(bitmap);
+            player.renderFrameYUV(bitmapY, bitmapU, bitmapV);
             if (mTextureId != 0) {
-                updateTexture(bitmap, mTextureId);
+                updateTexture(bitmapY, mTextureId);
             }
 
             // Draw background color

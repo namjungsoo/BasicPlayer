@@ -379,12 +379,12 @@ int decodeFrame(Movie *movie)
 				us = getMicrotime() - us;
 				LOGD("sws_getCachedContext END us=%ld gVideoCodecCtx->pix_fmt=%ld gPixelFormat=%ld", us, movie->gVideoCodecCtx->pix_fmt, movie->gPixelFormat);// 이거는 솔직히 시간이 안걸림
 				LOGD("gVideoCodecCtx->width=%ld gVideoCodecCtx->height=%ld movie->gTargetWidth=%ld movie->gTargetHeight=%ld",
-				movie->gVideoCodecCtx->width, movie->gVideoCodecCtx->height, movie->gTargetWidth, movie->gTargetHeight);// 이거는 솔직히 시간이 안걸림
+					movie->gVideoCodecCtx->width, movie->gVideoCodecCtx->height, movie->gTargetWidth, movie->gTargetHeight);// 이거는 솔직히 시간이 안걸림
 
 				// 실제로 scale을 하면서 픽셀포맷도 변경한다.
 				us = getMicrotime();
 				//LOGD("sws_scale BEGIN %ld", us);
-				sws_scale(movie->gImgConvertCtx, (const uint8_t * const*)movie->gFrame->data, movie->gFrame->linesize, 0, movie->gVideoCodecCtx->height, movie->gFrameRGB->data, movie->gFrameRGB->linesize);
+				// sws_scale(movie->gImgConvertCtx, (const uint8_t * const*)movie->gFrame->data, movie->gFrame->linesize, 0, movie->gVideoCodecCtx->height, movie->gFrameRGB->data, movie->gFrameRGB->linesize);
 
 				// for(int i=0; i<AV_NUM_DATA_POINTERS; i++) {
 				// 	LOGD("movie->gFrame->linesize[%d]=%d movie->gFrameRGB->linesize[%d]=%d", i, movie->gFrame->linesize[i], i, movie->gFrameRGB->linesize[i]);

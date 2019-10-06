@@ -36,7 +36,8 @@ public class PlayerView extends View {
     //private Context context;// View는 getContext가 있음
 
     // 순수하게 Player 관련 항목
-    private Bitmap bitmap;
+    //private Bitmap bitmap;
+    private Bitmap bitmapY, bitmapU, bitmapV;
     private boolean isPlaying;
     private boolean isSeeking;
     private int rotation = Surface.ROTATION_0;
@@ -78,7 +79,9 @@ public class PlayerView extends View {
             final int movieWidth = player.getMovieWidth();
             final int movieHeight = player.getMovieHeight();
 
-            bitmap = Bitmap.createBitmap(movieWidth, movieHeight, Bitmap.Config.ARGB_8888);
+            bitmapY = Bitmap.createBitmap(movieWidth, movieHeight, Bitmap.Config.ALPHA_8);
+            bitmapU = Bitmap.createBitmap(movieWidth/2, movieHeight/2, Bitmap.Config.ALPHA_8);
+            bitmapV = Bitmap.createBitmap(movieWidth/2, movieHeight/2, Bitmap.Config.ALPHA_8);
             Log.d(TAG, "init createBitmap");
 
             subtitleList = null;
@@ -222,7 +225,7 @@ public class PlayerView extends View {
     }
 
     protected void canvasDraw(Canvas canvas) {
-        canvas.drawBitmap(bitmap, src, target, null);
+        canvas.drawBitmap(bitmapY, src, target, null);
     }
 
     protected void canvasRestore(Canvas canvas, int rotation) {
@@ -239,15 +242,16 @@ public class PlayerView extends View {
         canvas.drawColor(Color.BLACK);
 
         long currentPositionUs = -1;
-        if (bitmap != null) {
+        if (bitmapY != null) {
             currentPositionUs = player.getCurrentPositionUs();
 
             // 항상 풀스크린으로 채우는 것은 안된다
-            final int bmWidth = bitmap.getWidth();
-            final int bmHeight = bitmap.getHeight();
+            final int bmWidth = bitmapY.getWidth();
+            final int bmHeight = bitmapY.getHeight();
 
             if (isPlaying || isSeeking) {
-                int ret = player.renderFrame(bitmap);
+                //int ret = player.renderFrame(bitmapY);
+                int ret = player.renderFrameYUV(bitmapY, bitmapU, bitmapV);
                 // 렌더링 종료
                 if (ret > 0) {
                     pause(true);
