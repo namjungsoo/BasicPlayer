@@ -162,108 +162,111 @@ int openAudioStream(Movie *movie)
 
 	buffer = av_malloc(sizeof(uint8_t)*buffer_size);
 	samples = av_malloc(sizeof(uint8_t)*buffer_size);
+
+	return 0;
 }
 
 void decodeAudio(Movie *movie, AVPacket packet) {
-			int64_t begin = getTimeNsec();
- 			int len = avcodec_decode_audio4(movie->gAudioCodecCtx, movie->gFrameAudio, &frameFinished, &packet);
-			int64_t end = getTimeNsec();
-			int64_t diff = end - begin;
+	LOGD("decodeAudio");
+	int64_t begin = getTimeNsec();
+	int len = avcodec_decode_audio4(movie->gAudioCodecCtx, movie->gFrameAudio, &frameFinished, &packet);
+	int64_t end = getTimeNsec();
+	int64_t diff = end - begin;
 
-			if(len < 0) {
-				LOGD("skip audio");
+	if(len < 0) {
+		LOGD("skip audio");
+	}
+	
+	// 이게 전부 0.0에서 변화가 없음
+	double pts = av_frame_get_best_effort_timestamp(movie->gFrameAudio);
+	double pts_clock = pts * av_q2d(movie->gFormatCtx->streams[movie->gAudioStreamIdx]->time_base);
+
+	if (frameFinished) {
+		int write_p = 0;
+		int plane_size;
+		int data_size = av_samples_get_buffer_size(&plane_size, movie->gAudioCodecCtx->channels, movie->gFrameAudio->nb_samples, movie->gAudioCodecCtx->sample_fmt, 1);
+		uint16_t nb, ch;
+
+		LOGD("movie->sfmt=%d", movie->sfmt);
+
+		if(movie->sfmt == AV_SAMPLE_FMT_S16P) {
+			uint16_t *out = (uint16_t *)samples;
+			for (nb = 0; nb < plane_size / sizeof(uint16_t); nb++) {
+				for (ch = 0; ch < movie->gAudioCodecCtx->channels; ch++) {
+					out[write_p] = ((uint16_t *) movie->gFrameAudio->extended_data[ch])[nb];
+					write_p++;
+				}
 			}
-			
- 			// 이게 전부 0.0에서 변화가 없음
- 			double pts = av_frame_get_best_effort_timestamp(movie->gFrameAudio);
- 			double pts_clock = pts * av_q2d(movie->gFormatCtx->streams[movie->gAudioStreamIdx]->time_base);
-
- 			if (frameFinished) {
-                int write_p = 0;
-				int plane_size;
-				int data_size = av_samples_get_buffer_size(&plane_size, movie->gAudioCodecCtx->channels, movie->gFrameAudio->nb_samples, movie->gAudioCodecCtx->sample_fmt, 1);
-				uint16_t nb, ch;
-
-				LOGD("movie->sfmt=%d", movie->sfmt);
-
-				if(movie->sfmt == AV_SAMPLE_FMT_S16P) {
-					uint16_t *out = (uint16_t *)samples;
-					for (nb = 0; nb < plane_size / sizeof(uint16_t); nb++) {
-						for (ch = 0; ch < movie->gAudioCodecCtx->channels; ch++) {
-							out[write_p] = ((uint16_t *) movie->gFrameAudio->extended_data[ch])[nb];
-							write_p++;
-						}
-					}
-					writeAudioTrack(samples, plane_size * movie->gAudioCodecCtx->channels);
+			writeAudioTrack(samples, plane_size * movie->gAudioCodecCtx->channels);
+		}
+		else if(movie->sfmt == AV_SAMPLE_FMT_FLTP) {
+			// LOGD("decodeAudioThread AV_SAMPLE_FMT_FLTP");
+			// resample: float -> short
+			uint16_t *out = (uint16_t *)samples;
+			for (nb = 0; nb < plane_size / sizeof(float); nb++) {
+				for (ch = 0; ch < movie->gAudioCodecCtx->channels; ch++) {
+					out[write_p] = (short)(((float *) movie->gFrameAudio->extended_data[ch])[nb] * SHRT_MAX);
+					write_p++;
 				}
-				else if(movie->sfmt == AV_SAMPLE_FMT_FLTP) {
-					// LOGD("decodeAudioThread AV_SAMPLE_FMT_FLTP");
-					// resample: float -> short
-					uint16_t *out = (uint16_t *)samples;
-					for (nb = 0; nb < plane_size / sizeof(float); nb++) {
-						for (ch = 0; ch < movie->gAudioCodecCtx->channels; ch++) {
-							out[write_p] = (short)(((float *) movie->gFrameAudio->extended_data[ch])[nb] * SHRT_MAX);
-							write_p++;
-						}
-					}
-					writeAudioTrack(samples, (plane_size / sizeof(float)) * sizeof(uint16_t) * movie->gAudioCodecCtx->channels);
-				}
-				else if(movie->sfmt == AV_SAMPLE_FMT_U8P) {
-					uint16_t *out = (uint16_t *)samples;
-                    for (nb = 0; nb < plane_size / sizeof(uint8_t); nb++) {
-                        for (ch = 0; ch < movie->gFrameAudio->channels; ch++) {
-                            out[write_p] = (((uint8_t *) movie->gFrameAudio->extended_data[0])[nb] - 127) * SHRT_MAX / 127;
-                            write_p++;
-                        }
-                    }
-					writeAudioTrack(samples, (plane_size / sizeof(uint8_t)) * sizeof(uint16_t) * movie->gAudioCodecCtx->channels);
-				}
-
-				// 채널 구분이 없음 
-				else if(movie->sfmt == AV_SAMPLE_FMT_S16) {
-					writeAudioTrack((char*)movie->gFrameAudio->extended_data[0], movie->gFrameAudio->linesize[0]);
-				}
-				else if(movie->sfmt == AV_SAMPLE_FMT_FLT) {
-					uint16_t *out = (uint16_t *)samples;
-                    for (nb = 0; nb < plane_size / sizeof(float); nb++) {
-                        out[nb] = (short) ( ((float *) movie->gFrameAudio->extended_data[0])[nb] * SHRT_MAX);
-                    }
-                    writeAudioTrack(samples, (plane_size / sizeof(float)) * sizeof(uint16_t));
-				}
-				else if(movie->sfmt == AV_SAMPLE_FMT_U8) {
-					uint16_t *out = (uint16_t *)samples;
-                    for (nb = 0; nb < plane_size / sizeof(uint8_t); nb++) {
-                        out[nb] = (short) ( (((uint8_t *) movie->gFrameAudio->extended_data[0])[nb] - 127) * SHRT_MAX / 127);
-                    }					
-					writeAudioTrack(samples, (plane_size / sizeof(uint8_t)) * sizeof(uint16_t));	
-				}
-
-				av_packet_unref(&packet);
- 			}
-			else {
-				av_packet_unref(&packet);
 			}
+			writeAudioTrack(samples, (plane_size / sizeof(float)) * sizeof(uint16_t) * movie->gAudioCodecCtx->channels);
+		}
+		else if(movie->sfmt == AV_SAMPLE_FMT_U8P) {
+			uint16_t *out = (uint16_t *)samples;
+			for (nb = 0; nb < plane_size / sizeof(uint8_t); nb++) {
+				for (ch = 0; ch < movie->gFrameAudio->channels; ch++) {
+					out[write_p] = (((uint8_t *) movie->gFrameAudio->extended_data[0])[nb] - 127) * SHRT_MAX / 127;
+					write_p++;
+				}
+			}
+			writeAudioTrack(samples, (plane_size / sizeof(uint8_t)) * sizeof(uint16_t) * movie->gAudioCodecCtx->channels);
+		}
 
+		// 채널 구분이 없음 
+		else if(movie->sfmt == AV_SAMPLE_FMT_S16) {
+			writeAudioTrack((char*)movie->gFrameAudio->extended_data[0], movie->gFrameAudio->linesize[0]);
+		}
+		else if(movie->sfmt == AV_SAMPLE_FMT_FLT) {
+			uint16_t *out = (uint16_t *)samples;
+			for (nb = 0; nb < plane_size / sizeof(float); nb++) {
+				out[nb] = (short) ( ((float *) movie->gFrameAudio->extended_data[0])[nb] * SHRT_MAX);
+			}
+			writeAudioTrack(samples, (plane_size / sizeof(float)) * sizeof(uint16_t));
+		}
+		else if(movie->sfmt == AV_SAMPLE_FMT_U8) {
+			uint16_t *out = (uint16_t *)samples;
+			for (nb = 0; nb < plane_size / sizeof(uint8_t); nb++) {
+				out[nb] = (short) ( (((uint8_t *) movie->gFrameAudio->extended_data[0])[nb] - 127) * SHRT_MAX / 127);
+			}					
+			writeAudioTrack(samples, (plane_size / sizeof(uint8_t)) * sizeof(uint16_t));	
+		}
+
+		av_packet_unref(&packet);
+	}
+	else {
+		av_packet_unref(&packet);
+	}
 }
 
+AVPacket audioPacket;
 
 void* decodeAudioThread(void *param) 
 {
 	LOGD("decodeAudioThread BEGIN");
 	Movie *movie = (Movie*)param;
 
-
 	while(movie->gAudioThreadRunning) {
-		AudioQ_lock();
+		// AudioQ_lock();
 		size_t size = AudioQ_size();
-		AudioQ_unlock();
+		// AudioQ_unlock();
 
 		if(size > 0) {
-			AudioQ_lock();
+			// AudioQ_lock();
 			AVPacket packet = AudioQ_pop();
-			AudioQ_unlock();
+			// AudioQ_unlock();
 
 			decodeAudio(movie, packet);
+			//decodeAudio(movie, audioPacket);
 		}
 		//usleep(1);
 	}
@@ -323,10 +326,12 @@ int openMovieWithAudio(Movie *movie, const char *filePath, int audio, int width,
 			return 0;
 		}
 		else {
+			LOGD("prepareAudioTrack");
 			prepareAudioTrack(movie->gAudioCodecCtx->sample_fmt, movie->gAudioCodecCtx->sample_rate, movie->gAudioCodecCtx->channels);
-			// movie->gAudioThreadRunning = 1;
-			// ret = pthread_create(&movie->gAudioThread, NULL, decodeAudioThread, movie);
-		}		
+			movie->gAudioThreadRunning = 1;
+			LOGD("pthread_create decodeAudioThread");
+			ret = pthread_create(&movie->gAudioThread, NULL, decodeAudioThread, movie);
+		}
 	}
 
 	return ret;
@@ -413,13 +418,15 @@ int decodeFrame(Movie *movie)
 			}
 		}
 		else if(packet.stream_index == movie->gAudioStreamIdx) {
-			decodeAudio(movie, packet);
+			//decodeAudio(movie, packet);
+			//audioPacket = packet;
+			
 			//TODO: 큐 동기화가 필요함 
-			// if(movie->gAudioThread != 0) {
+			if(movie->gAudioThread != 0) {
 			// 	AudioQ_lock();
-			// 	AudioQ_push(packet);
+			 	AudioQ_push(packet);
 			// 	AudioQ_unlock();
-			// }
+			}
 		}
 		else {
 			// 처리하지 못했을때 자체적으로 packet을 free 함 

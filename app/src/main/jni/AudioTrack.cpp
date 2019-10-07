@@ -138,9 +138,9 @@ void detatchThread()
 void writeAudioTrack(char* data, int data_size) 
 {
     // 쓰레드에서 호출되므로 javavm에서 env를 호출해야함 
-    JNIEnv *env = player->env;
+    //JNIEnv *env = player->env;
 
-    // JNIEnv *env = attachThread();
+    JNIEnv *env = attachThread();
     // jobject thiz = player->thiz;
 
     // 오디오 트랙에 데이터를 쓰면 된다 여기서
