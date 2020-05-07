@@ -53,6 +53,8 @@ typedef struct {
     int gFrameThreadRunning;
 
     int gTexId[3];// 0: Y, 1: U, 2: V
+    uint8_t *gData[3];
+
     enum AVSampleFormat sfmt;
 } Movie;
 

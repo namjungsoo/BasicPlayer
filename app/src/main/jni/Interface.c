@@ -139,12 +139,18 @@ jint Java_com_duongame_basicplayer_Player_renderFrameYUVTexId(JNIEnv *env, jobje
 	// decodeFrame은 항상 thread에서 수행되고 있다.
 	Movie *movie = gMovie;
 
+	// glBindTexture(GL_TEXTURE_2D, texIdY);
+	// glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_LUMINANCE, GL_UNSIGNED_BYTE, movie->gFrame->data[0]);
+	// glBindTexture(GL_TEXTURE_2D, texIdU);
+	// glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width/2, height/2, GL_LUMINANCE, GL_UNSIGNED_BYTE, movie->gFrame->data[1]);
+	// glBindTexture(GL_TEXTURE_2D, texIdV);
+	// glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width/2, height/2, GL_LUMINANCE, GL_UNSIGNED_BYTE, movie->gFrame->data[2]);
 	glBindTexture(GL_TEXTURE_2D, texIdY);
-	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_LUMINANCE, GL_UNSIGNED_BYTE, movie->gFrame->data[0]);
+	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_LUMINANCE, GL_UNSIGNED_BYTE, movie->gData[0]);
 	glBindTexture(GL_TEXTURE_2D, texIdU);
-	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width/2, height/2, GL_LUMINANCE, GL_UNSIGNED_BYTE, movie->gFrame->data[1]);
+	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width/2, height/2, GL_LUMINANCE, GL_UNSIGNED_BYTE, movie->gData[1]);
 	glBindTexture(GL_TEXTURE_2D, texIdV);
-	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width/2, height/2, GL_LUMINANCE, GL_UNSIGNED_BYTE, movie->gFrame->data[2]);
+	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width/2, height/2, GL_LUMINANCE, GL_UNSIGNED_BYTE, movie->gData[2]);
 
 	return 0;
 }

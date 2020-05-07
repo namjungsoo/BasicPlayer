@@ -213,8 +213,10 @@ public class GLPlayerView extends GLSurfaceView {
         @Override
         public void onDrawFrame(GL10 gl) {
             if (isPlaying) {
-//                player.renderFrameYUVTexId(player.getMovieWidth(), player.getMovieHeight(), mTextureIdY, mTextureIdU, mTextureIdV);
+                player.renderFrameYUVTexId(player.getMovieWidth(), player.getMovieHeight(), mTextureIdY, mTextureIdU, mTextureIdV);
 
+                // 이전에 쓰던거
+                // 이번에는 renderFrameYUVTexId 안에 OpenGL command를 내장하였음
 //                player.renderFrameYUVArray(arrayY, arrayU, arrayV);
 //                if (mTextureIdY != 0) {
 //                    updateTexture(player.getMovieWidth(), player.getMovieHeight(), mTextureIdY, arrayY);
