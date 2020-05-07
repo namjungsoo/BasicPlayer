@@ -199,8 +199,6 @@ public class GLPlayerView extends GLSurfaceView {
             if (mTextureIdV == 0) {
                 mTextureIdV = initTexture(player.getMovieWidth() / 2, player.getMovieHeight() / 2, arrayV);
             }
-
-            player.setTexIdYUV(mTextureIdY, mTextureIdU, mTextureIdV);
         }
 
         @Override
@@ -214,19 +212,6 @@ public class GLPlayerView extends GLSurfaceView {
         public void onDrawFrame(GL10 gl) {
             if (isPlaying) {
                 player.renderFrameYUVTexId(player.getMovieWidth(), player.getMovieHeight(), mTextureIdY, mTextureIdU, mTextureIdV);
-
-                // 이전에 쓰던거
-                // 이번에는 renderFrameYUVTexId 안에 OpenGL command를 내장하였음
-//                player.renderFrameYUVArray(arrayY, arrayU, arrayV);
-//                if (mTextureIdY != 0) {
-//                    updateTexture(player.getMovieWidth(), player.getMovieHeight(), mTextureIdY, arrayY);
-//                }
-//                if (mTextureIdU != 0) {
-//                    updateTexture(player.getMovieWidth() / 2, player.getMovieHeight() / 2, mTextureIdU, arrayU);
-//                }
-//                if (mTextureIdV != 0) {
-//                    updateTexture(player.getMovieWidth() / 2, player.getMovieHeight() / 2, mTextureIdV, arrayV);
-//                }
             }
 
             // Draw background color
