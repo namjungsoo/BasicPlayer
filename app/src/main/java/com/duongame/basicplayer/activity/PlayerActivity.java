@@ -33,7 +33,6 @@ import com.duongame.basicplayer.manager.ScreenManager;
 import com.duongame.basicplayer.util.TimeConverter;
 import com.duongame.basicplayer.util.UnitConverter;
 import com.duongame.basicplayer.view.GLPlayerView;
-import com.duongame.basicplayer.view.PlayerView;
 import com.google.android.gms.ads.AdView;
 
 import java.io.File;
@@ -207,7 +206,7 @@ public class PlayerActivity extends BaseActivity {
         int count = pref.getInt("exit_count", 0);
         SharedPreferences.Editor edit = pref.edit();
         edit.putInt("exit_count", count + 1);
-        edit.commit();
+        edit.apply();
 
         if (count % 2 == 0) {
             AdInterstitialManager.showAd(this, MODE_EXIT, new AdInterstitialManager.OnFinishListener() {

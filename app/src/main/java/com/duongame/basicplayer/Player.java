@@ -124,6 +124,10 @@ public class Player {
         return getCurrentPositionUs(id);
     }
 
+    public void setTexIdYUV(int texIdY, int texIdU, int texIdV) {
+        setTexIdYUV(id, texIdY, texIdU, texIdV);
+    }
+
     // 오디오 관련(static)
     public static native void initAudioTrack();
 
@@ -158,4 +162,6 @@ public class Player {
     private native double getFps(int id);
 
     private native long getCurrentPositionUs(int id);
+
+    private native void setTexIdYUV(int id, int texIdY, int texIdU, int texIdV);
 }

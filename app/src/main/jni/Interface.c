@@ -113,6 +113,7 @@ jint Java_com_duongame_basicplayer_Player_openMovie(JNIEnv *env, jobject thiz, i
 	return result;
 }
 
+// GLPlayerView.renderFrameYUVTexId 
 jint Java_com_duongame_basicplayer_Player_renderFrameYUVTexId(JNIEnv *env, jobject thiz, int id, int width, int height, int texIdY, int texIdU, int texIdV) {
 	int result;
 
@@ -121,107 +122,117 @@ jint Java_com_duongame_basicplayer_Player_renderFrameYUVTexId(JNIEnv *env, jobje
 		return -1;
 
 	// 영상이 종료된 상태임 
-	if(decodeFrame(gMovie) < 0) {
-		return 1;// 종료 상태 
-	}
-	else {
-		Movie *movie = gMovie;
+	// if(decodeFrame(gMovie) < 0) {
+	// 	return 1;// 종료 상태 
+	// }
+	// else {
+	// 	Movie *movie = gMovie;
 
-		glBindTexture(GL_TEXTURE_2D, texIdY);
-		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_LUMINANCE, GL_UNSIGNED_BYTE, movie->gFrame->data[0]);
-		glBindTexture(GL_TEXTURE_2D, texIdU);
-		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width/2, height/2, GL_LUMINANCE, GL_UNSIGNED_BYTE, movie->gFrame->data[1]);
-		glBindTexture(GL_TEXTURE_2D, texIdV);
-		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width/2, height/2, GL_LUMINANCE, GL_UNSIGNED_BYTE, movie->gFrame->data[2]);
-	}
+	// 	glBindTexture(GL_TEXTURE_2D, texIdY);
+	// 	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_LUMINANCE, GL_UNSIGNED_BYTE, movie->gFrame->data[0]);
+	// 	glBindTexture(GL_TEXTURE_2D, texIdU);
+	// 	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width/2, height/2, GL_LUMINANCE, GL_UNSIGNED_BYTE, movie->gFrame->data[1]);
+	// 	glBindTexture(GL_TEXTURE_2D, texIdV);
+	// 	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width/2, height/2, GL_LUMINANCE, GL_UNSIGNED_BYTE, movie->gFrame->data[2]);
+	// }
+
+	// decodeFrame은 항상 thread에서 수행되고 있다.
+	Movie *movie = gMovie;
+
+	glBindTexture(GL_TEXTURE_2D, texIdY);
+	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_LUMINANCE, GL_UNSIGNED_BYTE, movie->gFrame->data[0]);
+	glBindTexture(GL_TEXTURE_2D, texIdU);
+	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width/2, height/2, GL_LUMINANCE, GL_UNSIGNED_BYTE, movie->gFrame->data[1]);
+	glBindTexture(GL_TEXTURE_2D, texIdV);
+	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width/2, height/2, GL_LUMINANCE, GL_UNSIGNED_BYTE, movie->gFrame->data[2]);
 
 	return 0;
 }
 
-jint Java_com_duongame_basicplayer_Player_renderFrameYUVArray(JNIEnv *env, jobject thiz, int id, jbyteArray arrayY, jbyteArray arrayU, jbyteArray arrayV) {
-//    void *pixelsY, *pixelsU, *pixelsV;
-	int result;
+// jint Java_com_duongame_basicplayer_Player_renderFrameYUVArray(JNIEnv *env, jobject thiz, int id, jbyteArray arrayY, jbyteArray arrayU, jbyteArray arrayV) {
+// //    void *pixelsY, *pixelsU, *pixelsV;
+// 	int result;
 
-	Movie *gMovie = MovieMap_get(id);
-	if(gMovie == NULL)
-		return -1;
+// 	Movie *gMovie = MovieMap_get(id);
+// 	if(gMovie == NULL)
+// 		return -1;
 
-	// 영상이 종료된 상태임 
-	if(decodeFrame(gMovie) < 0) {
-		return 1;// 종료 상태 
-	}
-	else {
-		Movie *movie = gMovie;
-		(*env)->SetByteArrayRegion(env, arrayY, 0, movie->gVideoPictureSize*2/3, movie->gFrame->data[0]);
-		(*env)->SetByteArrayRegion(env, arrayU, 0, movie->gVideoPictureSize/6,   movie->gFrame->data[1]);
-		(*env)->SetByteArrayRegion(env, arrayV, 0, movie->gVideoPictureSize/6,   movie->gFrame->data[2]);
+// 	// 영상이 종료된 상태임 
+// 	if(decodeFrame(gMovie) < 0) {
+// 		return 1;// 종료 상태 
+// 	}
+// 	else {
+// 		Movie *movie = gMovie;
+// 		(*env)->SetByteArrayRegion(env, arrayY, 0, movie->gVideoPictureSize*2/3, movie->gFrame->data[0]);
+// 		(*env)->SetByteArrayRegion(env, arrayU, 0, movie->gVideoPictureSize/6,   movie->gFrame->data[1]);
+// 		(*env)->SetByteArrayRegion(env, arrayV, 0, movie->gVideoPictureSize/6,   movie->gFrame->data[2]);
 		
-		// pixelsY = (*env)->GetByteArrayElements(env, arrayY, 0);
-		// pixelsU = (*env)->GetByteArrayElements(env, arrayU, 0);
-		// pixelsV = (*env)->GetByteArrayElements(env, arrayV, 0);
-		// copyPixelsYUV(gMovie, (uint8_t*)pixelsY, (uint8_t*)pixelsU, (uint8_t*)pixelsV);
+// 		// pixelsY = (*env)->GetByteArrayElements(env, arrayY, 0);
+// 		// pixelsU = (*env)->GetByteArrayElements(env, arrayU, 0);
+// 		// pixelsV = (*env)->GetByteArrayElements(env, arrayV, 0);
+// 		// copyPixelsYUV(gMovie, (uint8_t*)pixelsY, (uint8_t*)pixelsU, (uint8_t*)pixelsV);
 
-		// (*env)->ReleaseByteArrayElements(env, arrayY, pixelsY, 0);
-		// (*env)->ReleaseByteArrayElements(env, arrayU, pixelsU, 0);
-		// (*env)->ReleaseByteArrayElements(env, arrayV, pixelsV, 0);
-	}
+// 		// (*env)->ReleaseByteArrayElements(env, arrayY, pixelsY, 0);
+// 		// (*env)->ReleaseByteArrayElements(env, arrayU, pixelsU, 0);
+// 		// (*env)->ReleaseByteArrayElements(env, arrayV, pixelsV, 0);
+// 	}
 
-	return 0;
-}
+// 	return 0;
+// }
 
-jint Java_com_duongame_basicplayer_Player_renderFrameYUV(JNIEnv *env, jobject thiz, int id, jobject bitmapY, jobject bitmapU, jobject bitmapV) {
-    void *pixelsY, *pixelsU, *pixelsV;
-	int result;
+// jint Java_com_duongame_basicplayer_Player_renderFrameYUV(JNIEnv *env, jobject thiz, int id, jobject bitmapY, jobject bitmapU, jobject bitmapV) {
+//     void *pixelsY, *pixelsU, *pixelsV;
+// 	int result;
 
-	Movie *gMovie = MovieMap_get(id);
-	if(gMovie == NULL)
-		return -1;
+// 	Movie *gMovie = MovieMap_get(id);
+// 	if(gMovie == NULL)
+// 		return -1;
 
-	// 영상이 종료된 상태임 
-	if(decodeFrame(gMovie) < 0) {
-		return 1;// 종료 상태 
-	}
-	else {
-		if ((result = AndroidBitmap_lockPixels(env, bitmapY, &pixelsY)) < 0)
-			return result;
-		if ((result = AndroidBitmap_lockPixels(env, bitmapU, &pixelsU)) < 0)
-			return result;
-		if ((result = AndroidBitmap_lockPixels(env, bitmapV, &pixelsV)) < 0)
-			return result;
+// 	// 영상이 종료된 상태임 
+// 	if(decodeFrame(gMovie) < 0) {
+// 		return 1;// 종료 상태 
+// 	}
+// 	else {
+// 		if ((result = AndroidBitmap_lockPixels(env, bitmapY, &pixelsY)) < 0)
+// 			return result;
+// 		if ((result = AndroidBitmap_lockPixels(env, bitmapU, &pixelsU)) < 0)
+// 			return result;
+// 		if ((result = AndroidBitmap_lockPixels(env, bitmapV, &pixelsV)) < 0)
+// 			return result;
 
-		copyPixelsYUV(gMovie, (uint8_t*)pixelsY, (uint8_t*)pixelsU, (uint8_t*)pixelsV);
+// 		copyPixelsYUV(gMovie, (uint8_t*)pixelsY, (uint8_t*)pixelsU, (uint8_t*)pixelsV);
 
-		AndroidBitmap_unlockPixels(env, bitmapY);
-		AndroidBitmap_unlockPixels(env, bitmapU);
-		AndroidBitmap_unlockPixels(env, bitmapV);
-	}
+// 		AndroidBitmap_unlockPixels(env, bitmapY);
+// 		AndroidBitmap_unlockPixels(env, bitmapU);
+// 		AndroidBitmap_unlockPixels(env, bitmapV);
+// 	}
 
-	return 0;
-}
+// 	return 0;
+// }
 
-jint Java_com_duongame_basicplayer_Player_renderFrame(JNIEnv *env, jobject thiz, int id, jobject bitmap)
-{
-    void *pixels;
-	int result;
+// jint Java_com_duongame_basicplayer_Player_renderFrame(JNIEnv *env, jobject thiz, int id, jobject bitmap)
+// {
+//     void *pixels;
+// 	int result;
 
-	Movie *gMovie = MovieMap_get(id);
-	if(gMovie == NULL)
-		return -1;
+// 	Movie *gMovie = MovieMap_get(id);
+// 	if(gMovie == NULL)
+// 		return -1;
 
-	// 영상이 종료된 상태임 
-	if(decodeFrame(gMovie) < 0) {
-		return 1;// 종료 상태 
-	}
-	else {
-		if ((result = AndroidBitmap_lockPixels(env, bitmap, &pixels)) < 0)
-			return result;
+// 	// 영상이 종료된 상태임 
+// 	if(decodeFrame(gMovie) < 0) {
+// 		return 1;// 종료 상태 
+// 	}
+// 	else {
+// 		if ((result = AndroidBitmap_lockPixels(env, bitmap, &pixels)) < 0)
+// 			return result;
 
-		copyPixels(gMovie, (uint8_t*)pixels);
+// 		copyPixels(gMovie, (uint8_t*)pixels);
 
-		AndroidBitmap_unlockPixels(env, bitmap);
-	}
-	return 0;
-}
+// 		AndroidBitmap_unlockPixels(env, bitmap);
+// 	}
+// 	return 0;
+// }
 
 jint Java_com_duongame_basicplayer_Player_getMovieWidth(JNIEnv *env, jobject thiz, int id)
 {
@@ -313,4 +324,15 @@ jlong Java_com_duongame_basicplayer_Player_getCurrentPositionUs(JNIEnv *env, job
 
 	jlong ret = getPosition(gMovie);
 	return ret;
+}
+
+void Java_com_duongame_basicplayer_Player_setTexIdYUV(JNIEnv *env, jobject thiz, int id, int texIdY, int texIdU, int texIdV) 
+{
+	Movie *gMovie = MovieMap_get(id);
+	if(gMovie == NULL)
+		return;
+
+	gMovie->gTexId[0] = texIdY;
+	gMovie->gTexId[1] = texIdU;
+	gMovie->gTexId[2] = texIdV;
 }

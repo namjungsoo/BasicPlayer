@@ -47,8 +47,12 @@ typedef struct {
     AVCodec *gAudioCodec;
     AVFrame *gFrameAudio;
     pthread_t gAudioThread;
+    pthread_t gFrameThread;
     int gAudioStreamIdx;
     int gAudioThreadRunning;
+    int gFrameThreadRunning;
+
+    int gTexId[3];// 0: Y, 1: U, 2: V
     enum AVSampleFormat sfmt;
 } Movie;
 

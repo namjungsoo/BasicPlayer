@@ -199,6 +199,8 @@ public class GLPlayerView extends GLSurfaceView {
             if (mTextureIdV == 0) {
                 mTextureIdV = initTexture(player.getMovieWidth() / 2, player.getMovieHeight() / 2, arrayV);
             }
+
+            player.setTexIdYUV(mTextureIdY, mTextureIdU, mTextureIdV);
         }
 
         @Override
@@ -211,7 +213,8 @@ public class GLPlayerView extends GLSurfaceView {
         @Override
         public void onDrawFrame(GL10 gl) {
             if (isPlaying) {
-                player.renderFrameYUVTexId(player.getMovieWidth(), player.getMovieHeight(), mTextureIdY, mTextureIdU, mTextureIdV);
+//                player.renderFrameYUVTexId(player.getMovieWidth(), player.getMovieHeight(), mTextureIdY, mTextureIdU, mTextureIdV);
+
 //                player.renderFrameYUVArray(arrayY, arrayU, arrayV);
 //                if (mTextureIdY != 0) {
 //                    updateTexture(player.getMovieWidth(), player.getMovieHeight(), mTextureIdY, arrayY);
