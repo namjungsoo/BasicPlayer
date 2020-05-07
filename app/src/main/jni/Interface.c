@@ -246,14 +246,3 @@ jlong Java_com_duongame_basicplayer_Player_getCurrentPositionUs(JNIEnv *env, job
 	jlong ret = getPosition(gMovie);
 	return ret;
 }
-
-void Java_com_duongame_basicplayer_Player_setTexIdYUV(JNIEnv *env, jobject thiz, int id, int texIdY, int texIdU, int texIdV) 
-{
-	Movie *gMovie = MovieMap_get(id);
-	if(gMovie == NULL)
-		return;
-
-	gMovie->gTexId[0] = texIdY;
-	gMovie->gTexId[1] = texIdU;
-	gMovie->gTexId[2] = texIdV;
-}
