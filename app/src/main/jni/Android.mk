@@ -143,7 +143,7 @@ ifeq ($(TARGET_ARCH_ABI),arm64-v8a)
 LOCAL_STATIC_LIBRARIES := libavformat libavcodec libswscale libswresample libavutil libx264 libssl libvorbis libcrypto libvorbisfile libvorbisenc libogg libopus libmp3lame libfdk-aac libshine
 endif
 
-LOCAL_LDLIBS := -lz -ljnigraphics -llog -lc -lm
+LOCAL_LDLIBS := -lz -ljnigraphics -llog -lc -lm -lGLESv2
 LOCAL_ARM_MODE := arm
 
 include $(BUILD_SHARED_LIBRARY)

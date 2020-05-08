@@ -50,6 +50,14 @@ typedef struct {
 
     int gTargetWidth;
     int gTargetHeight;
+
+    // 프레임 디코딩 쓰레드
+    pthread_t gFrameThread;
+    int gFrameThreadRunning;
+
+    // YUV 데이터
+    uint8_t *gData[3];
+
     enum AVSampleFormat sfmt;
 } Movie;
 

@@ -457,8 +457,6 @@ void closeFrame(Movie *movie)
 
 void closeMovie(Movie *movie)
 {
-	int status;
-
 	LOGD("closeMovie BEGIN");
 
 	if (movie->gVideoBuffer != NULL) {
@@ -488,7 +486,8 @@ void closeMovie(Movie *movie)
 	if(movie->gAudioThreadRunning) {
 		movie->gAudioThreadRunning = 0;
 
-		pthread_join(movie->gAudioThread, (void**)&status);
+		LOGD("closeMovie gAudioThread=%d", movie->gAudioThread);
+		pthread_join(movie->gAudioThread, NULL);
 		movie->gAudioThread = 0;		
 
 		if(movie->gAudioCodecCtx != NULL) {
@@ -578,3 +577,51 @@ int64_t getPosition(Movie *movie)
 {
 	return movie->gCurrentTimeUs;
 }
+
+// frame thread 
+void *decodeFrameThread(void *param) 
+{
+	LOGD("decodeFrameThread BEGIN");
+	Movie *movie = (Movie*)param;
+	AVPacket packet;
+	int frameFinished = 0;
+	
+	// 무한으로 돌린다
+	while(av_read_frame(movie->gFormatCtx, &packet) >= 0) {
+		if (packet.stream_index == movie->gVideoStreamIdx) {
+			avcodec_decode_video2(movie->gVideoCodecCtx, movie->gFrame, &frameFinished, &packet);
+			
+			int64_t pts = av_frame_get_best_effort_timestamp(movie->gFrame);
+			movie->gCurrentTimeUs = av_rescale_q(pts, movie->gFormatCtx->streams[movie->gVideoStreamIdx]->time_base, AV_TIME_BASE_Q);
+			LOGD("pts=%f movie->gCurrentTimeUs=%lu", pts, movie->gCurrentTimeUs);
+
+			if (frameFinished) {
+				copyFrameYUVTexData(movie);
+				av_packet_unref(&packet);
+			}
+		} else if(packet.stream_index == movie->gAudioStreamIdx) {
+			if(movie->gAudioThread != 0) {
+			 	AudioQ_lock();
+			 	AudioQ_push(packet);
+			 	AudioQ_unlock();
+			}
+		} else {
+			// 처리하지 못했을때 자체적으로 packet을 free 함 
+			av_packet_unref(&packet);
+		}
+	}
+
+	LOGW("decodeFrameThread END");
+}
+
+// for OpenGL texture 
+void copyFrameYUVTexData(Movie *movie) 
+{
+	int width = getWidth(movie);
+	int height = getHeight(movie);
+
+	memcpy(movie->gData[0], movie->gFrame->data[0], width*height);
+	memcpy(movie->gData[1], movie->gFrame->data[1], width*height/4);
+	memcpy(movie->gData[2], movie->gFrame->data[2], width*height/4);
+}
+

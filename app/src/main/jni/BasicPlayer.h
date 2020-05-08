@@ -48,6 +48,10 @@ double getFps(Movie *movie);
 int64_t getDuration(Movie *movie);
 int64_t getPosition(Movie *movie);
 
+// Frame thread & YUV data
+void *decodeFrameThread(void *param);
+void copyFrameYUVTexData(Movie *movie);
+
 #ifdef __cplusplus
 }
 #endif

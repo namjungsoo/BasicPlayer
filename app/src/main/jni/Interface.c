@@ -14,6 +14,9 @@
 #include <stdint.h>
 #include <linux/termios.h>
 
+#include <GLES/gl.h>
+#define THREAD_RENDER 1
+
 int tcgetattr(int fd, struct termios *s)    
 {
 	return ioctl(fd, TCGETS, s);
@@ -174,8 +177,12 @@ void Java_com_duongame_basicplayer_Player_closeMovie(JNIEnv *env, jobject thiz, 
 	LOGD("BEGIN closeMovie");
 	
 	closeMovie(gMovie);
+	LOGD("closeMovie end");
+
 	free(gMovie);
+	LOGD("closeMovie free end");
 	MovieMap_remove(id);
+	LOGD("closeMovie MovieMap_remove end");
 	
 	LOGD("END closeMovie");
 }
@@ -239,4 +246,42 @@ jlong Java_com_duongame_basicplayer_Player_getCurrentPositionUs(JNIEnv *env, job
 	jlong ret = getPosition(gMovie);
 //	LOGD("END getCurrentPositionUs");
 	return ret;
+}
+
+// GLPlayerView.renderFrameYUVTexId 
+jint Java_com_duongame_basicplayer_Player_renderFrameYUVTexId(JNIEnv *env, jobject thiz, int id, int width, int height, int texIdY, int texIdU, int texIdV) {
+	int result;
+
+	Movie *gMovie = MovieMap_get(id);
+	if(gMovie == NULL)
+		return -1;
+
+	if(!THREAD_RENDER) {// 기존 렌더링 방식
+		// 영상이 종료된 상태임 
+		if(decodeFrame(gMovie) < 0) {
+			return 1;// 종료 상태 
+		}
+		else {
+			Movie *movie = gMovie;
+
+			glBindTexture(GL_TEXTURE_2D, texIdY);
+			glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_LUMINANCE, GL_UNSIGNED_BYTE, movie->gFrame->data[0]);
+			glBindTexture(GL_TEXTURE_2D, texIdU);
+			glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width/2, height/2, GL_LUMINANCE, GL_UNSIGNED_BYTE, movie->gFrame->data[1]);
+			glBindTexture(GL_TEXTURE_2D, texIdV);
+			glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width/2, height/2, GL_LUMINANCE, GL_UNSIGNED_BYTE, movie->gFrame->data[2]);
+		}
+	} else {
+		// decodeFrame은 항상 thread에서 수행되고 있다.
+		Movie *movie = gMovie;
+
+		glBindTexture(GL_TEXTURE_2D, texIdY);
+		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_LUMINANCE, GL_UNSIGNED_BYTE, movie->gData[0]);
+		glBindTexture(GL_TEXTURE_2D, texIdU);
+		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width/2, height/2, GL_LUMINANCE, GL_UNSIGNED_BYTE, movie->gData[1]);
+		glBindTexture(GL_TEXTURE_2D, texIdV);
+		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width/2, height/2, GL_LUMINANCE, GL_UNSIGNED_BYTE, movie->gData[2]);
+	}
+
+	return 0;
 }
