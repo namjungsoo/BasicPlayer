@@ -250,8 +250,8 @@ public class PlayerView extends View {
             final int bmHeight = bitmapY.getHeight();
 
             if (isPlaying || isSeeking) {
-                //int ret = player.renderFrame(bitmapY);
-                int ret = player.renderFrameYUV(bitmapY, bitmapU, bitmapV);
+                int ret = player.renderFrame(bitmapY);
+                //int ret = player.renderFrameYUV(bitmapY, bitmapU, bitmapV);
                 // 렌더링 종료
                 if (ret > 0) {
                     pause(true);

@@ -33,6 +33,7 @@ import com.duongame.basicplayer.manager.ScreenManager;
 import com.duongame.basicplayer.util.TimeConverter;
 import com.duongame.basicplayer.util.UnitConverter;
 import com.duongame.basicplayer.view.GLPlayerView;
+import com.duongame.basicplayer.view.PlayerView;
 import com.google.android.gms.ads.AdView;
 
 import java.io.File;
@@ -43,8 +44,8 @@ public class PlayerActivity extends BaseActivity {
     private final static String TAG = "PlayerActivity";
 
     //TEST
-    private GLPlayerView playerView;
-    //private PlayerView playerView;
+    //private GLPlayerView playerView;
+    private PlayerView playerView;
 
     private ViewGroup toolBox;
     //private float alpha;
@@ -78,7 +79,9 @@ public class PlayerActivity extends BaseActivity {
 //        setSupportActionBar(toolbar);
 
         playerFrame = (FrameLayout) findViewById(R.id.playerFrame);
-        playerView = new GLPlayerView(this);
+        //playerView = new GLPlayerView(this);
+        playerView = new PlayerView(this);
+
         FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         playerView.setLayoutParams(params);
         playerFrame.addView(playerView, 0);

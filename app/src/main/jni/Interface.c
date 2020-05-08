@@ -113,6 +113,37 @@ jint Java_com_duongame_basicplayer_Player_openMovie(JNIEnv *env, jobject thiz, i
 	return result;
 }
 
+// PlayerView.renderFrame
+jint Java_com_duongame_basicplayer_Player_renderFrame(JNIEnv *env, jobject thiz, int id, jobject bitmap)
+{
+	LOGD("BEGIN renderFrame");
+    void *pixels;
+	int result;
+
+	Movie *gMovie = MovieMap_get(id);
+	if(gMovie == NULL)
+		return -1;
+
+	LOGD("renderFrame movie");
+	// 영상이 종료된 상태임 
+	if(decodeFrame(gMovie) < 0) {
+		return 1;// 종료 상태 
+	}
+	else {
+		LOGD("renderFrame decodeFrame");
+		if ((result = AndroidBitmap_lockPixels(env, bitmap, &pixels)) < 0) {
+			LOGD("renderFrame AndroidBitmap_lockPixels error");
+			return result;
+		}
+		copyPixels(gMovie, (uint8_t*)pixels);
+		LOGD("renderFrame copyPixels");
+
+		AndroidBitmap_unlockPixels(env, bitmap);
+	}
+	LOGD("END renderFrame");
+	return 0;
+}
+
 // GLPlayerView.renderFrameYUVTexId 
 jint Java_com_duongame_basicplayer_Player_renderFrameYUVTexId(JNIEnv *env, jobject thiz, int id, int width, int height, int texIdY, int texIdU, int texIdV) {
 	int result;
@@ -121,36 +152,32 @@ jint Java_com_duongame_basicplayer_Player_renderFrameYUVTexId(JNIEnv *env, jobje
 	if(gMovie == NULL)
 		return -1;
 
-	// 영상이 종료된 상태임 
-	// if(decodeFrame(gMovie) < 0) {
-	// 	return 1;// 종료 상태 
-	// }
-	// else {
-	// 	Movie *movie = gMovie;
+	if(!THREAD_RENDER) {// 기존 렌더링 방식
+		// 영상이 종료된 상태임 
+		if(decodeFrame(gMovie) < 0) {
+			return 1;// 종료 상태 
+		}
+		else {
+			Movie *movie = gMovie;
 
-	// 	glBindTexture(GL_TEXTURE_2D, texIdY);
-	// 	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_LUMINANCE, GL_UNSIGNED_BYTE, movie->gFrame->data[0]);
-	// 	glBindTexture(GL_TEXTURE_2D, texIdU);
-	// 	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width/2, height/2, GL_LUMINANCE, GL_UNSIGNED_BYTE, movie->gFrame->data[1]);
-	// 	glBindTexture(GL_TEXTURE_2D, texIdV);
-	// 	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width/2, height/2, GL_LUMINANCE, GL_UNSIGNED_BYTE, movie->gFrame->data[2]);
-	// }
+			glBindTexture(GL_TEXTURE_2D, texIdY);
+			glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_LUMINANCE, GL_UNSIGNED_BYTE, movie->gFrame->data[0]);
+			glBindTexture(GL_TEXTURE_2D, texIdU);
+			glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width/2, height/2, GL_LUMINANCE, GL_UNSIGNED_BYTE, movie->gFrame->data[1]);
+			glBindTexture(GL_TEXTURE_2D, texIdV);
+			glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width/2, height/2, GL_LUMINANCE, GL_UNSIGNED_BYTE, movie->gFrame->data[2]);
+		}
+	} else {
+		// decodeFrame은 항상 thread에서 수행되고 있다.
+		Movie *movie = gMovie;
 
-	// decodeFrame은 항상 thread에서 수행되고 있다.
-	Movie *movie = gMovie;
-
-	// glBindTexture(GL_TEXTURE_2D, texIdY);
-	// glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_LUMINANCE, GL_UNSIGNED_BYTE, movie->gFrame->data[0]);
-	// glBindTexture(GL_TEXTURE_2D, texIdU);
-	// glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width/2, height/2, GL_LUMINANCE, GL_UNSIGNED_BYTE, movie->gFrame->data[1]);
-	// glBindTexture(GL_TEXTURE_2D, texIdV);
-	// glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width/2, height/2, GL_LUMINANCE, GL_UNSIGNED_BYTE, movie->gFrame->data[2]);
-	glBindTexture(GL_TEXTURE_2D, texIdY);
-	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_LUMINANCE, GL_UNSIGNED_BYTE, movie->gData[0]);
-	glBindTexture(GL_TEXTURE_2D, texIdU);
-	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width/2, height/2, GL_LUMINANCE, GL_UNSIGNED_BYTE, movie->gData[1]);
-	glBindTexture(GL_TEXTURE_2D, texIdV);
-	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width/2, height/2, GL_LUMINANCE, GL_UNSIGNED_BYTE, movie->gData[2]);
+		glBindTexture(GL_TEXTURE_2D, texIdY);
+		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_LUMINANCE, GL_UNSIGNED_BYTE, movie->gData[0]);
+		glBindTexture(GL_TEXTURE_2D, texIdU);
+		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width/2, height/2, GL_LUMINANCE, GL_UNSIGNED_BYTE, movie->gData[1]);
+		glBindTexture(GL_TEXTURE_2D, texIdV);
+		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width/2, height/2, GL_LUMINANCE, GL_UNSIGNED_BYTE, movie->gData[2]);
+	}
 
 	return 0;
 }

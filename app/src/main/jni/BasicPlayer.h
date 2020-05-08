@@ -16,6 +16,7 @@ extern "C" {
 #endif
 
 #include "Movie.h"
+#define THREAD_RENDER 0
 
 void initMovie(Movie *movie);
 
@@ -29,6 +30,7 @@ int openAudioStream(Movie *movie);
 
 // return: == 0 - success
 //         != 0 then end of movie or fail
+//int decodeFrame(Movie *movie);
 int decodeFrame(Movie *movie);
 
 void copyPixels(Movie *movie, uint8_t *pixels);
@@ -48,6 +50,10 @@ int seekMovie(Movie *movie, int64_t positionUs);
 double getFps(Movie *movie);
 int64_t getDuration(Movie *movie);
 int64_t getPosition(Movie *movie);
+
+void *decodeFrameThread(void *param);
+void renderFrameYUVTexId(Movie *movie);
+void copyFrameYUVTexData(Movie *movie);
 
 #ifdef __cplusplus
 }
