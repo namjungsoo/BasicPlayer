@@ -5,9 +5,9 @@ import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.content.res.ResourcesCompat;
-import android.support.v7.app.ActionBar;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.res.ResourcesCompat;
+import androidx.appcompat.app.ActionBar;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.MenuItem;
@@ -34,7 +34,6 @@ import com.duongame.basicplayer.util.TimeConverter;
 import com.duongame.basicplayer.util.UnitConverter;
 import com.duongame.basicplayer.view.PlayerView;
 import com.google.android.gms.ads.AdView;
-import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
 
 import java.io.File;
 
