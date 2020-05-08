@@ -23,6 +23,7 @@ import com.duongame.basicplayer.manager.AdInterstitialManager;
 import com.duongame.basicplayer.manager.PermissionManager;
 import com.duongame.basicplayer.task.FindFileTask;
 import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.MobileAds;
 
 import java.io.File;
 import java.util.List;
@@ -47,6 +48,7 @@ public class MainActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         Log.d(TAG, "onCreate");
 
+        MobileAds.initialize(this);
         realm = Realm.getDefaultInstance();
 
         Player.initAudioTrack();

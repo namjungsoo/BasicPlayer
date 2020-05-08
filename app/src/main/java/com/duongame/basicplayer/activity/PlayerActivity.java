@@ -180,10 +180,13 @@ public class PlayerActivity extends BaseActivity {
     public void onDestroy() {
         Log.d(TAG, "onDestroy");
         super.onDestroy();
+        Log.d(TAG, "onDestroy end");
 
         playerView.close();
+        Log.d(TAG, "onDestroy close end");
         if (adView != null) {
             playerFrame.removeView(adView);
+            Log.d(TAG, "onDestroy removeView end");
         }
     }
 
@@ -193,7 +196,7 @@ public class PlayerActivity extends BaseActivity {
         int count = pref.getInt("exit_count", 0);
         SharedPreferences.Editor edit = pref.edit();
         edit.putInt("exit_count", count + 1);
-        edit.commit();
+        edit.apply();
 
         if (count % 2 == 0) {
             AdInterstitialManager.showAd(this, MODE_EXIT, new AdInterstitialManager.OnFinishListener() {

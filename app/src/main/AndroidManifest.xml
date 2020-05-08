@@ -29,6 +29,9 @@
         <meta-data
             android:name="io.fabric.ApiKey"
             android:value="479ae7d868a353eb8da82e059fd1a04418af3cf3" />
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-8174809468024854~1143658840"/>
     </application>
 
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
