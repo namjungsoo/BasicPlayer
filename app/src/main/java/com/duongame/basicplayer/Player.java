@@ -112,6 +112,10 @@ public class Player {
         return getCurrentPositionUs(id);
     }
 
+    public int renderFrameYUVTexId(int width, int height, int texIdY, int texIdU, int texIdV) {
+        return renderFrameYUVTexId(id, width, height, texIdY, texIdU, texIdV);
+    }
+
     // 오디오 관련(static)
     public static native void initAudioTrack();
 
@@ -140,4 +144,7 @@ public class Player {
     private native double getFps(int id);
 
     private native long getCurrentPositionUs(int id);
+
+    private native int renderFrameYUVTexId(int id, int width, int height, int texIdY, int texIdU, int texIdV);
+
 }
