@@ -5,15 +5,16 @@ apply plugin: 'kotlin-kapt'
 apply plugin: 'realm-android'
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion 29
     buildToolsVersion '28.0.3'
     defaultConfig {
+        multiDexEnabled true
         applicationId 'com.duongame.basicplayer'
         buildConfigField "boolean", "SHOW_AD", "true"
-        minSdkVersion 14
-        targetSdkVersion 28
-        versionCode 12
-        versionName "1.1.0"
+        minSdkVersion 16
+        targetSdkVersion 29
+        versionCode 13
+        versionName "1.1.1"
 
         buildConfigField "String", "GA_TRACKING_ID", "\"UA-61499807-16\""
     }
@@ -58,7 +59,7 @@ android {
         }
         production {
             dimension "mode"
-            minSdkVersion 14
+            minSdkVersion 16
         }
         original {
             buildConfigField "boolean", "SHOW_AD", "true"
@@ -98,9 +99,9 @@ dependencies {
     //implementation 'com.googlecode.juniversalchardet:juniversalchardet:1.0.3'
 
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
-    implementation 'androidx.appcompat:appcompat:1.0.0'
+    implementation 'androidx.appcompat:appcompat:1.1.0'
     implementation 'androidx.cardview:cardview:1.0.0'
-    implementation 'androidx.recyclerview:recyclerview:1.0.0'
+    implementation 'androidx.recyclerview:recyclerview:1.1.0'
 
     //ads는 항상 15.0.1을 유지할것
     implementation 'com.google.android.gms:play-services-ads:19.1.0'
@@ -113,6 +114,8 @@ dependencies {
         transitive = true
     }
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+
+    implementation 'androidx.multidex:multidex:2.0.1'
 }
 
 // Add to the bottom of the file

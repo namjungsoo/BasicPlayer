@@ -6,11 +6,12 @@ import com.duongame.basicplayer.data.MovieFileMigration;
 import com.google.android.gms.analytics.GoogleAnalytics;
 import com.google.android.gms.analytics.Tracker;
 import com.google.firebase.analytics.FirebaseAnalytics;
+import androidx.multidex.MultiDexApplication;
 
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
 
-public class PlayerApplication extends Application {
+public class PlayerApplication extends MultiDexApplication {
     private Tracker mTracker;
 
     @Override
