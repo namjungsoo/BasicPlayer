@@ -144,10 +144,11 @@ void writeAudioTrack(char* data, int data_size)
     // 오디오 트랙에 데이터를 쓰면 된다 여기서
     // 어떤 소리가 나던지 일단은 써보자 
     jbyteArray samples_byte_array = env->NewByteArray(data_size);
+    env->SetByteArrayRegion(samples_byte_array, 0, data_size, (const jbyte*)data);
 
-	jbyte *jni_samples = env->GetByteArrayElements(samples_byte_array, 0);
-	memcpy(jni_samples, data, data_size);
-	env->ReleaseByteArrayElements(samples_byte_array, jni_samples, 0);
+	// jbyte *jni_samples = env->GetByteArrayElements(samples_byte_array, 0);
+	// memcpy(jni_samples, data, data_size);
+	// env->ReleaseByteArrayElements(samples_byte_array, jni_samples, 0);
 
     if(player->audio_track != NULL) {
 	   int ret = env->CallIntMethod(player->audio_track, player->audio_track_write_method, samples_byte_array, 0, data_size);
