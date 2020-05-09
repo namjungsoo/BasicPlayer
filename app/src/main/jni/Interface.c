@@ -15,7 +15,6 @@
 #include <linux/termios.h>
 
 #include <GLES/gl.h>
-#define THREAD_RENDER 1
 
 int tcgetattr(int fd, struct termios *s)    
 {
@@ -256,7 +255,17 @@ jint Java_com_duongame_basicplayer_Player_renderFrameYUVTexId(JNIEnv *env, jobje
 	if(gMovie == NULL)
 		return -1;
 
-	if(!THREAD_RENDER) {// 기존 렌더링 방식
+#if THREAD_RENDER == 1 
+		// decodeFrame은 항상 thread에서 수행되고 있다.
+		Movie *movie = gMovie;
+
+		glBindTexture(GL_TEXTURE_2D, texIdY);
+		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_LUMINANCE, GL_UNSIGNED_BYTE, movie->gData[0]);
+		glBindTexture(GL_TEXTURE_2D, texIdU);
+		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width/2, height/2, GL_LUMINANCE, GL_UNSIGNED_BYTE, movie->gData[1]);
+		glBindTexture(GL_TEXTURE_2D, texIdV);
+		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width/2, height/2, GL_LUMINANCE, GL_UNSIGNED_BYTE, movie->gData[2]);
+#else
 		// 영상이 종료된 상태임 
 		if(decodeFrame(gMovie) < 0) {
 			return 1;// 종료 상태 
@@ -271,17 +280,7 @@ jint Java_com_duongame_basicplayer_Player_renderFrameYUVTexId(JNIEnv *env, jobje
 			glBindTexture(GL_TEXTURE_2D, texIdV);
 			glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width/2, height/2, GL_LUMINANCE, GL_UNSIGNED_BYTE, movie->gFrame->data[2]);
 		}
-	} else {
-		// decodeFrame은 항상 thread에서 수행되고 있다.
-		Movie *movie = gMovie;
-
-		glBindTexture(GL_TEXTURE_2D, texIdY);
-		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_LUMINANCE, GL_UNSIGNED_BYTE, movie->gData[0]);
-		glBindTexture(GL_TEXTURE_2D, texIdU);
-		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width/2, height/2, GL_LUMINANCE, GL_UNSIGNED_BYTE, movie->gData[1]);
-		glBindTexture(GL_TEXTURE_2D, texIdV);
-		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width/2, height/2, GL_LUMINANCE, GL_UNSIGNED_BYTE, movie->gData[2]);
-	}
+#endif
 
 	return 0;
 }

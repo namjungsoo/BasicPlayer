@@ -124,6 +124,11 @@ int openVideoStream(Movie *movie, int width, int height)
 	LOGD("fps=%f", movie->gFps);
 
 	LOGD("pix_fmt=%d(%s)", movie->gVideoCodecCtx->pix_fmt, av_get_pix_fmt_name(movie->gVideoCodecCtx->pix_fmt));
+
+	movie->gData[0] = (uint8_t*)(malloc(sizeof(uint8_t)*getWidth(movie)*getHeight(movie)));
+	movie->gData[1] = (uint8_t*)(malloc(sizeof(uint8_t)*getWidth(movie)*getHeight(movie)/4));
+	movie->gData[2] = (uint8_t*)(malloc(sizeof(uint8_t)*getWidth(movie)*getHeight(movie)/4));
+
 	return 0;
 }
 
@@ -313,8 +318,14 @@ int openMovieWithAudio(Movie *movie, const char *filePath, int audio, int width,
 		}
 		else {
 			prepareAudioTrack(movie->gAudioCodecCtx->sample_fmt, movie->gAudioCodecCtx->sample_rate, movie->gAudioCodecCtx->channels);
-			movie->gAudioThreadRunning = 1;
 			ret = pthread_create(&movie->gAudioThread, NULL, decodeAudioThread, movie);
+			movie->gAudioThreadRunning = 1;
+
+#if THREAD_RENDER == 1
+			LOGD("THREAD_RENDER decodeFrameThread");
+			ret = pthread_create(&movie->gFrameThread, NULL, decodeFrameThread, movie);
+			movie->gFrameThreadRunning = 1;
+#endif			
 		}		
 	}
 
@@ -459,6 +470,19 @@ void closeMovie(Movie *movie)
 {
 	LOGD("closeMovie BEGIN");
 
+	// frame thread를 종료시킨다 
+	if(movie->gFrameThreadRunning) {
+		movie->gFrameThreadRunning = 0;
+
+		LOGD("closeMovie gFrameThread=%d", movie->gFrameThread);
+		pthread_join(movie->gFrameThread, NULL);
+		movie->gFrameThread = 0;		
+	}
+
+	free(movie->gData[0]);
+	free(movie->gData[1]);
+	free(movie->gData[2]);
+
 	if (movie->gVideoBuffer != NULL) {
 		free(movie->gVideoBuffer);
 		movie->gVideoBuffer = NULL;
@@ -489,18 +513,17 @@ void closeMovie(Movie *movie)
 		LOGD("closeMovie gAudioThread=%d", movie->gAudioThread);
 		pthread_join(movie->gAudioThread, NULL);
 		movie->gAudioThread = 0;		
-
-		if(movie->gAudioCodecCtx != NULL) {
-			avcodec_close(movie->gAudioCodecCtx);
-			movie->gAudioCodecCtx = NULL;
-		}
-		LOGW("closeMovie gAudioCodecCtx");
-		movie->gAudioStreamIdx = -1;
-		
-		AudioQ_lock();
-		AudioQ_clear();
-		AudioQ_unlock();
 	}
+	if(movie->gAudioCodecCtx != NULL) {
+		avcodec_close(movie->gAudioCodecCtx);
+		movie->gAudioCodecCtx = NULL;
+	}
+	LOGW("closeMovie gAudioCodecCtx");
+	movie->gAudioStreamIdx = -1;
+	
+	AudioQ_lock();
+	AudioQ_clear();
+	AudioQ_unlock();
 	//END Audio 
 
 	LOGD("closeMovie END");
@@ -583,23 +606,28 @@ void *decodeFrameThread(void *param)
 {
 	LOGD("decodeFrameThread BEGIN");
 	Movie *movie = (Movie*)param;
+	LOGD("decodeFrameThread movie=%llu", movie);
 	AVPacket packet;
 	int frameFinished = 0;
 	
 	// 무한으로 돌린다
-	while(av_read_frame(movie->gFormatCtx, &packet) >= 0) {
+	while(movie->gFrameThreadRunning && av_read_frame(movie->gFormatCtx, &packet) >= 0) {
+		LOGD("decodeFrameThread av_read_frame");
 		if (packet.stream_index == movie->gVideoStreamIdx) {
 			avcodec_decode_video2(movie->gVideoCodecCtx, movie->gFrame, &frameFinished, &packet);
-			
+			LOGD("decodeFrameThread avcodec_decode_video2");
+
 			int64_t pts = av_frame_get_best_effort_timestamp(movie->gFrame);
 			movie->gCurrentTimeUs = av_rescale_q(pts, movie->gFormatCtx->streams[movie->gVideoStreamIdx]->time_base, AV_TIME_BASE_Q);
-			LOGD("pts=%f movie->gCurrentTimeUs=%lu", pts, movie->gCurrentTimeUs);
+			LOGD("decodeFrameThread pts=%f movie->gCurrentTimeUs=%lu", pts, movie->gCurrentTimeUs);
 
 			if (frameFinished) {
 				copyFrameYUVTexData(movie);
+				LOGD("avcodec_decode_video2 copyFrameYUVTexData");
 				av_packet_unref(&packet);
 			}
 		} else if(packet.stream_index == movie->gAudioStreamIdx) {
+			LOGD("decodeFrameThread gAudioStreamIdx");
 			if(movie->gAudioThread != 0) {
 			 	AudioQ_lock();
 			 	AudioQ_push(packet);
@@ -609,6 +637,7 @@ void *decodeFrameThread(void *param)
 			// 처리하지 못했을때 자체적으로 packet을 free 함 
 			av_packet_unref(&packet);
 		}
+		usleep(1);
 	}
 
 	LOGW("decodeFrameThread END");
@@ -617,11 +646,12 @@ void *decodeFrameThread(void *param)
 // for OpenGL texture 
 void copyFrameYUVTexData(Movie *movie) 
 {
+	LOGD("copyFrameYUVTexData BEGIN");
 	int width = getWidth(movie);
 	int height = getHeight(movie);
 
 	memcpy(movie->gData[0], movie->gFrame->data[0], width*height);
 	memcpy(movie->gData[1], movie->gFrame->data[1], width*height/4);
 	memcpy(movie->gData[2], movie->gFrame->data[2], width*height/4);
+	LOGD("copyFrameYUVTexData END");
 }
-
