@@ -5,9 +5,6 @@ import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
-import androidx.core.content.ContextCompat;
-import androidx.core.content.res.ResourcesCompat;
-import androidx.appcompat.app.ActionBar;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.MenuItem;
@@ -23,6 +20,10 @@ import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import androidx.appcompat.app.ActionBar;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.res.ResourcesCompat;
+
 import com.duongame.basicplayer.BuildConfig;
 import com.duongame.basicplayer.R;
 import com.duongame.basicplayer.manager.AdBannerManager;
@@ -32,7 +33,7 @@ import com.duongame.basicplayer.manager.PreferenceManager;
 import com.duongame.basicplayer.manager.ScreenManager;
 import com.duongame.basicplayer.util.TimeConverter;
 import com.duongame.basicplayer.util.UnitConverter;
-import com.duongame.basicplayer.view.PlayerView;
+import com.duongame.basicplayer.view.IPlayerView;
 import com.google.android.gms.ads.AdView;
 
 import java.io.File;
@@ -42,7 +43,8 @@ import static com.duongame.basicplayer.manager.AdInterstitialManager.MODE_EXIT;
 public class PlayerActivity extends BaseActivity {
     private final static String TAG = "PlayerActivity";
 
-    private PlayerView playerView;
+    //private GLPlayerView playerView;
+    private IPlayerView playerView;
 
     private ViewGroup toolBox;
     //private float alpha;
@@ -78,7 +80,7 @@ public class PlayerActivity extends BaseActivity {
 
         playerFrame = (FrameLayout) findViewById(R.id.playerFrame);
 
-        playerView = (PlayerView) findViewById(R.id.playerView);
+        playerView = findViewById(R.id.playerView);
         toolBox = (ViewGroup) findViewById(R.id.toolBox);
 
         currentTime = (TextView) findViewById(R.id.currentTime);

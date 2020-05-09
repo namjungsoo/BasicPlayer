@@ -125,9 +125,9 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.ViewHolder> 
             @Override
             public void onClick(View view) {
                 // 무조건 열지 말고 기존에 읽었던 파일인지 테스트
-                if (!FileManager.checkRecentFile(context, file.absolutePath)) {
+//                if (!FileManager.checkRecentFile(context, file.absolutePath)) {
                     FileManager.openFile(context, file.absolutePath, 0L, 0);
-                }
+//                }
             }
         });
     }
