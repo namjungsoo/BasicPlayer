@@ -36,7 +36,7 @@ import static com.duongame.basicplayer.view.PlayerView.Axis.AXIS_Y;
 /**
  * Created by namjungsoo on 16. 6. 18..
  */
-public class PlayerView extends View {
+public class PlayerView extends View implements IPlayerView {
     private final static String TAG = "PlayerView";
 
     private Bitmap bitmap;

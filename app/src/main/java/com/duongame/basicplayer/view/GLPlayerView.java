@@ -35,7 +35,7 @@ import javax.microedition.khronos.opengles.GL10;
 // 5. 회전 처리 (회전은 텍스처 좌표를 적용하자)
 // 6. YUV 처리
 
-public class GLPlayerView extends GLSurfaceView {
+public class GLPlayerView extends GLSurfaceView implements IPlayerView {
     private final static String TAG = "GLPlayerView";
 
     // 순수하게 Player 관련 항목
