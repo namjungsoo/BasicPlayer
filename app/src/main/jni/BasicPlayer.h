@@ -16,7 +16,7 @@ extern "C" {
 #endif
 
 #include "Movie.h"
-#define THREAD_RENDER 1
+#define THREAD_RENDER 0
 
 void initMovie(Movie *movie);
 
