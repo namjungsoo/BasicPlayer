@@ -21,8 +21,8 @@ jmethodID java_get_static_method(JNIEnv *env, jclass cls, JavaMethod method) {
 }
 
 typedef struct {
-    jclass player_class;//MoviePlayView
-    jmethodID player_prepare_audio_track_method;//prepareAudioTrack
+    jclass player_class;// com.duongame.basicplayer.Player
+    jmethodID player_prepare_audio_track_method;// prepareAudioTrack
 
     // AudioTrack
     jclass audio_track_class;
@@ -39,13 +39,13 @@ typedef struct {
     jobject thiz;
     
     JavaVM *javavm;
-} Player;
+} JavaPlayer;
 
-Player *player = NULL;
+JavaPlayer *player = NULL;
 
 void initAudioTrack(JNIEnv *env, jobject thiz)
 {
-    player = (Player*)malloc(sizeof(Player));
+    player = (JavaPlayer*)malloc(sizeof(JavaPlayer));
     memset(player, 0, sizeof(*player));
 
     LOGD("initAudioTrack");

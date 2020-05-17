@@ -71,6 +71,7 @@ double getFps(Movie *movie)
 
 int openVideoStream(Movie *movie, int width, int height) 
 {
+	AVDictionary *optionsDict;
 	LOGD("openVideoStream");
 
 	// 비디오 스트림 인덱스를 체크한다. 
@@ -82,8 +83,8 @@ int openVideoStream(Movie *movie, int width, int height)
 	movie->gVideoCodec = avcodec_find_decoder(movie->gVideoCodecCtx->codec_id);
 	if (movie->gVideoCodec == NULL)
 		return -5;
-
-	if (avcodec_open2(movie->gVideoCodecCtx, movie->gVideoCodec, &movie->optionsDict) < 0)
+	
+	if (avcodec_open2(movie->gVideoCodecCtx, movie->gVideoCodec, &optionsDict) < 0)
 		return -6;
 
 	// 프레임을 할당한다. frame은 원본 frameRGB는 변환용 
@@ -134,6 +135,7 @@ int openVideoStream(Movie *movie, int width, int height)
 
 int openAudioStream(Movie *movie) 
 {
+	AVDictionary *optionsDict;
 	LOGD("openAudioStream gAudioStreamIdx=%d", movie->gAudioStreamIdx);
 
 	// 오디오 스트림 인덱스를 체크한다. 
@@ -146,16 +148,16 @@ int openAudioStream(Movie *movie)
 	if (movie->gAudioCodec == NULL)
 		return -5;
 
-	if (avcodec_open2(movie->gAudioCodecCtx, movie->gAudioCodec, &movie->optionsDict) < 0)
+	if (avcodec_open2(movie->gAudioCodecCtx, movie->gAudioCodec, &optionsDict) < 0)
 		return -6;
 
 	LOGD("gAudioCodecCtx->sample_fmt=%d", movie->gAudioCodecCtx->sample_fmt);
 	LOGD("gAudioCodecCtx->sample_rate=%d", movie->gAudioCodecCtx->sample_rate);
 	LOGD("gAudioCodecCtx->channels=%d", movie->gAudioCodecCtx->channels);
 
-	movie->sfmt = movie->gAudioCodecCtx->sample_fmt;
+	//movie->sfmt = movie->gAudioCodecCtx->sample_fmt;
 
-	const char *audioFormat = getAudioFormatString(movie->sfmt);
+	const char *audioFormat = getAudioFormatString(movie->gAudioCodecCtx->sample_fmt);
 	LOGD("audioFormat=%s", audioFormat);
 }
 
@@ -200,7 +202,7 @@ void* decodeAudioThread(void *param)
 				int data_size = av_samples_get_buffer_size(&plane_size, movie->gAudioCodecCtx->channels, movie->gFrameAudio->nb_samples, movie->gAudioCodecCtx->sample_fmt, 1);
 				uint16_t nb, ch;
 
-				if(movie->sfmt == AV_SAMPLE_FMT_S16P) {
+				if(movie->gAudioCodecCtx->sample_fmt == AV_SAMPLE_FMT_S16P) {
 					uint16_t *out = (uint16_t *)samples;
 					for (nb = 0; nb < plane_size / sizeof(uint16_t); nb++) {
 						for (ch = 0; ch < movie->gAudioCodecCtx->channels; ch++) {
@@ -210,7 +212,7 @@ void* decodeAudioThread(void *param)
 					}
 					writeAudioTrack(samples, plane_size * movie->gAudioCodecCtx->channels);
 				}
-				else if(movie->sfmt == AV_SAMPLE_FMT_FLTP) {
+				else if(movie->gAudioCodecCtx->sample_fmt == AV_SAMPLE_FMT_FLTP) {
 					// LOGD("decodeAudioThread AV_SAMPLE_FMT_FLTP");
 					// resample: float -> short
 					uint16_t *out = (uint16_t *)samples;
@@ -222,7 +224,7 @@ void* decodeAudioThread(void *param)
 					}
 					writeAudioTrack(samples, (plane_size / sizeof(float)) * sizeof(uint16_t) * movie->gAudioCodecCtx->channels);
 				}
-				else if(movie->sfmt == AV_SAMPLE_FMT_U8P) {
+				else if(movie->gAudioCodecCtx->sample_fmt == AV_SAMPLE_FMT_U8P) {
 					uint16_t *out = (uint16_t *)samples;
                     for (nb = 0; nb < plane_size / sizeof(uint8_t); nb++) {
                         for (ch = 0; ch < movie->gFrameAudio->channels; ch++) {
@@ -234,17 +236,17 @@ void* decodeAudioThread(void *param)
 				}
 
 				// 채널 구분이 없음 
-				else if(movie->sfmt == AV_SAMPLE_FMT_S16) {
+				else if(movie->gAudioCodecCtx->sample_fmt == AV_SAMPLE_FMT_S16) {
 					writeAudioTrack((char*)movie->gFrameAudio->extended_data[0], movie->gFrameAudio->linesize[0]);
 				}
-				else if(movie->sfmt == AV_SAMPLE_FMT_FLT) {
+				else if(movie->gAudioCodecCtx->sample_fmt == AV_SAMPLE_FMT_FLT) {
 					uint16_t *out = (uint16_t *)samples;
                     for (nb = 0; nb < plane_size / sizeof(float); nb++) {
                         out[nb] = (short) ( ((float *) movie->gFrameAudio->extended_data[0])[nb] * SHRT_MAX);
                     }
                     writeAudioTrack(samples, (plane_size / sizeof(float)) * sizeof(uint16_t));
 				}
-				else if(movie->sfmt == AV_SAMPLE_FMT_U8) {
+				else if(movie->gAudioCodecCtx->sample_fmt == AV_SAMPLE_FMT_U8) {
 					uint16_t *out = (uint16_t *)samples;
                     for (nb = 0; nb < plane_size / sizeof(uint8_t); nb++) {
                         out[nb] = (short) ( (((uint8_t *) movie->gFrameAudio->extended_data[0])[nb] - 127) * SHRT_MAX / 127);

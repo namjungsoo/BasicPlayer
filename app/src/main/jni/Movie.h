@@ -18,47 +18,38 @@ extern "C" {
 #include <pthread.h>
 
 typedef struct {
+    // 공통 
     AVFormatContext *gFormatCtx;
+    int64_t gCurrentTimeUs;
 
     // 비디오 관련 
     AVCodecContext *gVideoCodecCtx;
     AVCodec *gVideoCodec;
-    int gVideoStreamIdx;
-
     AVFrame *gFrame;
     AVFrame *gFrameRGB;
-
-    struct SwsContext *gImgConvertCtx;
-
+    int gVideoStreamIdx;
     int gPictureSize;
     uint8_t *gVideoBuffer;
-
-    AVDictionary *optionsDict;
-
+    uint8_t *gData[3];// YUV 데이터
     int gPixelFormat;
     double gFps;
-    int64_t gCurrentTimeUs;
+    pthread_t gFrameThread;
+    int gFrameThreadRunning;
+    int gTargetWidth;
+    int gTargetHeight;
 
     // 오디오 관련 
     AVCodecContext *gAudioCodecCtx;
     AVCodec *gAudioCodec;
-    int gAudioStreamIdx;
     AVFrame *gFrameAudio;
-
+    int gAudioStreamIdx;
     pthread_t gAudioThread;
     int gAudioThreadRunning;
 
-    int gTargetWidth;
-    int gTargetHeight;
-
-    // 프레임 디코딩 쓰레드
-    pthread_t gFrameThread;
-    int gFrameThreadRunning;
-
-    // YUV 데이터
-    uint8_t *gData[3];
-
-    enum AVSampleFormat sfmt;
+    // 소프트웨어 디코딩시에만 사용됨 
+    struct SwsContext *gImgConvertCtx;
+    //AVDictionary *optionsDict;// 필요없음
+    //enum AVSampleFormat sfmt;// 필요없음
 } Movie;
 
 #ifdef __cplusplus
