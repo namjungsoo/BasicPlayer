@@ -31,7 +31,7 @@ typedef struct {
     int gPictureSize;
     uint8_t *gVideoBuffer;
     uint8_t *gData[3];// YUV 데이터
-    int gPixelFormat;
+    enum AVPixelFormat gPixelFormat;
     double gFps;
     pthread_t gFrameThread;
     int gFrameThreadRunning;

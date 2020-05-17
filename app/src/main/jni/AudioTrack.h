@@ -40,7 +40,7 @@ static JavaMethod audio_track_get_sample_rate = {"getSampleRate", "()I"};
 
 void initAudioTrack(JNIEnv *env, jobject thiz);
 void prepareAudioTrack(int audioFormat, int sampleRate, int channels);
-void writeAudioTrack(char* data, int data_size);
+void writeAudioTrack(uint8_t* data, int data_size);
 
 void pauseAudioTrack(JNIEnv *env, jobject thiz);
 void resumeAudioTrack(JNIEnv *env, jobject thiz);

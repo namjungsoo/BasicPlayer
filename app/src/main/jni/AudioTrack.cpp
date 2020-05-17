@@ -135,7 +135,7 @@ void detatchThread()
     int ret = player->javavm->DetachCurrentThread();
 }
 
-void writeAudioTrack(char* data, int data_size) 
+void writeAudioTrack(uint8_t* data, int data_size) 
 {
     // 쓰레드에서 호출되므로 javavm에서 env를 호출해야함 
     JNIEnv *env = attachThread();
