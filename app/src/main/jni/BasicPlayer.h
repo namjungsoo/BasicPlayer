@@ -30,8 +30,9 @@ int openAudioStream(Movie *movie);
 
 // return: == 0 - success
 //         != 0 then end of movie or fail
+// 수동으로 렌더링하여 그 픽셀을 얻을 필요가 있을때
+// Bitmap에 그릴 경우 
 int decodeFrame(Movie *movie);
-
 void copyPixels(Movie *movie, uint8_t *pixels);
 
 int getWidth(Movie *movie);
@@ -50,6 +51,7 @@ int64_t getDuration(Movie *movie);
 int64_t getPosition(Movie *movie);
 
 // Frame thread & YUV data
+// internal 
 void *decodeFrameThread(void *param);
 void copyFrameYUVTexData(Movie *movie);
 

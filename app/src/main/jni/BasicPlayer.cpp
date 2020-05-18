@@ -66,6 +66,7 @@ void initMovie(Movie *movie)
 	movie->gPixelFormat = AV_PIX_FMT_BGR32;
 	movie->gVideoStreamIdx = -1;	// 인덱스 INVALID
 	movie->gAudioStreamIdx = -1;	// 인덱스 INVALID
+	movie->gFrameThreadRunning = 0; // 쓰레드 중지 상태
 	movie->gAudioThreadRunning = 0; // 쓰레드 중지 상태
 }
 

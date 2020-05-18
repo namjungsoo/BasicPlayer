@@ -10,24 +10,6 @@ std::map<int, std::string> gAudioFormatMap;
 
 void initAudioFormatMap() 
 {
-	// if (sfmt == AV_SAMPLE_FMT_U8 || sfmt == AV_SAMPLE_FMT_U8P) {
-	// 	LOGD("AV_SAMPLE_FMT_U8");
-	// }
-	// else if (sfmt == AV_SAMPLE_FMT_S16 || sfmt == AV_SAMPLE_FMT_S16P) {
-	// 	LOGD("AV_SAMPLE_FMT_S16");
-	// }
-	// else if (sfmt == AV_SAMPLE_FMT_S32 || sfmt == AV_SAMPLE_FMT_S32P) {
-	// 	LOGD("AV_SAMPLE_FMT_S32");
-	// }
-	// else if (sfmt == AV_SAMPLE_FMT_FLT || sfmt == AV_SAMPLE_FMT_FLTP) {
-	// 	LOGD("AV_SAMPLE_FMT_FLT");
-	// }
-	// else if (sfmt == AV_SAMPLE_FMT_DBL || sfmt == AV_SAMPLE_FMT_DBLP) {
-	// 	LOGD("AV_SAMPLE_FMT_DBL");
-	// }
-	// else {
-	// 	LOGD("Unsupported format");
-	// }
 	gAudioFormatMap.clear();
 
 	//normal
