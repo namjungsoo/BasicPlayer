@@ -15,18 +15,25 @@
 #include <linux/termios.h>
 
 #include <GLES/gl.h>
-
+#include "SharedQueue.h"
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
+SharedQueue<AVPacket> packetQueue;
+
+//TEST
 pthread_t thread;
 int param;
 void *test_thread(void *param) {
 	LOGD("test_thread=%llu", param);
 	return NULL;
+}
+
+void queue_clear_callback(AVPacket packet) {
+
 }
 
 jint JNI_OnLoad(JavaVM* vm, void* reserved) {
@@ -35,6 +42,7 @@ jint JNI_OnLoad(JavaVM* vm, void* reserved) {
 	LOGD("param=%llu", &param);
 	pthread_create(&thread, NULL, test_thread, &param);
 
+	packetQueue.clear(queue_clear_callback);
     return JNI_VERSION_1_6;
 }
 

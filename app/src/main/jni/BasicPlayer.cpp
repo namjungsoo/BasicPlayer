@@ -43,6 +43,7 @@ extern "C"
 
 #include "BasicPlayer.h"
 #include "Log.h"
+#include "Util.h"
 
 //Audio
 #include "AudioQ.h"
@@ -50,13 +51,6 @@ extern "C"
 #include "AudioFormatMap.h"
 
 #define AVCODEC_MAX_AUDIO_FRAME_SIZE 192000
-
-int64_t getTimeNsec()
-{
-	struct timespec now;
-	clock_gettime(CLOCK_MONOTONIC, &now);
-	return (int64_t)now.tv_sec * 1000000000LL + now.tv_nsec;
-}
 
 // 구조체를 초기화한다.
 void initMovie(Movie *movie)
@@ -409,13 +403,6 @@ int openMovie(Movie *movie, const char filePath[], int width, int height)
 	LOGD("openMovie filePath=%s width=%d height=%d", filePath, width, height);
 
 	return openMovieWithAudio(movie, filePath, 1, width, height);
-}
-
-long getMicrotime()
-{
-	struct timeval currentTime;
-	gettimeofday(&currentTime, NULL);
-	return currentTime.tv_sec * (int)1e6 + currentTime.tv_usec;
 }
 
 // 40ms만에 한번씩 호출된다.
