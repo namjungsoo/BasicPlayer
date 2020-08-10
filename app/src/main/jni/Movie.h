@@ -3,10 +3,6 @@
 
 #pragma once
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 // ffmpeg lib
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
@@ -16,6 +12,9 @@ extern "C" {
 #include <libavutil/imgutils.h>// av_image_fill_arrays, av_image_get_buffer_size
 #include <libavutil/mem.h>
 #include <pthread.h>
+
+#include <mutex>
+#include <condition_variable>
 
 typedef struct {
     // 공통 
@@ -50,10 +49,11 @@ typedef struct {
     struct SwsContext *gImgConvertCtx;
     //AVDictionary *optionsDict;// 필요없음
     //enum AVSampleFormat sfmt;// 필요없음
-} Movie;
 
-#ifdef __cplusplus
-}
-#endif
+    // decode queue
+    std::mutex m;
+    std::condition_variable cv;
+
+} Movie;
 
 #endif//__MOVIE_H__

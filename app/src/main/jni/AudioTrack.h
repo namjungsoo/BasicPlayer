@@ -3,10 +3,6 @@
 
 #include <jni.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 typedef struct {
     const char* name;
     const char* signature;
@@ -44,9 +40,5 @@ void writeAudioTrack(uint8_t* data, int data_size);
 
 void pauseAudioTrack(JNIEnv *env, jobject thiz);
 void resumeAudioTrack(JNIEnv *env, jobject thiz);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif//__AUDIOTRACK_H__

@@ -125,7 +125,7 @@ endif
 include $(CLEAR_VARS)
 
 LOCAL_MODULE := libbasicplayer
-LOCAL_SRC_FILES := BasicPlayer.cpp Interface.cpp AudioQ.cpp AudioTrack.cpp AudioFormatMap.cpp PlayerMap.cpp compat.c
+LOCAL_SRC_FILES := BasicPlayer.cpp Interface.cpp AudioQ.cpp AudioTrack.cpp AudioFormatMap.cpp PlayerMap.cpp compat.c Main.cpp
 LOCAL_C_INCLUDES := $(LOCAL_FFMPEG_PATH)/include/ \
                     $(LOCAL_PATH)/../include/libavcodec \
                     $(LOCAL_PATH)/../include/libavformat \

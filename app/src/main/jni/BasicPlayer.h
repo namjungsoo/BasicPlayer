@@ -11,10 +11,6 @@
 #ifndef __BASICPLAYER_H__
 #define __BASICPLAYER_H__
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include "Movie.h"
 #define THREAD_RENDER 0
 
@@ -54,9 +50,5 @@ int64_t getPosition(Movie *movie);
 // internal 
 void *decodeFrameThread(void *param);
 void copyFrameYUVTexData(Movie *movie);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif//__BASICPLAYER_H__
