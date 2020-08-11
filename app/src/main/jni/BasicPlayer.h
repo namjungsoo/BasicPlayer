@@ -12,7 +12,7 @@
 #define __BASICPLAYER_H__
 
 #include "Movie.h"
-#define THREAD_RENDER 0
+#define THREAD_RENDER 1
 
 void initMovie(Movie *movie);
 

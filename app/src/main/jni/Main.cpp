@@ -153,8 +153,9 @@ int renderFrame(JNIEnv *env, jobject thiz, int id, jobject bitmap)
 	return 0;
 }
 
-int renderFrameYUVTexId(JNIEnv *env, jobject thiz, int id, int width, int height, int texIdY, int texIdU, int texIdV)
+int renderFrameYUVTexId(int id, int width, int height, int texIdY, int texIdU, int texIdV)
 {
+	LOGD("renderFrameYUVTexId");
 	int result;
 
 	Movie *gMovie = MovieMap_get(id);

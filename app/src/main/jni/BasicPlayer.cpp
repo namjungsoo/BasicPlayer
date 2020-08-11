@@ -180,40 +180,40 @@ int openAudioStream(Movie *movie)
 
 void *decodeAudioThread(void *param)
 {
-	LOGD("decodeAudioThread BEGIN new");
-	LOGD("decodeAudioThread BEGIN %d %llu", param, param);
+	// LOGD("decodeAudioThread BEGIN new");
+	// LOGD("decodeAudioThread BEGIN %d %llu", param, param);
 	Movie *movie = (Movie *)param;
 	int frameFinished = 0;
-	LOGD("decodeAudioThread movie=%llu %d", movie, movie->gAudioThreadRunning);
+	// LOGD("decodeAudioThread movie=%llu %d", movie, movie->gAudioThreadRunning);
 
 	int buffer_size = AVCODEC_MAX_AUDIO_FRAME_SIZE + FF_INPUT_BUFFER_PADDING_SIZE;
-	LOGD("decodeAudioThread buffer_size=%d", buffer_size);
+	// LOGD("decodeAudioThread buffer_size=%d", buffer_size);
 
 	uint8_t *buffer = (uint8_t *)av_malloc(sizeof(uint8_t) * buffer_size);
 	uint8_t *samples = (uint8_t *)av_malloc(sizeof(uint8_t) * buffer_size);
-    LOGD("decodeAudioThread buffer, samples");
+    // LOGD("decodeAudioThread buffer, samples");
 
 	while (movie->gAudioThreadRunning)
 	{
-	    LOGD("decodeAudioThread size BEGIN");
+	    // LOGD("decodeAudioThread size BEGIN");
 		AudioQ_lock();
 		size_t size = AudioQ_size();
 		AudioQ_unlock();
 
-        LOGD("decodeAudioThread size END");
+        // LOGD("decodeAudioThread size END");
 
 		if (size > 0)
 		{
 			AudioQ_lock();
 			AVPacket packet = AudioQ_pop();
 			AudioQ_unlock();
-            LOGD("decodeAudioThread pop");
+            // LOGD("decodeAudioThread pop");
 
 			int64_t begin = getTimeNsec();
 			int len = avcodec_decode_audio4(movie->gAudioCodecCtx, movie->gFrameAudio, &frameFinished, &packet);
 			int64_t end = getTimeNsec();
 			int64_t diff = end - begin;
-			LOGD("decodeAudioThread avcodec_decode_audio4");
+			// LOGD("decodeAudioThread avcodec_decode_audio4");
 
 			if (len < 0)
 			{
@@ -222,9 +222,9 @@ void *decodeAudioThread(void *param)
 
 			// 이게 전부 0.0에서 변화가 없음
 			double pts = av_frame_get_best_effort_timestamp(movie->gFrameAudio);
-			LOGD("decodeAudioThread pts");
+			// LOGD("decodeAudioThread pts");
 			double pts_clock = pts * av_q2d(movie->gFormatCtx->streams[movie->gAudioStreamIdx]->time_base);
-			LOGD("decodeAudioThread pts_clock");
+			// LOGD("decodeAudioThread pts_clock");
 
 			if (frameFinished)
 			{
@@ -232,7 +232,7 @@ void *decodeAudioThread(void *param)
 				int plane_size;
 				int data_size = av_samples_get_buffer_size(&plane_size, movie->gAudioCodecCtx->channels, movie->gFrameAudio->nb_samples, movie->gAudioCodecCtx->sample_fmt, 1);
 				uint16_t nb, ch;
-                LOGD("decodeAudioThread av_samples_get_buffer_size");
+                // LOGD("decodeAudioThread av_samples_get_buffer_size");
 
 				if (movie->gAudioCodecCtx->sample_fmt == AV_SAMPLE_FMT_S16P)
 				{
@@ -246,7 +246,7 @@ void *decodeAudioThread(void *param)
 						}
 					}
 					writeAudioTrack(samples, plane_size * movie->gAudioCodecCtx->channels);
-					LOGD("decodeAudioThread AV_SAMPLE_FMT_S16P");
+					// LOGD("decodeAudioThread AV_SAMPLE_FMT_S16P");
 				}
 				else if (movie->gAudioCodecCtx->sample_fmt == AV_SAMPLE_FMT_FLTP)
 				{
@@ -262,7 +262,7 @@ void *decodeAudioThread(void *param)
 						}
 					}
 					writeAudioTrack(samples, (plane_size / sizeof(float)) * sizeof(uint16_t) * movie->gAudioCodecCtx->channels);
-					LOGD("decodeAudioThread AV_SAMPLE_FMT_FLTP");
+					// LOGD("decodeAudioThread AV_SAMPLE_FMT_FLTP");
 				}
 				else if (movie->gAudioCodecCtx->sample_fmt == AV_SAMPLE_FMT_U8P)
 				{
@@ -276,14 +276,14 @@ void *decodeAudioThread(void *param)
 						}
 					}
 					writeAudioTrack(samples, (plane_size / sizeof(uint8_t)) * sizeof(uint16_t) * movie->gAudioCodecCtx->channels);
-					LOGD("decodeAudioThread AV_SAMPLE_FMT_U8P");
+					// LOGD("decodeAudioThread AV_SAMPLE_FMT_U8P");
 				}
 
 				// 채널 구분이 없음
 				else if (movie->gAudioCodecCtx->sample_fmt == AV_SAMPLE_FMT_S16)
 				{
 					writeAudioTrack(movie->gFrameAudio->extended_data[0], movie->gFrameAudio->linesize[0]);
-					LOGD("decodeAudioThread AV_SAMPLE_FMT_S16");
+					// LOGD("decodeAudioThread AV_SAMPLE_FMT_S16");
 				}
 				else if (movie->gAudioCodecCtx->sample_fmt == AV_SAMPLE_FMT_FLT)
 				{
@@ -293,7 +293,7 @@ void *decodeAudioThread(void *param)
 						out[nb] = (short)(((float *)movie->gFrameAudio->extended_data[0])[nb] * SHRT_MAX);
 					}
 					writeAudioTrack(samples, (plane_size / sizeof(float)) * sizeof(uint16_t));
-					LOGD("decodeAudioThread AV_SAMPLE_FMT_FLT");
+					// LOGD("decodeAudioThread AV_SAMPLE_FMT_FLT");
 				}
 				else if (movie->gAudioCodecCtx->sample_fmt == AV_SAMPLE_FMT_U8)
 				{
@@ -303,7 +303,7 @@ void *decodeAudioThread(void *param)
 						out[nb] = (short)((((uint8_t *)movie->gFrameAudio->extended_data[0])[nb] - 127) * SHRT_MAX / 127);
 					}
 					writeAudioTrack(samples, (plane_size / sizeof(uint8_t)) * sizeof(uint16_t));
-					LOGD("decodeAudioThread AV_SAMPLE_FMT_U8");
+					// LOGD("decodeAudioThread AV_SAMPLE_FMT_U8");
 				}
 
 				av_packet_unref(&packet);
@@ -316,7 +316,7 @@ void *decodeAudioThread(void *param)
 		usleep(1);
 	}
 
-	LOGW("decodeAudioThread END");
+	// LOGW("decodeAudioThread END");
 
 	av_free(buffer);
 	av_free(samples);
@@ -421,6 +421,7 @@ long getMicrotime()
 // 40ms만에 한번씩 호출된다.
 int decodeFrame(Movie *movie)
 {
+	LOGD("decodeFrame");
 	int frameFinished = 0;
 	AVPacket packet;
 
@@ -712,15 +713,31 @@ void *decodeFrameThread(void *param)
 		LOGD("decodeFrameThread av_read_frame");
 		if (packet.stream_index == movie->gVideoStreamIdx)
 		{
+			// 비디오를 packet에 디코딩함 
 			avcodec_decode_video2(movie->gVideoCodecCtx, movie->gFrame, &frameFinished, &packet);
 			LOGD("decodeFrameThread avcodec_decode_video2");
 
+			// 현재 시간을 구해서 기록 
 			int64_t pts = av_frame_get_best_effort_timestamp(movie->gFrame);
 			movie->gCurrentTimeUs = av_rescale_q(pts, movie->gFormatCtx->streams[movie->gVideoStreamIdx]->time_base, AV_TIME_BASE_Q);
 			LOGD("decodeFrameThread pts=%f movie->gCurrentTimeUs=%lu", pts, movie->gCurrentTimeUs);
 
 			if (frameFinished)
 			{
+				// 프레임이 완료되면 queue에 넣어준다 
+				// {
+				// 	std::unique_lock<std::mutex> lock(movie->frameMutex);
+				// 	// 10개 이상이면 더이상 넣지 못하고 기다린다
+				// 	if(movie->frameQueue.size() < 10) {
+				// 		movie->frameQueue.push(packet);	
+				// 	} else {
+				// 		// 깨어나는 경우에는 size()가 10이하라서 추가가 가능함 
+				// 		movie->frameCV.wait(lock);
+				// 		movie->frameQueue.push(packet);	
+				// 	}					
+				// }
+
+				// 기존 코드 			
 				copyFrameYUVTexData(movie);
 				LOGD("avcodec_decode_video2 copyFrameYUVTexData");
 				av_packet_unref(&packet);

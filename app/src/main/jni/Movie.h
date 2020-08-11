@@ -15,6 +15,15 @@
 
 #include <mutex>
 #include <condition_variable>
+#include <queue>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+#include <libavcodec/avcodec.h>
+#ifdef __cplusplus
+}
+#endif
 
 typedef struct {
     // 공통 
@@ -51,9 +60,13 @@ typedef struct {
     //enum AVSampleFormat sfmt;// 필요없음
 
     // decode queue
-    std::mutex m;
-    std::condition_variable cv;
+    std::mutex frameMutex;
+    std::condition_variable frameCV;
+    std::queue<AVPacket> frameQueue;
 
+    // audio queue
+    std::mutex audioMutex;
+    std::queue<AVPacket> audioQueue;
 } Movie;
 
 #endif//__MOVIE_H__

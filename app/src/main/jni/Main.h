@@ -13,7 +13,7 @@ namespace Main {
     int openMovieWithAudio(JNIEnv *env, jobject thiz, int id, jstring filePath, int audio, int width, int height);
     int openMovie(JNIEnv *env, jobject thiz, int id, jstring filePath, int width, int height);
     int renderFrame(JNIEnv *env, jobject thiz, int id, jobject bitmap);
-    int renderFrameYUVTexId(JNIEnv *env, jobject thiz, int id, int width, int height, int texIdY, int texIdU, int texIdV);
+    int renderFrameYUVTexId(int id, int width, int height, int texIdY, int texIdU, int texIdV);
 
     int getMovieWidth(int id);
     int getMovieHeight(int id);

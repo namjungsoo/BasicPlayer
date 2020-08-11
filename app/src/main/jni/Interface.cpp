@@ -86,7 +86,7 @@ jlong Java_com_duongame_basicplayer_Player_getCurrentPositionUs(JNIEnv *env, job
 // GLPlayerView.renderFrameYUVTexId
 jint Java_com_duongame_basicplayer_Player_renderFrameYUVTexId(JNIEnv *env, jobject thiz, int id, int width, int height, int texIdY, int texIdU, int texIdV) 
 {
-	return Main::renderFrameYUVTexId(env, thiz, id, width, height, texIdY, texIdU, texIdV);
+	return Main::renderFrameYUVTexId(id, width, height, texIdY, texIdU, texIdV);
 }
 
 #ifdef __cplusplus
