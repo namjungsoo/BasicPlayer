@@ -165,6 +165,13 @@ int renderFrameYUVTexId(int id, int width, int height, int texIdY, int texIdU, i
 #if THREAD_RENDER == 1
 		// decodeFrame은 항상 thread에서 수행되고 있다.
 		Movie *movie = gMovie;
+		{
+			std::unique_lock<std::mutex> lock(movie->frameMutex);
+			if(movie->frameQueue.size() > 0) {
+				AVPacket packet = movie->frameQueue.front();
+				movie->frameQueue.pop();
+			}
+		}
 
 		glBindTexture(GL_TEXTURE_2D, texIdY);
 		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, width, height, GL_LUMINANCE, GL_UNSIGNED_BYTE, movie->gData[0]);
