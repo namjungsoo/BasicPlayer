@@ -427,8 +427,13 @@ int decodeFrame(Movie *movie)
 
 			if (frameFinished) {
 				// 이미지 컨버트 컨텍스트를 받는다. 없으면 새로 생성
-				long us;
-				us = getMicrotime();
+				movie->gImgConvertCtx = sws_getCachedContext(movie->gImgConvertCtx,
+					movie->gVideoCodecCtx->width, movie->gVideoCodecCtx->height, movie->gVideoCodecCtx->pix_fmt,
+					movie->gTargetWidth, movie->gTargetHeight, movie->gPixelFormat, SWS_FAST_BILINEAR, NULL, NULL, NULL);
+
+				// 이미지를 컨버팅 하면서 스케일 함 
+				sws_scale(movie->gImgConvertCtx, (const uint8_t * const*)movie->gFrame->data, movie->gFrame->linesize, 0, movie->gVideoCodecCtx->height, movie->gFrameRGB->data, movie->gFrameRGB->linesize);
+
 				av_packet_unref(&packet);
 				return 0;
 			}
