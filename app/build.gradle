@@ -1,20 +1,23 @@
 apply plugin: 'com.android.application'
+
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
+
 apply plugin: 'realm-android'
+apply plugin: 'com.google.firebase.crashlytics'
 
 android {
-    compileSdkVersion 29
-    buildToolsVersion '28.0.3'
+    compileSdkVersion 30
+    buildToolsVersion '30.0.2'
     defaultConfig {
         multiDexEnabled true
         applicationId 'com.duongame.basicplayer'
         buildConfigField "boolean", "SHOW_AD", "true"
         minSdkVersion 16
-        targetSdkVersion 29
-        versionCode 13
-        versionName "1.1.1"
+        targetSdkVersion 30
+        versionCode 14
+        versionName "1.1.2"
 
         buildConfigField "String", "GA_TRACKING_ID", "\"UA-61499807-16\""
     }
@@ -79,14 +82,6 @@ android {
             dimension "edition"
         }
     }
-    // Android Oreo 이상에서는 64bit OS에서는 64bit so를 기본적으로 찾게되는데 이를 32bit so를 사용하라고 강제하는 명령임
-//    splits {
-//        abi {
-//            enable true
-//            reset()
-//            include 'armeabi-v7a'
-//        }
-//    }
 }
 
 dependencies {
@@ -99,32 +94,32 @@ dependencies {
     //implementation 'com.googlecode.juniversalchardet:juniversalchardet:1.0.3'
 
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
-    implementation 'androidx.appcompat:appcompat:1.1.0'
+    implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'androidx.cardview:cardview:1.0.0'
     implementation 'androidx.recyclerview:recyclerview:1.1.0'
 
     //ads는 항상 15.0.1을 유지할것
-    implementation 'com.google.android.gms:play-services-ads:19.1.0'
+    implementation 'com.google.android.gms:play-services-ads:19.6.0'
     implementation 'com.google.android.gms:play-services-analytics:17.0.0'
 
-    implementation 'com.google.firebase:firebase-core:17.4.0'
-    implementation 'com.google.firebase:firebase-config:19.1.4'
+    implementation 'com.google.firebase:firebase-core:18.0.0'
+    implementation 'com.google.firebase:firebase-config:20.0.2'
 
-    implementation('com.crashlytics.sdk.android:crashlytics:2.10.1@aar') {
-        transitive = true
-    }
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    // Add the Firebase Crashlytics SDK.
+    implementation 'com.google.firebase:firebase-crashlytics:17.3.0'
+
+    // Recommended: Add the Google Analytics SDK.
+    implementation 'com.google.firebase:firebase-analytics:18.0.0'
+
+    // Add the Firebase Crashlytics NDK dependency.
+    implementation 'com.google.firebase:firebase-crashlytics-ndk:17.3.0'
+
+//    implementation('com.crashlytics.sdk.android:crashlytics:2.10.1@aar') {
+//        transitive = true
+//    }
+    //implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 
     implementation 'androidx.multidex:multidex:2.0.1'
-}
-
-// Add to the bottom of the file
-//PRO
-apply plugin: 'io.fabric'
-
-repositories {
-    maven { url 'https://maven.fabric.io/public' }
-    mavenCentral()
 }
 
 apply plugin: 'com.google.gms.google-services'

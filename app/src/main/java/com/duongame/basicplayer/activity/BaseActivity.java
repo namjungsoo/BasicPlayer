@@ -8,7 +8,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import android.widget.Toast;
 
-import com.crashlytics.android.Crashlytics;
+//import com.crashlytics.android.Crashlytics;
 import com.duongame.basicplayer.BuildConfig;
 import com.duongame.basicplayer.PlayerApplication;
 import com.duongame.basicplayer.R;
@@ -20,7 +20,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
 
-import io.fabric.sdk.android.Fabric;
+//import io.fabric.sdk.android.Fabric;
 
 /**
  * Created by namjungsoo on 2016-06-23.
@@ -52,15 +52,16 @@ public class BaseActivity extends AppCompatActivity {
 
         // Obtain the FirebaseAnalytics instance.
         firebaseAnalytics = FirebaseAnalytics.getInstance(this);
-        Fabric.with(this, new Crashlytics());
-        AdInterstitialManager.init(this);
+//        Fabric.with(this, new Crashlytics());
+        if (BuildConfig.SHOW_AD)
+            AdInterstitialManager.init(this);
 
         mFirebaseRemoteConfig = FirebaseRemoteConfig.getInstance();
         mFirebaseRemoteConfig.fetch(0).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
                 if (task.isSuccessful()) {
-                    mFirebaseRemoteConfig.activateFetched();
+                    mFirebaseRemoteConfig.activate();
 
                     // 최신버전 업데이트 관련
                     long version = mFirebaseRemoteConfig.getLong("latest_version");

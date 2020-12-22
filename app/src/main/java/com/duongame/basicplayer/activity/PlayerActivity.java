@@ -5,9 +5,11 @@ import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+
 import androidx.core.content.ContextCompat;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.appcompat.app.ActionBar;
+
 import android.util.Log;
 import android.view.Gravity;
 import android.view.MenuItem;
@@ -192,21 +194,25 @@ public class PlayerActivity extends BaseActivity {
 
     @Override
     public void onBackPressed() {
-        SharedPreferences pref = getSharedPreferences("player", MODE_PRIVATE);
-        int count = pref.getInt("exit_count", 0);
-        SharedPreferences.Editor edit = pref.edit();
-        edit.putInt("exit_count", count + 1);
-        edit.apply();
+        if (BuildConfig.SHOW_AD) {
+            SharedPreferences pref = getSharedPreferences("player", MODE_PRIVATE);
+            int count = pref.getInt("exit_count", 0);
+            SharedPreferences.Editor edit = pref.edit();
+            edit.putInt("exit_count", count + 1);
+            edit.apply();
 
-        if (count % 2 == 0) {
-            AdInterstitialManager.showAd(this, MODE_EXIT, new AdInterstitialManager.OnFinishListener() {
-                @Override
-                public void onFinish() {
-                    finish();
-                }
-            });
+            if (count % 2 == 0) {
+                AdInterstitialManager.showAd(this, MODE_EXIT, new AdInterstitialManager.OnFinishListener() {
+                    @Override
+                    public void onFinish() {
+                        finish();
+                    }
+                });
+            } else {
+                //finish();
+                super.onBackPressed();
+            }
         } else {
-            //finish();
             super.onBackPressed();
         }
     }

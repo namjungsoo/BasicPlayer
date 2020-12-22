@@ -129,8 +129,10 @@ public class MainActivity extends BaseActivity {
 
     private void initView() {
         // 광고들 초기화
-        AdBannerManager.init(this);
-        AdInterstitialManager.init(this);
+        if (BuildConfig.SHOW_AD) {
+            AdBannerManager.init(this);
+            AdInterstitialManager.init(this);
+        }
 
         // 루트 레이아웃을 얻어서
         View root = getLayoutInflater().inflate(R.layout.activity_main, null);
@@ -173,21 +175,25 @@ public class MainActivity extends BaseActivity {
 
     @Override
     public void onBackPressed() {
-        SharedPreferences pref = getSharedPreferences("main", MODE_PRIVATE);
-        int count = pref.getInt("exit_count", 0);
-        SharedPreferences.Editor edit = pref.edit();
-        edit.putInt("exit_count", count + 1);
-        edit.apply();
+        if (BuildConfig.SHOW_AD) {
+            SharedPreferences pref = getSharedPreferences("main", MODE_PRIVATE);
+            int count = pref.getInt("exit_count", 0);
+            SharedPreferences.Editor edit = pref.edit();
+            edit.putInt("exit_count", count + 1);
+            edit.apply();
 
-        if (count % 2 == 0) {
-            AdInterstitialManager.showAd(this, MODE_EXIT, new AdInterstitialManager.OnFinishListener() {
-                @Override
-                public void onFinish() {
-                    finish();
-                }
-            });
+            if (count % 2 == 0) {
+                AdInterstitialManager.showAd(this, MODE_EXIT, new AdInterstitialManager.OnFinishListener() {
+                    @Override
+                    public void onFinish() {
+                        finish();
+                    }
+                });
+            } else {
+                //finish();
+                super.onBackPressed();
+            }
         } else {
-            //finish();
             super.onBackPressed();
         }
     }
