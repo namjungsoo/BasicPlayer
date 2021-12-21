@@ -22,22 +22,27 @@ public class AlertManager {
         final File file = new File(filename);
 
         //PRO
-        if (BuildConfig.SHOW_AD) {
-            AlertManager.showAlertWithBanner(context, context.getResources().getString(R.string.dialog_recentfile), file.getName(), new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i) {
-                    FileManager.openFile(context, filename, time, rotation);
-                }
-            }, negListener, null);
-        } else {
-            AlertManager.showAlert(context, context.getResources().getString(R.string.dialog_recentfile), file.getName(), new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i) {
-                    FileManager.openFile(context, filename, time, rotation);
-                }
-            }, negListener, null);
-        }
-
+//        if (BuildConfig.SHOW_AD) {
+//            AlertManager.showAlertWithBanner(context, context.getResources().getString(R.string.dialog_recentfile), file.getName(), new DialogInterface.OnClickListener() {
+//                @Override
+//                public void onClick(DialogInterface dialogInterface, int i) {
+//                    FileManager.openFile(context, filename, time, rotation);
+//                }
+//            }, negListener, null);
+//        } else {
+//            AlertManager.showAlert(context, context.getResources().getString(R.string.dialog_recentfile), file.getName(), new DialogInterface.OnClickListener() {
+//                @Override
+//                public void onClick(DialogInterface dialogInterface, int i) {
+//                    FileManager.openFile(context, filename, time, rotation);
+//                }
+//            }, negListener, null);
+//        }
+        AlertManager.showAlert(context, context.getResources().getString(R.string.dialog_recentfile), file.getName(), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                FileManager.openFile(context, filename, time, rotation);
+            }
+        }, negListener, null);
     }
 
     public static void showAlertWithBanner(Context context, String title, String message, DialogInterface.OnClickListener posListener, DialogInterface.OnClickListener negListener, DialogInterface.OnKeyListener keyListener) {
